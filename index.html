@@ -10,21 +10,21 @@
 		<div id="map"></div>
 		<section id="panel" class="panel">
 			<header class="panel-header">
-				<button id="panel-toggle" class="panel-toggle" type="button" aria-label="Toggle menu" aria-expanded="true" aria-controls="panel-content">
+				<button id="panel-toggle" class="panel-toggle" type="button" aria-label="Toggle menu" aria-expanded="true" aria-controls="panel-content" data-i18n-aria-label="toggleMenu">
 					<i data-lucide="menu"></i>
 				</button>
-				<h1>Darktide Maps</h1>
+				<h1 data-i18n="appTitle">Darktide Maps</h1>
 			</header>
 			<p id="help" class="help"></p>
 			<div id="panel-content" class="panel-content">
 				<section class="map-selector">
-					<h2>Map</h2>
-					<select id="map-select" aria-label="Map"></select>
+					<h2 data-i18n="map">Map</h2>
+					<select id="map-select" aria-label="Map" data-i18n-aria-label="map"></select>
 				</section>
 				<section class="filters">
-					<h2>Filters</h2>
+					<h2 data-i18n="filters">Filters</h2>
 					<div id="filter-list">
-						<p class="muted">No marker categories available.</p>
+						<p class="muted" data-i18n="noMarkerCategories">No marker categories available.</p>
 					</div>
 				</section>
 			</div>
@@ -32,7 +32,7 @@
 		<div id="loading-overlay" class="loading-overlay" role="status" aria-live="polite" hidden></div>
 		<div id="error-banner" class="error-banner" role="alert" hidden>
 			<span id="error-message"></span>
-			<button id="error-dismiss" type="button">Dismiss</button>
+			<button id="error-dismiss" type="button" data-i18n="dismiss">Dismiss</button>
 		</div>
 		<script type="module" src="./app.js"></script>
 	</body>

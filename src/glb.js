@@ -10,9 +10,10 @@ function typedArrayForAccessor(json, binary, accessorIndex) {
 	const accessor = json.accessors[accessorIndex];
 	const bufferView = json.bufferViews[accessor.bufferView];
 	const byteOffset = binary.byteOffset + (bufferView.byteOffset ?? 0) + (accessor.byteOffset ?? 0);
+	const components = accessor.type === "SCALAR" ? 1 : 3;
 
 	if (accessor.componentType === FLOAT_COMPONENT_TYPE) {
-		return new Float32Array(binary.buffer, byteOffset, accessor.count * 3);
+		return new Float32Array(binary.buffer, byteOffset, accessor.count * components);
 	}
 
 	if (accessor.componentType === UNSIGNED_SHORT_COMPONENT_TYPE) {
@@ -55,10 +56,31 @@ export function parseGlb(arrayBuffer) {
 		throw new Error("GLB is missing its JSON or binary chunk.");
 	}
 
-	const primitive = json.meshes[0].primitives[0];
+	function parsePrimitive(primitive) {
+		return {
+			positions: typedArrayForAccessor(json, binary, primitive.attributes.POSITION),
+			normals: Number.isInteger(primitive.attributes.NORMAL)
+				? typedArrayForAccessor(json, binary, primitive.attributes.NORMAL)
+				: null,
+			colors: Number.isInteger(primitive.attributes.COLOR_0)
+				? typedArrayForAccessor(json, binary, primitive.attributes.COLOR_0)
+				: null,
+			indices: typedArrayForAccessor(json, binary, primitive.indices),
+		};
+	}
 
-	return {
-		positions: typedArrayForAccessor(json, binary, primitive.attributes.POSITION),
-		indices: typedArrayForAccessor(json, binary, primitive.indices),
-	};
+	const primitives = json.meshes[0].primitives;
+	const parts = {};
+
+	for (const primitive of primitives) {
+		if (primitive.extras?.part) {
+			parts[primitive.extras.part] = parsePrimitive(primitive);
+		}
+	}
+
+	if (Object.keys(parts).length > 0) {
+		return {parts};
+	}
+
+	return parsePrimitive(primitives[0]);
 }

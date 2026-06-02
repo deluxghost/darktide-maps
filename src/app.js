@@ -1,7 +1,9 @@
 import { parseGlb } from "./glb.js";
-import { createBoundaryPaths } from "./boundary-edges.js";
+import { applyTranslations, t } from "./i18n.js";
+import { createLandmarkMesh } from "./landmarks.js";
+import { createBoundaryPaths } from "./boundaries.js";
 import { createMesh } from "./navmesh.js";
-import { createNavmeshRenderer } from "./render-navmesh.js";
+import { createMapRenderer } from "./renderer.js";
 import { createIcons, Menu } from "lucide";
 
 const mapElement = document.querySelector("#map");
@@ -13,9 +15,11 @@ const errorDismiss = document.querySelector("#error-dismiss");
 const panel = document.querySelector(".panel");
 const panelToggle = document.querySelector("#panel-toggle");
 const helpElement = document.querySelector("#help");
+const filterList = document.querySelector("#filter-list");
 const mobileMedia = window.matchMedia("(max-width: 640px)");
 
 let loadController;
+let mainPathVisible = true;
 
 function formatBytes(bytes) {
 	if (bytes < 1024) {
@@ -47,8 +51,43 @@ function setPanelCollapsed(collapsed) {
 
 function writeHelp() {
 	helpElement.textContent = mobileMedia.matches
-		? "Drag to pan. Pinch to zoom. Twist or use three fingers to rotate."
-		: "Drag to pan. Right-drag or Shift + drag to rotate. Scroll to zoom.";
+		? t("helpMobile")
+		: t("helpDesktop");
+}
+
+function writeEmptyFilters() {
+	filterList.replaceChildren();
+
+	const message = document.createElement("p");
+
+	message.className = "muted";
+	message.textContent = t("noMarkerCategories");
+	filterList.append(message);
+}
+
+function writeMainPathFilter(map) {
+	filterList.replaceChildren();
+
+	if (!map.landmarks?.mainPath) {
+		writeEmptyFilters();
+
+		return;
+	}
+
+	const label = document.createElement("label");
+	const checkbox = document.createElement("input");
+	const text = document.createElement("span");
+
+	label.className = "filter-option";
+	checkbox.type = "checkbox";
+	checkbox.checked = mainPathVisible;
+	text.textContent = t("filterMainPath");
+	checkbox.addEventListener("change", () => {
+		mainPathVisible = checkbox.checked;
+		mapRenderer.setMainPathVisible(mainPathVisible);
+	});
+	label.append(checkbox, text);
+	filterList.append(label);
 }
 
 function appendMapOption(parent, map) {
@@ -94,7 +133,32 @@ function writeMapOptions(manifest) {
 	}
 }
 
-const renderNavmesh = createNavmeshRenderer(mapElement, showError);
+const mapRenderer = createMapRenderer(mapElement, showError);
+
+async function loadGlb(file, signal) {
+	const response = await fetch(file, { signal });
+
+	if (!response.ok) {
+		throw new Error(`HTTP ${response.status} while loading ${file}`);
+	}
+
+	return parseGlb(await response.arrayBuffer());
+}
+
+async function loadMainPathMeshes(mainPath, signal) {
+	if (!mainPath) {
+		return null;
+	}
+
+	const glb = await loadGlb(mainPath.file, signal);
+	const meshes = {};
+
+	for (const [part, partGlb] of Object.entries(glb.parts)) {
+		meshes[part] = createLandmarkMesh(partGlb);
+	}
+
+	return meshes;
+}
 
 async function loadMap(map) {
 	if (loadController) {
@@ -103,18 +167,23 @@ async function loadMap(map) {
 
 	loadController = new AbortController();
 	errorBanner.hidden = true;
-	setLoading(`Loading ${map.title ?? map.id} (${formatBytes(map.assetBytes)})...`);
+	setLoading(t("loadingMap", {
+		title: map.title ?? map.id,
+		size: formatBytes(map.assetBytes),
+	}));
 
 	try {
-		const response = await fetch(map.file, { signal: loadController.signal });
+		const glb = await loadGlb(map.file, loadController.signal);
+		const mainPathMeshes = await loadMainPathMeshes(map.landmarks?.mainPath, loadController.signal);
 
-		if (!response.ok) {
-			throw new Error(`HTTP ${response.status} while loading ${map.file}`);
-		}
-
-		const glb = parseGlb(await response.arrayBuffer());
-
-		renderNavmesh(map, createMesh(glb), createBoundaryPaths(glb));
+		mapRenderer.render(
+			map,
+			createMesh(glb),
+			createBoundaryPaths(glb),
+			mainPathMeshes,
+			{mainPathVisible},
+		);
+		writeMainPathFilter(map);
 		clearLoading();
 	} catch (error) {
 		if (error.name !== "AbortError") {
@@ -128,13 +197,13 @@ async function initialize() {
 	const response = await fetch("./data/maps.json");
 
 	if (!response.ok) {
-		throw new Error(`HTTP ${response.status} while loading map manifest.`);
+		throw new Error(t("errorLoadingManifest", {status: response.status}));
 	}
 
 	const manifest = await response.json();
 
 	if (!Array.isArray(manifest.maps) || manifest.maps.length === 0) {
-		throw new Error("Map manifest contains no maps.");
+		throw new Error(t("errorNoMaps"));
 	}
 
 	writeMapOptions(manifest);
@@ -148,6 +217,7 @@ async function initialize() {
 
 export function startApp() {
 	createIcons({ icons: { Menu } });
+	applyTranslations();
 	setPanelCollapsed(mobileMedia.matches);
 	writeHelp();
 	mobileMedia.addEventListener("change", writeHelp);

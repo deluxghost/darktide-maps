@@ -22,7 +22,19 @@
 				"vertices": 34900
 			},
 			"sourceBytes": 3034048,
-			"assetBytes": 711716
+			"assetBytes": 711716,
+			"landmarks": {
+				"mainPath": {
+					"file": "./data/cm_archives.main_path.glb",
+					"sourceBytes": 39487,
+					"assetBytes": 96096,
+					"stats": {
+						"nodes": 205,
+						"segments": 3,
+						"markers": 16
+					}
+				}
+			}
 		},
 		{
 			"id": "cm_habs",
@@ -45,7 +57,19 @@
 				"vertices": 34165
 			},
 			"sourceBytes": 2901898,
-			"assetBytes": 682116
+			"assetBytes": 682116,
+			"landmarks": {
+				"mainPath": {
+					"file": "./data/cm_habs.main_path.glb",
+					"sourceBytes": 40882,
+					"assetBytes": 96568,
+					"stats": {
+						"nodes": 200,
+						"segments": 8,
+						"markers": 32
+					}
+				}
+			}
 		},
 		{
 			"id": "cm_raid",
@@ -68,7 +92,19 @@
 				"vertices": 40582
 			},
 			"sourceBytes": 3514950,
-			"assetBytes": 811296
+			"assetBytes": 811296,
+			"landmarks": {
+				"mainPath": {
+					"file": "./data/cm_raid.main_path.glb",
+					"sourceBytes": 40168,
+					"assetBytes": 97060,
+					"stats": {
+						"nodes": 206,
+						"segments": 4,
+						"markers": 13
+					}
+				}
+			}
 		},
 		{
 			"id": "core_research",
@@ -91,7 +127,19 @@
 				"vertices": 25139
 			},
 			"sourceBytes": 2113901,
-			"assetBytes": 506872
+			"assetBytes": 506872,
+			"landmarks": {
+				"mainPath": {
+					"file": "./data/core_research.main_path.glb",
+					"sourceBytes": 26611,
+					"assetBytes": 66916,
+					"stats": {
+						"nodes": 135,
+						"segments": 5,
+						"markers": 16
+					}
+				}
+			}
 		},
 		{
 			"id": "dm_forge",
@@ -114,7 +162,19 @@
 				"vertices": 30601
 			},
 			"sourceBytes": 2621207,
-			"assetBytes": 618328
+			"assetBytes": 618328,
+			"landmarks": {
+				"mainPath": {
+					"file": "./data/dm_forge.main_path.glb",
+					"sourceBytes": 29089,
+					"assetBytes": 71760,
+					"stats": {
+						"nodes": 145,
+						"segments": 6,
+						"markers": 19
+					}
+				}
+			}
 		},
 		{
 			"id": "dm_propaganda",
@@ -137,7 +197,19 @@
 				"vertices": 32239
 			},
 			"sourceBytes": 2749056,
-			"assetBytes": 647532
+			"assetBytes": 647532,
+			"landmarks": {
+				"mainPath": {
+					"file": "./data/dm_propaganda.main_path.glb",
+					"sourceBytes": 34585,
+					"assetBytes": 84964,
+					"stats": {
+						"nodes": 178,
+						"segments": 4,
+						"markers": 15
+					}
+				}
+			}
 		},
 		{
 			"id": "dm_rise",
@@ -160,7 +232,19 @@
 				"vertices": 49131
 			},
 			"sourceBytes": 4222899,
-			"assetBytes": 983952
+			"assetBytes": 983952,
+			"landmarks": {
+				"mainPath": {
+					"file": "./data/dm_rise.main_path.glb",
+					"sourceBytes": 40307,
+					"assetBytes": 96816,
+					"stats": {
+						"nodes": 203,
+						"segments": 6,
+						"markers": 24
+					}
+				}
+			}
 		},
 		{
 			"id": "dm_stockpile",
@@ -183,7 +267,19 @@
 				"vertices": 28590
 			},
 			"sourceBytes": 2374860,
-			"assetBytes": 568268
+			"assetBytes": 568268,
+			"landmarks": {
+				"mainPath": {
+					"file": "./data/dm_stockpile.main_path.glb",
+					"sourceBytes": 28912,
+					"assetBytes": 72292,
+					"stats": {
+						"nodes": 145,
+						"segments": 7,
+						"markers": 19
+					}
+				}
+			}
 		},
 		{
 			"id": "fm_armoury",
@@ -206,7 +302,19 @@
 				"vertices": 42952
 			},
 			"sourceBytes": 3751836,
-			"assetBytes": 867580
+			"assetBytes": 867580,
+			"landmarks": {
+				"mainPath": {
+					"file": "./data/fm_armoury.main_path.glb",
+					"sourceBytes": 34711,
+					"assetBytes": 84296,
+					"stats": {
+						"nodes": 174,
+						"segments": 6,
+						"markers": 16
+					}
+				}
+			}
 		},
 		{
 			"id": "fm_cargo",
@@ -229,7 +337,19 @@
 				"vertices": 31042
 			},
 			"sourceBytes": 2671476,
-			"assetBytes": 624192
+			"assetBytes": 624192,
+			"landmarks": {
+				"mainPath": {
+					"file": "./data/fm_cargo.main_path.glb",
+					"sourceBytes": 35531,
+					"assetBytes": 87508,
+					"stats": {
+						"nodes": 184,
+						"segments": 4,
+						"markers": 13
+					}
+				}
+			}
 		},
 		{
 			"id": "fm_resurgence",
@@ -252,7 +372,19 @@
 				"vertices": 43246
 			},
 			"sourceBytes": 3767473,
-			"assetBytes": 881756
+			"assetBytes": 881756,
+			"landmarks": {
+				"mainPath": {
+					"file": "./data/fm_resurgence.main_path.glb",
+					"sourceBytes": 28739,
+					"assetBytes": 70480,
+					"stats": {
+						"nodes": 142,
+						"segments": 6,
+						"markers": 24
+					}
+				}
+			}
 		},
 		{
 			"id": "hm_cartel",
@@ -275,7 +407,19 @@
 				"vertices": 34939
 			},
 			"sourceBytes": 2926135,
-			"assetBytes": 688780
+			"assetBytes": 688780,
+			"landmarks": {
+				"mainPath": {
+					"file": "./data/hm_cartel.main_path.glb",
+					"sourceBytes": 38402,
+					"assetBytes": 93692,
+					"stats": {
+						"nodes": 197,
+						"segments": 5,
+						"markers": 21
+					}
+				}
+			}
 		},
 		{
 			"id": "hm_complex",
@@ -298,7 +442,19 @@
 				"triangles": 54390
 			},
 			"sourceBytes": 3393009,
-			"assetBytes": 795776
+			"assetBytes": 795776,
+			"landmarks": {
+				"mainPath": {
+					"file": "./data/hm_complex.main_path.glb",
+					"sourceBytes": 29446,
+					"assetBytes": 73704,
+					"stats": {
+						"nodes": 152,
+						"segments": 4,
+						"markers": 14
+					}
+				}
+			}
 		},
 		{
 			"id": "hm_strain",
@@ -321,7 +477,19 @@
 				"vertices": 36093
 			},
 			"sourceBytes": 3150042,
-			"assetBytes": 729820
+			"assetBytes": 729820,
+			"landmarks": {
+				"mainPath": {
+					"file": "./data/hm_strain.main_path.glb",
+					"sourceBytes": 33776,
+					"assetBytes": 82528,
+					"stats": {
+						"nodes": 170,
+						"segments": 6,
+						"markers": 18
+					}
+				}
+			}
 		},
 		{
 			"id": "hub_ship",
@@ -344,7 +512,8 @@
 				"triangles": 4763
 			},
 			"sourceBytes": 275707,
-			"assetBytes": 70012
+			"assetBytes": 70012,
+			"landmarks": {}
 		},
 		{
 			"id": "km_enforcer",
@@ -367,7 +536,19 @@
 				"vertices": 36958
 			},
 			"sourceBytes": 3129169,
-			"assetBytes": 732716
+			"assetBytes": 732716,
+			"landmarks": {
+				"mainPath": {
+					"file": "./data/km_enforcer.main_path.glb",
+					"sourceBytes": 36854,
+					"assetBytes": 88804,
+					"stats": {
+						"nodes": 182,
+						"segments": 8,
+						"markers": 23
+					}
+				}
+			}
 		},
 		{
 			"id": "km_enforcer_twins",
@@ -390,7 +571,19 @@
 				"vertices": 22122
 			},
 			"sourceBytes": 1845240,
-			"assetBytes": 438840
+			"assetBytes": 438840,
+			"landmarks": {
+				"mainPath": {
+					"file": "./data/km_enforcer_twins.main_path.glb",
+					"sourceBytes": 27768,
+					"assetBytes": 68320,
+					"stats": {
+						"nodes": 137,
+						"segments": 6,
+						"markers": 17
+					}
+				}
+			}
 		},
 		{
 			"id": "km_heresy",
@@ -413,7 +606,19 @@
 				"vertices": 32471
 			},
 			"sourceBytes": 2808156,
-			"assetBytes": 657816
+			"assetBytes": 657816,
+			"landmarks": {
+				"mainPath": {
+					"file": "./data/km_heresy.main_path.glb",
+					"sourceBytes": 26470,
+					"assetBytes": 66816,
+					"stats": {
+						"nodes": 136,
+						"segments": 4,
+						"markers": 8
+					}
+				}
+			}
 		},
 		{
 			"id": "km_station",
@@ -436,7 +641,19 @@
 				"vertices": 31745
 			},
 			"sourceBytes": 2738281,
-			"assetBytes": 640156
+			"assetBytes": 640156,
+			"landmarks": {
+				"mainPath": {
+					"file": "./data/km_station.main_path.glb",
+					"sourceBytes": 37921,
+					"assetBytes": 89956,
+					"stats": {
+						"nodes": 186,
+						"segments": 7,
+						"markers": 29
+					}
+				}
+			}
 		},
 		{
 			"id": "lm_cooling",
@@ -459,7 +676,19 @@
 				"vertices": 28807
 			},
 			"sourceBytes": 2473561,
-			"assetBytes": 578088
+			"assetBytes": 578088,
+			"landmarks": {
+				"mainPath": {
+					"file": "./data/lm_cooling.main_path.glb",
+					"sourceBytes": 32476,
+					"assetBytes": 79744,
+					"stats": {
+						"nodes": 161,
+						"segments": 8,
+						"markers": 16
+					}
+				}
+			}
 		},
 		{
 			"id": "lm_rails",
@@ -482,7 +711,19 @@
 				"vertices": 31775
 			},
 			"sourceBytes": 2697779,
-			"assetBytes": 632740
+			"assetBytes": 632740,
+			"landmarks": {
+				"mainPath": {
+					"file": "./data/lm_rails.main_path.glb",
+					"sourceBytes": 33085,
+					"assetBytes": 80272,
+					"stats": {
+						"nodes": 166,
+						"segments": 5,
+						"markers": 22
+					}
+				}
+			}
 		},
 		{
 			"id": "lm_scavenge",
@@ -505,7 +746,19 @@
 				"vertices": 41341
 			},
 			"sourceBytes": 3589872,
-			"assetBytes": 836512
+			"assetBytes": 836512,
+			"landmarks": {
+				"mainPath": {
+					"file": "./data/lm_scavenge.main_path.glb",
+					"sourceBytes": 44509,
+					"assetBytes": 106284,
+					"stats": {
+						"nodes": 225,
+						"segments": 6,
+						"markers": 28
+					}
+				}
+			}
 		},
 		{
 			"id": "op_no_mans_land",
@@ -528,7 +781,19 @@
 				"vertices": 26630
 			},
 			"sourceBytes": 2308907,
-			"assetBytes": 542980
+			"assetBytes": 542980,
+			"landmarks": {
+				"mainPath": {
+					"file": "./data/op_no_mans_land.main_path.glb",
+					"sourceBytes": 33136,
+					"assetBytes": 80636,
+					"stats": {
+						"nodes": 168,
+						"segments": 4,
+						"markers": 14
+					}
+				}
+			}
 		},
 		{
 			"id": "op_train",
@@ -551,7 +816,19 @@
 				"vertices": 6908
 			},
 			"sourceBytes": 555641,
-			"assetBytes": 140720
+			"assetBytes": 140720,
+			"landmarks": {
+				"mainPath": {
+					"file": "./data/op_train.main_path.glb",
+					"sourceBytes": 4762,
+					"assetBytes": 16792,
+					"stats": {
+						"nodes": 24,
+						"segments": 1,
+						"markers": 2
+					}
+				}
+			}
 		},
 		{
 			"id": "prologue",
@@ -574,7 +851,8 @@
 				"vertices": 8312
 			},
 			"sourceBytes": 663049,
-			"assetBytes": 167080
+			"assetBytes": 167080,
+			"landmarks": {}
 		},
 		{
 			"id": "psykhanium",
@@ -597,7 +875,8 @@
 				"vertices": 19107
 			},
 			"sourceBytes": 1615266,
-			"assetBytes": 388068
+			"assetBytes": 388068,
+			"landmarks": {}
 		},
 		{
 			"id": "tg_shooting_range",
@@ -620,7 +899,8 @@
 				"vertices": 2985
 			},
 			"sourceBytes": 266042,
-			"assetBytes": 68016
+			"assetBytes": 68016,
+			"landmarks": {}
 		}
 	]
 }
