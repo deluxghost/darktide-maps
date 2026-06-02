@@ -15,7 +15,9 @@ scripts/build-map-assets.mjs
 
 The script converts `navmesh/<mission>.json` dumps into standard glTF 2.0
 binary `.glb` files. When `main_path/<mission>.json` exists, it also converts
-that route into an optimized landmark `.glb` with embedded parts. It refreshes:
+that route into an optimized landmark `.glb` with embedded parts. When
+`metadata/missions.json` exists, it merges mission title and zone metadata into the
+manifest. It refreshes:
 
 ```text
 public/data/maps.json
@@ -34,11 +36,22 @@ its declared landmark assets.
 ```text
 binaries/dump/NavExporter/navmesh/
 binaries/dump/NavExporter/main_path/
+binaries/dump/NavExporter/metadata/
 ```
 
 This is relative to the Darktide game directory. Do not write a
 machine-specific absolute game installation path into this skill or project
 documentation.
+
+The build also reads the project-local hand-maintained metadata file:
+
+```text
+map-metadata.json
+```
+
+This file contains accepted zone ids with app-owned display text, plus mission
+title localization values keyed by exported game localization keys. Do not add
+private localization lookup code to the build script.
 
 ## Build command
 
@@ -70,6 +83,10 @@ Main path colors are frontend configuration, not baked into generated GLB
 vertex colors. The generated `main_path` GLB embeds `tube`, `arrows`, and
 `start` part ids.
 
+Mission metadata is stored in `maps.json`. It includes mission title keys and
+zone ids. A mission zone is included only when it exists in `map-metadata.json`;
+maps outside that list omit `zone` and are grouped as Other by the browser.
+
 `src/config.js` separates runtime and build-time values:
 
 - `VISUAL_CONFIG.runtime` is applied by the browser. Color-only changes do not
@@ -86,7 +103,7 @@ Run:
 node --check .\scripts\build-map-assets.mjs
 node --check .\scripts\gltf-writer.mjs
 node --check .\scripts\main-path-geometry.mjs
-node --check .\app.js
+node --check .\src\app.js
 npm run build
 ```
 

@@ -1,5 +1,5 @@
 import { parseGlb } from "./glb.js";
-import { applyTranslations, t } from "./i18n.js";
+import { applyTranslations, localizeValue, t } from "./i18n.js";
 import { createLandmarkMesh } from "./landmarks.js";
 import { createBoundaryPaths } from "./boundaries.js";
 import { createMesh } from "./navmesh.js";
@@ -17,9 +17,14 @@ const panelToggle = document.querySelector("#panel-toggle");
 const helpElement = document.querySelector("#help");
 const filterList = document.querySelector("#filter-list");
 const mobileMedia = window.matchMedia("(max-width: 640px)");
+const trailingZoneIds = ["operations", "other"];
 
 let loadController;
 let mainPathVisible = true;
+
+function mapTitle(map) {
+	return localizeValue(map.title, map.id);
+}
 
 function formatBytes(bytes) {
 	if (bytes < 1024) {
@@ -94,39 +99,54 @@ function appendMapOption(parent, map) {
 	const option = document.createElement("option");
 
 	option.value = map.id;
-	option.textContent = map.title ?? map.id;
+	option.textContent = mapTitle(map);
 	parent.append(option);
 }
 
+function zoneTitle(zoneId, title) {
+	if (zoneId === "other") {
+		return t("zoneOther");
+	}
+
+	return localizeValue(title, zoneId);
+}
+
 function writeMapOptions(manifest) {
-	const regions = new Map((manifest.regions ?? []).map((region) => [region.id, region]));
+	const zones = manifest.zones ?? {};
 	const groupedMaps = new Map();
 
 	for (const map of manifest.maps) {
-		const maps = groupedMaps.get(map.regionId);
+		const zone = map.zone ?? "other";
+		const maps = groupedMaps.get(zone);
 
 		if (maps) {
 			maps.push(map);
 		} else {
-			groupedMaps.set(map.regionId, [map]);
+			groupedMaps.set(zone, [map]);
 		}
 	}
 
-	for (const [regionId, maps] of groupedMaps) {
-		const region = regions.get(regionId);
+	const zoneIds = [...groupedMaps.keys()]
+		.filter((zone) => !trailingZoneIds.includes(zone))
+		.sort((left, right) => left.localeCompare(right));
 
-		if (!region) {
-			for (const map of maps) {
-				appendMapOption(mapSelect, map);
-			}
+	for (const zone of trailingZoneIds) {
+		if (groupedMaps.has(zone)) {
+			zoneIds.push(zone);
+		}
+	}
 
+	for (const zone of zoneIds) {
+		const maps = groupedMaps.get(zone);
+
+		if (!maps) {
 			continue;
 		}
 
 		const group = document.createElement("optgroup");
 
-		group.label = region.title ?? region.id;
-		for (const map of maps) {
+		group.label = zoneTitle(zone, zones[zone]);
+		for (const map of [...maps].sort((left, right) => left.id.localeCompare(right.id))) {
 			appendMapOption(group, map);
 		}
 		mapSelect.append(group);
@@ -168,7 +188,7 @@ async function loadMap(map) {
 	loadController = new AbortController();
 	errorBanner.hidden = true;
 	setLoading(t("loadingMap", {
-		title: map.title ?? map.id,
+		title: mapTitle(map),
 		size: formatBytes(map.assetBytes),
 	}));
 
@@ -181,7 +201,10 @@ async function loadMap(map) {
 			createMesh(glb),
 			createBoundaryPaths(glb),
 			mainPathMeshes,
-			{mainPathVisible},
+			{
+				mainPathVisible,
+				fitPositions: glb.positions,
+			},
 		);
 		writeMainPathFilter(map);
 		clearLoading();
@@ -212,12 +235,13 @@ async function initialize() {
 		loadMap(manifest.maps.find((map) => map.id === mapSelect.value));
 	});
 
-	await loadMap(manifest.maps[0]);
+	await loadMap(manifest.maps.find((map) => map.id === mapSelect.value));
 }
 
 export function startApp() {
 	createIcons({ icons: { Menu } });
 	applyTranslations();
+	document.title = t("appTitle");
 	setPanelCollapsed(mobileMedia.matches);
 	writeHelp();
 	mobileMedia.addEventListener("change", writeHelp);

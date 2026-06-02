@@ -13,15 +13,16 @@ Implemented runtime output:
 ```text
 binaries/dump/NavExporter/navmesh/<mission>.json
 binaries/dump/NavExporter/main_path/<mission>.json
+binaries/dump/NavExporter/metadata/missions.json
 ```
 
-Navmesh export is mission-bound and slow. Keep other data families separate so
-they can use independent commands and do not repeat navmesh extraction.
+Navmesh and main path exports require an active mission. Table-based metadata
+does not require entering a mission and is exported by the `maptableexport`
+command.
 
 Reserved directory families:
 
 ```text
-binaries/dump/NavExporter/metadata/
 binaries/dump/NavExporter/markers/
 ```
 
@@ -41,7 +42,19 @@ The build reads:
 ```text
 navmesh/<mission>.json
 main_path/<mission>.json
+metadata/missions.json
+<project>/map-metadata.json
 ```
+
+`metadata/missions.json` is optional for old dump sets. When present, it adds
+mission title keys and zone ids to the web manifest. A mission zone is included
+only when it exists in `map-metadata.json`; maps outside that list omit `zone`
+and are grouped as Other by the browser.
+
+`map-metadata.json` is a hand-maintained project metadata file. It contains
+accepted zone ids with app-owned display text, plus mission title localization
+values keyed by the exported game localization keys. The build does not call
+private localization lookup code.
 
 It writes:
 
@@ -85,16 +98,19 @@ metadata without requiring changes to generated base map assets:
 ```json
 {
 	"schemaVersion": 1,
-	"regions": [
-		{
-			"id": "region-id",
-			"title": "Region title"
+	"zones": {
+		"zone-id": {
+			"en": "Zone title"
 		}
-	],
+	},
 	"maps": [
 		{
 			"id": "mission-id",
-			"regionId": "region-id",
+			"zone": "zone-id",
+			"titleKey": "loc_mission_name",
+			"title": {
+				"en": "Mission title"
+			},
 			"file": "./data/mission-id.glb",
 			"landmarks": {
 				"mainPath": {
@@ -106,8 +122,8 @@ metadata without requiring changes to generated base map assets:
 }
 ```
 
-`regionId` and `regions` are optional. Until metadata export and preprocessing
-are implemented, the UI lists mission ids without region grouping.
+`zone` and `zones` are optional. Without metadata input, the UI lists mission ids
+under `other`.
 
-Marker category filters have a reserved HUD region. Marker schemas and filter
+Marker category filters have a reserved HUD area. Marker schemas and filter
 behavior must be implemented together after marker data sources are confirmed.

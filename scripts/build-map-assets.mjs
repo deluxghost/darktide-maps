@@ -7,6 +7,8 @@ const inputDirectory = process.argv[2];
 const outputDirectory = process.argv[3] ?? path.resolve("public", "data");
 const navmeshDirectory = inputDirectory && path.join(inputDirectory, "navmesh");
 const mainPathDirectory = inputDirectory && path.join(inputDirectory, "main_path");
+const metadataDirectory = inputDirectory && path.join(inputDirectory, "metadata");
+const mapMetadataPath = path.resolve("map-metadata.json");
 
 if (!inputDirectory) {
 	throw new Error("Usage: node scripts/build-map-assets.mjs <nav-exporter-directory> [output-directory]");
@@ -38,6 +40,65 @@ async function readOptionalFile(filePath) {
 
 		throw error;
 	}
+}
+
+async function readOptionalJson(filePath) {
+	const source = await readOptionalFile(filePath);
+
+	return source ? JSON.parse(source) : null;
+}
+
+function indexById(items, sourceName) {
+	const index = new Map();
+
+	for (const item of items ?? []) {
+		if (!item.id) {
+			throw new Error(`${sourceName} item is missing id.`);
+		}
+
+		if (index.has(item.id)) {
+			throw new Error(`Duplicate ${sourceName} id: ${item.id}.`);
+		}
+
+		index.set(item.id, item);
+	}
+
+	return index;
+}
+
+function buildMapMetadata(mission, mapMetadata) {
+	if (!mission) {
+		return {};
+	}
+
+	const zone = mission.zone;
+	const nameKey = mission.name_key;
+
+	if (!Object.hasOwn(mapMetadata.missions, nameKey)) {
+		throw new Error(`Mission ${mission.id} uses missing mission name key: ${nameKey}. Add it to map-metadata.json first.`);
+	}
+
+	return compactObject({
+		zone: Object.hasOwn(mapMetadata.zones, zone) ? zone : undefined,
+		titleKey: nameKey,
+		title: mapMetadata.missions[nameKey],
+	});
+}
+
+function compactObject(value) {
+	if (!value || typeof value !== "object" || Array.isArray(value)) {
+		return value;
+	}
+
+	const entries = Object.entries(value)
+		.map(([key, child]) => [key, compactObject(child)])
+		.filter(([, child]) => child !== undefined);
+
+	if (entries.length === 0) {
+		return undefined;
+	}
+
+	return Object.fromEntries(entries);
 }
 
 async function buildMainPathAsset(missionId) {
@@ -88,6 +149,9 @@ async function buildMainPathAsset(missionId) {
 
 await mkdir(outputDirectory, {recursive: true});
 
+const metadata = await readOptionalJson(path.join(metadataDirectory, "missions.json"));
+const mapMetadata = await readOptionalJson(mapMetadataPath) ?? {zones: {}, missions: {}};
+const missionIndex = indexById(metadata?.missions, "mission metadata");
 const inputFiles = (await readdir(navmeshDirectory))
 	.filter((fileName) => /^.+\.json$/i.test(fileName))
 	.sort();
@@ -120,6 +184,7 @@ for (const inputFileName of inputFiles) {
 	missionIds.add(data.mission);
 
 	const fileName = `${sanitizeFileName(data.mission)}.glb`;
+	const mapMetadataEntry = buildMapMetadata(missionIndex.get(data.mission), mapMetadata);
 	const outputPath = path.join(outputDirectory, fileName);
 	const glb = createNavmeshGlb(data);
 	const mainPath = await buildMainPathAsset(data.mission);
@@ -129,6 +194,7 @@ for (const inputFileName of inputFiles) {
 	maps.push({
 		id: data.mission,
 		file: `./data/${fileName}`,
+		...mapMetadataEntry,
 		bounds: data.bounds,
 		stats: data.stats,
 		sourceBytes: source.length,
@@ -141,7 +207,7 @@ const outputFiles = await readDirectoryIfExists(outputDirectory);
 const expectedAssets = new Set(maps.map((map) => path.basename(map.file)));
 
 for (const map of maps) {
-	if (map.landmarks.mainPath) {
+	if (map.landmarks?.mainPath) {
 		expectedAssets.add(path.basename(map.landmarks.mainPath.file));
 	}
 }
@@ -154,7 +220,11 @@ for (const outputFileName of outputFiles) {
 
 await writeFile(
 	path.join(outputDirectory, "maps.json"),
-	`${JSON.stringify({schemaVersion: 1, maps}, null, "\t")}\n`,
+	`${JSON.stringify(compactObject({
+		schemaVersion: 1,
+		zones: Object.keys(mapMetadata.zones).length ? mapMetadata.zones : undefined,
+		maps,
+	}), null, "\t")}\n`,
 );
 
 for (const map of maps) {

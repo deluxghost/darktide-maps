@@ -1,0 +1,32 @@
+{
+	"en": {
+		"appTitle": "Darktide Maps",
+		"dismiss": "Dismiss",
+		"errorLoadingManifest": "HTTP {status} while loading map manifest.",
+		"errorNoMaps": "Map manifest contains no maps.",
+		"filterMainPath": "Main Path",
+		"filters": "Filters",
+		"helpDesktop": "Drag to pan. Right-drag or Shift + drag to rotate. Scroll to zoom.",
+		"helpMobile": "Drag to pan. Pinch to zoom. Twist or use three fingers to rotate.",
+		"loadingMap": "Loading {title} ({size})...",
+		"map": "Map",
+		"noMarkerCategories": "No marker categories available.",
+		"toggleMenu": "Toggle menu",
+		"zoneOther": "Other"
+	},
+	"zh-cn": {
+		"appTitle": "暗潮地图",
+		"dismiss": "关闭",
+		"errorLoadingManifest": "加载地图清单时返回 HTTP {status}。",
+		"errorNoMaps": "地图清单中没有地图。",
+		"filterMainPath": "主路径",
+		"filters": "筛选",
+		"helpDesktop": "拖动平移。右键拖动或 Shift + 拖动旋转。滚轮缩放。",
+		"helpMobile": "拖动平移。双指缩放。双指旋转或三指旋转地图。",
+		"loadingMap": "正在加载 {title}（{size}）...",
+		"map": "地图",
+		"noMarkerCategories": "没有可用的地标类型。",
+		"toggleMenu": "切换菜单",
+		"zoneOther": "其他"
+	}
+}
