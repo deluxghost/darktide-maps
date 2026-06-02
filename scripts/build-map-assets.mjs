@@ -2,13 +2,16 @@ import {mkdir, readFile, readdir, rm, writeFile} from "node:fs/promises";
 import path from "node:path";
 import {createGeometryPartsGlb, createNavmeshGlb} from "./gltf-writer.mjs";
 import {createMainPathMeshes} from "./main-path-geometry.mjs";
+import {buildMarkers} from "./markers.mjs";
 
 const inputDirectory = process.argv[2];
 const outputDirectory = process.argv[3] ?? path.resolve("public", "data");
 const navmeshDirectory = inputDirectory && path.join(inputDirectory, "navmesh");
 const mainPathDirectory = inputDirectory && path.join(inputDirectory, "main_path");
+const chestMarkersDirectory = inputDirectory && path.join(inputDirectory, "markers", "chests");
 const metadataDirectory = inputDirectory && path.join(inputDirectory, "metadata");
-const mapMetadataPath = path.resolve("map-metadata.json");
+const mapMetadataPath = path.resolve("metadata", "map.json");
+const markerMetadataPath = path.resolve("metadata", "markers.json");
 
 if (!inputDirectory) {
 	throw new Error("Usage: node scripts/build-map-assets.mjs <nav-exporter-directory> [output-directory]");
@@ -75,7 +78,7 @@ function buildMapMetadata(mission, mapMetadata) {
 	const nameKey = mission.name_key;
 
 	if (!Object.hasOwn(mapMetadata.missions, nameKey)) {
-		throw new Error(`Mission ${mission.id} uses missing mission name key: ${nameKey}. Add it to map-metadata.json first.`);
+		throw new Error(`Mission ${mission.id} uses missing mission name key: ${nameKey}. Add it to metadata/map.json first.`);
 	}
 
 	return compactObject({
@@ -151,6 +154,7 @@ await mkdir(outputDirectory, {recursive: true});
 
 const metadata = await readOptionalJson(path.join(metadataDirectory, "missions.json"));
 const mapMetadata = await readOptionalJson(mapMetadataPath) ?? {zones: {}, missions: {}};
+const markerMetadata = await readOptionalJson(markerMetadataPath) ?? {overrides: {}};
 const missionIndex = indexById(metadata?.missions, "mission metadata");
 const inputFiles = (await readdir(navmeshDirectory))
 	.filter((fileName) => /^.+\.json$/i.test(fileName))
@@ -188,6 +192,9 @@ for (const inputFileName of inputFiles) {
 	const outputPath = path.join(outputDirectory, fileName);
 	const glb = createNavmeshGlb(data);
 	const mainPath = await buildMainPathAsset(data.mission);
+	const markers = await buildMarkers(data.mission, markerMetadata, {
+		chests: chestMarkersDirectory,
+	});
 
 	await writeFile(outputPath, glb);
 
@@ -200,6 +207,7 @@ for (const inputFileName of inputFiles) {
 		sourceBytes: source.length,
 		assetBytes: glb.length,
 		landmarks: mainPath ? {mainPath} : {},
+		markers: markers ?? undefined,
 	});
 }
 

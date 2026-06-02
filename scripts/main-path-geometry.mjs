@@ -1,4 +1,5 @@
 import { VISUAL_CONFIG } from "../src/config.js";
+import {arrayFromLuaJson} from "./json.js";
 
 const MAIN_PATH = VISUAL_CONFIG.build.mainPath;
 
@@ -232,8 +233,8 @@ export function createMainPathMeshes(data) {
 		arrows: createMesh(),
 		start: createMesh(),
 	};
-	const visibleSegments = (data.segments ?? [])
-		.map((segment) => cleanNodes(segment.nodes ?? []))
+	const visibleSegments = arrayFromLuaJson(data.segments ?? [], "main path segments")
+		.map((segment) => cleanNodes(arrayFromLuaJson(segment.nodes ?? [], "main path segment nodes")))
 		.filter((nodes) => nodes.length >= 2);
 
 	for (const nodes of visibleSegments) {

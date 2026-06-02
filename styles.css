@@ -3,6 +3,7 @@
 	background: #111512;
 	font-family: Arial, sans-serif;
 	--menu-button-size: 36px;
+	--marker-popup-anchor-offset: 44px;
 	--panel-toolbar-padding: 4px;
 	--panel-toolbar-height: calc(var(--menu-button-size) + var(--panel-toolbar-padding) * 2);
 }
@@ -73,14 +74,14 @@ h2 {
 }
 
 h1 {
-	font-size: 16px;
+	font-size: 18px;
 	line-height: 1;
 }
 
 h2 {
 	margin-bottom: 8px;
 	color: #cbd7ca;
-	font-size: 12px;
+	font-size: 14px;
 }
 
 button {
@@ -185,6 +186,8 @@ input[type="checkbox"] {
 }
 
 .loading-overlay,
+.marker-popup,
+.marker-tooltip,
 .error-banner {
 	position: absolute;
 	z-index: 2;
@@ -216,11 +219,120 @@ input[type="checkbox"] {
 	font-size: 12px;
 }
 
-.error-banner button {
-	padding: 4px 7px;
-	border-color: rgba(232, 144, 130, 0.65);
+.error-dismiss {
+	display: grid;
+	place-items: center;
+	width: 24px;
+	height: 24px;
+	padding: 0;
+	border: 0;
 	color: #f2cac3;
-	background: rgba(91, 36, 29, 0.9);
+	background: transparent;
+}
+
+.error-dismiss svg,
+.marker-popup-close svg {
+	display: block;
+	width: 14px;
+	height: 14px;
+	stroke-width: 2;
+}
+
+.marker-popup {
+	z-index: 3;
+	min-width: 160px;
+	max-width: 240px;
+	padding: 8px 10px 10px;
+	border: 1px solid rgba(214, 179, 74, 0.75);
+	color: #f3ead0;
+	background: rgba(28, 22, 11, 0.94);
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.34);
+	transform: translate(-50%, calc(-100% - var(--marker-popup-anchor-offset)));
+	font-size: 12px;
+}
+
+.marker-popup::after {
+	position: absolute;
+	bottom: -8px;
+	left: 50%;
+	width: 14px;
+	height: 14px;
+	border-right: 1px solid rgba(214, 179, 74, 0.75);
+	border-bottom: 1px solid rgba(214, 179, 74, 0.75);
+	background: rgba(28, 22, 11, 0.94);
+	content: "";
+	transform: translateX(-50%) rotate(45deg);
+}
+
+.marker-popup-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.marker-popup strong {
+	font-size: 15px;
+	line-height: 1.2;
+}
+
+.marker-popup small {
+	display: block;
+	margin-top: 3px;
+	color: #bba76f;
+	font-size: 11px;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+.marker-popup p {
+	margin: 6px 0 0;
+	color: #d9cda9;
+	line-height: 1.35;
+}
+
+.marker-popup-close {
+	display: grid;
+	place-items: center;
+	flex: 0 0 auto;
+	width: 22px;
+	height: 22px;
+	padding: 0;
+	border-color: rgba(214, 179, 74, 0.65);
+	color: #f3ead0;
+	background: rgba(51, 39, 17, 0.95);
+}
+
+.marker-tooltip {
+	padding: 5px 8px;
+	border: 1px solid rgba(214, 179, 74, 0.65);
+	color: #f3ead0;
+	background: rgba(28, 22, 11, 0.94);
+	box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+	font-size: 15px;
+	line-height: 1.2;
+	pointer-events: none;
+	transform: translateY(-50%);
+	white-space: nowrap;
+}
+
+.marker-tooltip::before {
+	position: absolute;
+	top: 50%;
+	left: -6px;
+	width: 10px;
+	height: 10px;
+	border-left: 1px solid rgba(214, 179, 74, 0.65);
+	border-bottom: 1px solid rgba(214, 179, 74, 0.65);
+	background: rgba(28, 22, 11, 0.94);
+	content: "";
+	transform: translateY(-50%) rotate(45deg);
+}
+
+.filter-color {
+	width: 10px;
+	height: 10px;
+	border: 1px solid rgba(255, 255, 255, 0.42);
 }
 
 [hidden] {

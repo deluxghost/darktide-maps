@@ -1,7 +1,8 @@
 import { COORDINATE_SYSTEM, Deck, OrbitView } from "@deck.gl/core";
-import { PathLayer } from "@deck.gl/layers";
+import { IconLayer, PathLayer } from "@deck.gl/layers";
 import { SimpleMeshLayer } from "@deck.gl/mesh-layers";
 import { VISUAL_CONFIG } from "./config.js";
+import { pinIconForCategory } from "./icons.js";
 
 const OPAQUE_MESH_PARAMETERS = {
 	blend: false,
@@ -21,6 +22,13 @@ const OVERLAY_LINE_PARAMETERS = {
 	polygonOffsetFill: false,
 };
 
+const SCREEN_MARKER_PARAMETERS = {
+	blend: true,
+	depthMask: false,
+	depthTest: false,
+	depthWriteEnabled: false,
+};
+
 const INITIAL_ROTATION_X = 55;
 const INITIAL_VIEW_PADDING = 0.8;
 const MIN_WORLD_SIZE = 1;
@@ -35,6 +43,30 @@ function midpoint(min, max) {
 
 function clamp(value, min, max) {
 	return Math.min(Math.max(value, min), max);
+}
+
+function viewDepth(pin, viewport) {
+	const position = pin.position;
+	const matrix = viewport.viewMatrix;
+
+	return matrix[2] * position[0] + matrix[6] * position[1] + matrix[10] * position[2] + matrix[14];
+}
+
+function sortedPins(pins, visibleCategories, viewport) {
+	const visiblePins = pins.filter((pin) => visibleCategories.has(pin.category));
+
+	if (!viewport) {
+		return visiblePins;
+	}
+
+	return visiblePins
+		.map((pin, index) => ({
+			pin,
+			index,
+			depth: viewDepth(pin, viewport),
+		}))
+		.sort((left, right) => left.depth - right.depth || left.index - right.index)
+		.map((entry) => entry.pin);
 }
 
 function boundsFromPositions(positions) {
@@ -99,7 +131,9 @@ export function createMapRenderer(mapElement, onError) {
 			return [];
 		}
 
-		const { map, mesh, boundaryPaths, mainPathMeshes, mainPathVisible } = currentState;
+		const { map, mesh, boundaryPaths, mainPathMeshes, mainPathVisible, markerPins, visiblePinCategories } = currentState;
+		const viewport = deckInstance?.getViewports()[0];
+		const visiblePins = sortedPins(markerPins, visiblePinCategories, viewport);
 		const layers = [
 			new SimpleMeshLayer({
 				id: `navmesh-surface-${map.id}`,
@@ -146,6 +180,20 @@ export function createMapRenderer(mapElement, onError) {
 			}
 		}
 
+		layers.push(new IconLayer({
+			id: `pin-markers-${map.id}`,
+			data: visiblePins,
+			coordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
+			getPosition: (pin) => pin.position,
+			getIcon: (pin) => pinIconForCategory(pin.category),
+			getSize: VISUAL_CONFIG.runtime.pins.iconHeight,
+			sizeUnits: "pixels",
+			billboard: true,
+			pickable: true,
+			alphaCutoff: 0.05,
+			parameters: SCREEN_MARKER_PARAMETERS,
+		}));
+
 		return layers;
 	}
 
@@ -167,6 +215,12 @@ export function createMapRenderer(mapElement, onError) {
 			boundaryPaths,
 			mainPathMeshes,
 			mainPathVisible: options.mainPathVisible,
+			markerPins: options.markerPins,
+			visiblePinCategories: new Set(options.visiblePinCategories),
+			onMarkerClick: options.onMarkerClick,
+			onMarkerHover: options.onMarkerHover,
+			onViewChange: options.onViewChange,
+			viewState,
 		};
 
 		if (deckInstance) {
@@ -194,7 +248,54 @@ export function createMapRenderer(mapElement, onError) {
 			initialViewState: viewState,
 			layers: createLayers(),
 			onError,
+			onViewStateChange: ({viewState: nextViewState}) => {
+				const previousViewState = currentState.viewState;
+
+				currentState.viewState = nextViewState;
+
+				if (
+					nextViewState.rotationOrbit !== previousViewState.rotationOrbit
+					|| nextViewState.rotationX !== previousViewState.rotationX
+				) {
+					requestAnimationFrame(updateLayers);
+				}
+
+				requestAnimationFrame(() => currentState.onViewChange?.());
+			},
+			onClick: (info) => {
+				if (info.object?.markerType === "pin") {
+					currentState.onMarkerClick(info.object, info.x, info.y);
+
+					return true;
+				}
+
+				currentState.onMarkerClick(null);
+
+				return false;
+			},
+			onHover: (info) => {
+				currentState.onMarkerHover?.(info.object?.markerType === "pin" ? info.object : null);
+			},
+			getCursor: ({isHovering}) => isHovering ? "pointer" : null,
 		});
+
+		requestAnimationFrame(updateLayers);
+	}
+
+	function projectPosition(position) {
+		const viewport = deckInstance?.getViewports()[0];
+
+		if (!viewport) {
+			return null;
+		}
+
+		const [x, y] = viewport.project(position);
+		const bounds = mapElement.getBoundingClientRect();
+
+		return {
+			x: bounds.left + x,
+			y: bounds.top + y,
+		};
 	}
 
 	function setMainPathVisible(visible) {
@@ -206,8 +307,24 @@ export function createMapRenderer(mapElement, onError) {
 		updateLayers();
 	}
 
+	function setPinCategoryVisible(category, visible) {
+		if (!currentState) {
+			return;
+		}
+
+		if (visible) {
+			currentState.visiblePinCategories.add(category);
+		} else {
+			currentState.visiblePinCategories.delete(category);
+		}
+
+		updateLayers();
+	}
+
 	return {
 		render,
+		projectPosition,
 		setMainPathVisible,
+		setPinCategoryVisible,
 	};
 }

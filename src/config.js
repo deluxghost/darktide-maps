@@ -29,6 +29,18 @@ export const VISUAL_CONFIG = {
 			arrowsColor: [255, 61, 41, 255],
 			startColor: [86, 255, 131, 255],
 		},
+		pins: {
+			iconWidth: 28,
+			iconHeight: 36,
+			tooltipOffset: [18, -23],
+			categories: {
+				chest: {
+					labelKey: "markerChest",
+					color: [244, 190, 76, 245],
+					outlineColor: [43, 32, 12, 255],
+				},
+			},
+		},
 	},
 	build: {
 		mainPath: {
