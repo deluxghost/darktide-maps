@@ -1,0 +1,626 @@
+{
+	"schemaVersion": 1,
+	"maps": [
+		{
+			"id": "cm_archives",
+			"file": "./data/cm_archives.glb",
+			"bounds": {
+				"min": [
+					-433.01000976562,
+					-298.48999023438,
+					-53.418292999268
+				],
+				"max": [
+					346.75,
+					169.95500183105,
+					10.400234222412
+				]
+			},
+			"stats": {
+				"triangles": 48693,
+				"tiles": 441,
+				"vertices": 34900
+			},
+			"sourceBytes": 3034048,
+			"assetBytes": 711716
+		},
+		{
+			"id": "cm_habs",
+			"file": "./data/cm_habs.glb",
+			"bounds": {
+				"min": [
+					-9.6899995803833,
+					-376.95999145508,
+					-16.96718788147
+				],
+				"max": [
+					353.11499023438,
+					100.12999725342,
+					27.740703582764
+				]
+			},
+			"stats": {
+				"triangles": 45230,
+				"tiles": 391,
+				"vertices": 34165
+			},
+			"sourceBytes": 2901898,
+			"assetBytes": 682116
+		},
+		{
+			"id": "cm_raid",
+			"file": "./data/cm_raid.glb",
+			"bounds": {
+				"min": [
+					-371.44998168945,
+					-400.51998901367,
+					-112.62624359131
+				],
+				"max": [
+					88.63500213623,
+					-33.345001220703,
+					7.742856502533
+				]
+			},
+			"stats": {
+				"triangles": 53926,
+				"tiles": 329,
+				"vertices": 40582
+			},
+			"sourceBytes": 3514950,
+			"assetBytes": 811296
+		},
+		{
+			"id": "core_research",
+			"file": "./data/core_research.glb",
+			"bounds": {
+				"min": [
+					-142.78500366211,
+					-362.42498779297,
+					0.40000000596046
+				],
+				"max": [
+					96.424995422363,
+					381.32998657227,
+					93.833984375
+				]
+			},
+			"stats": {
+				"triangles": 34073,
+				"tiles": 420,
+				"vertices": 25139
+			},
+			"sourceBytes": 2113901,
+			"assetBytes": 506872
+		},
+		{
+			"id": "dm_forge",
+			"file": "./data/dm_forge.glb",
+			"bounds": {
+				"min": [
+					-91.294998168945,
+					-242.53500366211,
+					-47.072830200195
+				],
+				"max": [
+					325.75500488281,
+					400.13998413086,
+					22.968439102173
+				]
+			},
+			"stats": {
+				"triangles": 41726,
+				"tiles": 314,
+				"vertices": 30601
+			},
+			"sourceBytes": 2621207,
+			"assetBytes": 618328
+		},
+		{
+			"id": "dm_propaganda",
+			"file": "./data/dm_propaganda.glb",
+			"bounds": {
+				"min": [
+					-323.19000244141,
+					-89.775001525879,
+					-40.599918365479
+				],
+				"max": [
+					61.084999084473,
+					241.20500183105,
+					87.956184387207
+				]
+			},
+			"stats": {
+				"triangles": 43316,
+				"tiles": 905,
+				"vertices": 32239
+			},
+			"sourceBytes": 2749056,
+			"assetBytes": 647532
+		},
+		{
+			"id": "dm_rise",
+			"file": "./data/dm_rise.glb",
+			"bounds": {
+				"min": [
+					-187.43499755859,
+					-162.73500061035,
+					-53.947174072266
+				],
+				"max": [
+					254.78999328613,
+					348.83999633789,
+					2.7118144035339
+				]
+			},
+			"stats": {
+				"triangles": 65604,
+				"tiles": 767,
+				"vertices": 49131
+			},
+			"sourceBytes": 4222899,
+			"assetBytes": 983952
+		},
+		{
+			"id": "dm_stockpile",
+			"file": "./data/dm_stockpile.glb",
+			"bounds": {
+				"min": [
+					-350.45498657227,
+					-68.11499786377,
+					2.9719505310059
+				],
+				"max": [
+					367.93499755859,
+					362.80499267578,
+					53.697071075439
+				]
+			},
+			"stats": {
+				"triangles": 37404,
+				"tiles": 295,
+				"vertices": 28590
+			},
+			"sourceBytes": 2374860,
+			"assetBytes": 568268
+		},
+		{
+			"id": "fm_armoury",
+			"file": "./data/fm_armoury.glb",
+			"bounds": {
+				"min": [
+					-322.33499145508,
+					-463.31500244141,
+					-44.089683532715
+				],
+				"max": [
+					229.33000183105,
+					49.305000305176,
+					36.149688720703
+				]
+			},
+			"stats": {
+				"triangles": 58565,
+				"tiles": 661,
+				"vertices": 42952
+			},
+			"sourceBytes": 3751836,
+			"assetBytes": 867580
+		},
+		{
+			"id": "fm_cargo",
+			"file": "./data/fm_cargo.glb",
+			"bounds": {
+				"min": [
+					-240.25498962402,
+					-376.67498779297,
+					-31.678087234497
+				],
+				"max": [
+					219.83000183105,
+					126.82499694824,
+					14.399883270264
+				]
+			},
+			"stats": {
+				"triangles": 41821,
+				"tiles": 325,
+				"vertices": 31042
+			},
+			"sourceBytes": 2671476,
+			"assetBytes": 624192
+		},
+		{
+			"id": "fm_resurgence",
+			"file": "./data/fm_resurgence.glb",
+			"bounds": {
+				"min": [
+					-324.04498291016,
+					-298.77499389648,
+					-29.099725723267
+				],
+				"max": [
+					414.76998901367,
+					277.49499511719,
+					20.399728775024
+				]
+			},
+			"stats": {
+				"triangles": 60339,
+				"tiles": 510,
+				"vertices": 43246
+			},
+			"sourceBytes": 3767473,
+			"assetBytes": 881756
+		},
+		{
+			"id": "hm_cartel",
+			"file": "./data/hm_cartel.glb",
+			"bounds": {
+				"min": [
+					-135.56500244141,
+					-342,
+					-24.715427398682
+				],
+				"max": [
+					351.78500366211,
+					105.26000213623,
+					43.100273132324
+				]
+			},
+			"stats": {
+				"triangles": 44794,
+				"tiles": 385,
+				"vertices": 34939
+			},
+			"sourceBytes": 2926135,
+			"assetBytes": 688780
+		},
+		{
+			"id": "hm_complex",
+			"file": "./data/hm_complex.glb",
+			"bounds": {
+				"min": [
+					-364.13500976562,
+					-66.595001220703,
+					-33.057067871094
+				],
+				"max": [
+					256.97500610352,
+					328.69998168945,
+					36.938632965088
+				]
+			},
+			"stats": {
+				"tiles": 419,
+				"vertices": 39056,
+				"triangles": 54390
+			},
+			"sourceBytes": 3393009,
+			"assetBytes": 795776
+		},
+		{
+			"id": "hm_strain",
+			"file": "./data/hm_strain.glb",
+			"bounds": {
+				"min": [
+					-227.14500427246,
+					-92.815002441406,
+					-156.80020141602
+				],
+				"max": [
+					53.104999542236,
+					427.4049987793,
+					-5.872218132019
+				]
+			},
+			"stats": {
+				"triangles": 49324,
+				"tiles": 320,
+				"vertices": 36093
+			},
+			"sourceBytes": 3150042,
+			"assetBytes": 729820
+		},
+		{
+			"id": "hub_ship",
+			"file": "./data/hub_ship.glb",
+			"bounds": {
+				"min": [
+					-59.090000152588,
+					-170.71499633789,
+					98.526214599609
+				],
+				"max": [
+					47.215000152588,
+					-63.174999237061,
+					105.62512207031
+				]
+			},
+			"stats": {
+				"tiles": 46,
+				"vertices": 3390,
+				"triangles": 4763
+			},
+			"sourceBytes": 275707,
+			"assetBytes": 70012
+		},
+		{
+			"id": "km_enforcer",
+			"file": "./data/km_enforcer.glb",
+			"bounds": {
+				"min": [
+					-419.04498291016,
+					-211.375,
+					-5.5501170158386
+				],
+				"max": [
+					258.9700012207,
+					20.805000305176,
+					58.220985412598
+				]
+			},
+			"stats": {
+				"triangles": 48077,
+				"tiles": 359,
+				"vertices": 36958
+			},
+			"sourceBytes": 3129169,
+			"assetBytes": 732716
+		},
+		{
+			"id": "km_enforcer_twins",
+			"file": "./data/km_enforcer_twins.glb",
+			"bounds": {
+				"min": [
+					-252.98500061035,
+					-211.375,
+					-19.691577911377
+				],
+				"max": [
+					258.9700012207,
+					-0.094999998807907,
+					27.095914840698
+				]
+			},
+			"stats": {
+				"triangles": 28768,
+				"tiles": 270,
+				"vertices": 22122
+			},
+			"sourceBytes": 1845240,
+			"assetBytes": 438840
+		},
+		{
+			"id": "km_heresy",
+			"file": "./data/km_heresy.glb",
+			"bounds": {
+				"min": [
+					-190.85499572754,
+					-417.80999755859,
+					-29.099725723267
+				],
+				"max": [
+					240.16000366211,
+					208.9049987793,
+					34.550975799561
+				]
+			},
+			"stats": {
+				"triangles": 44567,
+				"tiles": 374,
+				"vertices": 32471
+			},
+			"sourceBytes": 2808156,
+			"assetBytes": 657816
+		},
+		{
+			"id": "km_station",
+			"file": "./data/km_station.glb",
+			"bounds": {
+				"min": [
+					-222.96499633789,
+					-451.05999755859,
+					-16.575313568115
+				],
+				"max": [
+					110.48500061035,
+					36.384998321533,
+					27.740703582764
+				]
+			},
+			"stats": {
+				"triangles": 43075,
+				"tiles": 333,
+				"vertices": 31745
+			},
+			"sourceBytes": 2738281,
+			"assetBytes": 640156
+		},
+		{
+			"id": "lm_cooling",
+			"file": "./data/lm_cooling.glb",
+			"bounds": {
+				"min": [
+					-154.4700012207,
+					-447.82998657227,
+					-130.84992980957
+				],
+				"max": [
+					269.60998535156,
+					1.710000038147,
+					2.7336850166321
+				]
+			},
+			"stats": {
+				"triangles": 38607,
+				"tiles": 399,
+				"vertices": 28807
+			},
+			"sourceBytes": 2473561,
+			"assetBytes": 578088
+		},
+		{
+			"id": "lm_rails",
+			"file": "./data/lm_rails.glb",
+			"bounds": {
+				"min": [
+					-282.81500244141,
+					-258.49499511719,
+					-70.285194396973
+				],
+				"max": [
+					276.07000732422,
+					428.73498535156,
+					3.5696232318878
+				]
+			},
+			"stats": {
+				"triangles": 41780,
+				"tiles": 520,
+				"vertices": 31775
+			},
+			"sourceBytes": 2697779,
+			"assetBytes": 632740
+		},
+		{
+			"id": "lm_scavenge",
+			"file": "./data/lm_scavenge.glb",
+			"bounds": {
+				"min": [
+					-143.54499816895,
+					-92.815002441406,
+					-160.08026123047
+				],
+				"max": [
+					126.25499725342,
+					236.26499938965,
+					13.440197944641
+				]
+			},
+			"stats": {
+				"triangles": 56609,
+				"tiles": 382,
+				"vertices": 41341
+			},
+			"sourceBytes": 3589872,
+			"assetBytes": 836512
+		},
+		{
+			"id": "op_no_mans_land",
+			"file": "./data/op_no_mans_land.glb",
+			"bounds": {
+				"min": [
+					-232.75,
+					-176.88999938965,
+					-12.418320655823
+				],
+				"max": [
+					2.1849999427795,
+					450.86999511719,
+					14.434942245483
+				]
+			},
+			"stats": {
+				"triangles": 37109,
+				"tiles": 291,
+				"vertices": 26630
+			},
+			"sourceBytes": 2308907,
+			"assetBytes": 542980
+		},
+		{
+			"id": "op_train",
+			"file": "./data/op_train.glb",
+			"bounds": {
+				"min": [
+					-12.255000114441,
+					-267.70999145508,
+					-0.10023435950279
+				],
+				"max": [
+					12.255000114441,
+					205.48500061035,
+					12.16756439209
+				]
+			},
+			"stats": {
+				"triangles": 9512,
+				"tiles": 67,
+				"vertices": 6908
+			},
+			"sourceBytes": 555641,
+			"assetBytes": 140720
+		},
+		{
+			"id": "prologue",
+			"file": "./data/prologue.glb",
+			"bounds": {
+				"min": [
+					71.345001220703,
+					-106.11499786377,
+					-2.8500390052795
+				],
+				"max": [
+					309.13000488281,
+					164.72999572754,
+					15.725778579712
+				]
+			},
+			"stats": {
+				"triangles": 11097,
+				"tiles": 105,
+				"vertices": 8312
+			},
+			"sourceBytes": 663049,
+			"assetBytes": 167080
+		},
+		{
+			"id": "psykhanium",
+			"file": "./data/psykhanium.glb",
+			"bounds": {
+				"min": [
+					-83.220001220703,
+					-326.60998535156,
+					-3.6219143867493
+				],
+				"max": [
+					394.53500366211,
+					424.74499511719,
+					20.399728775024
+				]
+			},
+			"stats": {
+				"triangles": 26337,
+				"tiles": 587,
+				"vertices": 19107
+			},
+			"sourceBytes": 1615266,
+			"assetBytes": 388068
+		},
+		{
+			"id": "tg_shooting_range",
+			"file": "./data/tg_shooting_range.glb",
+			"bounds": {
+				"min": [
+					-38.095001220703,
+					-32.110000610352,
+					0.60781252384186
+				],
+				"max": [
+					38.095001220703,
+					439.4700012207,
+					0.82527339458466
+				]
+			},
+			"stats": {
+				"triangles": 5238,
+				"tiles": 55,
+				"vertices": 2985
+			},
+			"sourceBytes": 266042,
+			"assetBytes": 68016
+		}
+	]
+}

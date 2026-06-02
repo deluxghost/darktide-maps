@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Darktide Maps</title>
+		<link rel="stylesheet" href="./styles.css">
+	</head>
+	<body>
+		<div id="map"></div>
+		<section id="panel" class="panel">
+			<header class="panel-header">
+				<button id="panel-toggle" class="panel-toggle" type="button" aria-label="Toggle menu" aria-expanded="true" aria-controls="panel-content">
+					<i data-lucide="menu"></i>
+				</button>
+				<h1>Darktide Maps</h1>
+			</header>
+			<p id="help" class="help"></p>
+			<div id="panel-content" class="panel-content">
+				<section class="map-selector">
+					<h2>Map</h2>
+					<select id="map-select" aria-label="Map"></select>
+				</section>
+				<section class="filters">
+					<h2>Filters</h2>
+					<div id="filter-list">
+						<p class="muted">No marker categories available.</p>
+					</div>
+				</section>
+			</div>
+		</section>
+		<div id="loading-overlay" class="loading-overlay" role="status" aria-live="polite" hidden></div>
+		<div id="error-banner" class="error-banner" role="alert" hidden>
+			<span id="error-message"></span>
+			<button id="error-dismiss" type="button">Dismiss</button>
+		</div>
+		<script type="module" src="./app.js"></script>
+	</body>
+</html>
