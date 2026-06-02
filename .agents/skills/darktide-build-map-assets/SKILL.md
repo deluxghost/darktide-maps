@@ -16,6 +16,8 @@ scripts/build-map-assets.mjs
 The script converts `navmesh/<mission>.json` dumps into standard glTF 2.0
 binary `.glb` files. When `main_path/<mission>.json` exists, it also converts
 that route into an optimized landmark `.glb` with embedded parts. When
+`markers/chests/<mission>.json` exists, it embeds chest pin marker positions in
+the map manifest. When
 `metadata/missions.json` exists, it merges mission title and zone metadata into the
 manifest. It refreshes:
 
@@ -29,6 +31,12 @@ referenced by the refreshed manifest.
 The webapp loads `maps.json`, then requests only the currently selected map and
 its declared landmark assets.
 
+`NavExporter` uses two dump commands:
+
+- `missionexport` writes active-mission data under `navmesh/`, `main_path/`,
+  and `markers/chests/`.
+- `tableexport` writes table-based metadata under `metadata/`.
+
 ## Input path
 
 `NavExporter` writes dump files under:
@@ -36,6 +44,7 @@ its declared landmark assets.
 ```text
 binaries/dump/NavExporter/navmesh/
 binaries/dump/NavExporter/main_path/
+binaries/dump/NavExporter/markers/chests/
 binaries/dump/NavExporter/metadata/
 ```
 
@@ -46,12 +55,16 @@ documentation.
 The build also reads the project-local hand-maintained metadata file:
 
 ```text
-map-metadata.json
+metadata/map.json
+metadata/markers.json
 ```
 
-This file contains accepted zone ids with app-owned display text, plus mission
-title localization values keyed by exported game localization keys. Do not add
-private localization lookup code to the build script.
+`metadata/map.json` contains accepted zone ids with app-owned display text, plus
+mission title localization values keyed by exported game localization keys.
+`metadata/markers.json` contains hand-maintained stable-id overrides. Build
+rules such as marker default names, merge distances, and id generation belong to
+the preprocessing code, not manual metadata. Do not add private localization
+lookup code to the build script.
 
 ## Build command
 
@@ -83,8 +96,15 @@ Main path colors are frontend configuration, not baked into generated GLB
 vertex colors. The generated `main_path` GLB embeds `tube`, `arrows`, and
 `start` part ids.
 
+Chest marker colors and labels are frontend configuration. The generated
+manifest stores chest marker pins under `markers.pins` on each map entry. The
+chest dump contains one pin per chest unit; very close chest units may be merged
+during the build. Chest marker ids are generated from the mission id plus
+exported source unit ids. A chest dump without `source.unit_id` is invalid.
+Other marker families may use their own id strategy.
+
 Mission metadata is stored in `maps.json`. It includes mission title keys and
-zone ids. A mission zone is included only when it exists in `map-metadata.json`;
+zone ids. A mission zone is included only when it exists in `metadata/map.json`;
 maps outside that list omit `zone` and are grouped as Other by the browser.
 
 `src/config.js` separates runtime and build-time values:
@@ -103,6 +123,7 @@ Run:
 node --check .\scripts\build-map-assets.mjs
 node --check .\scripts\gltf-writer.mjs
 node --check .\scripts\main-path-geometry.mjs
+node --check .\scripts\markers.mjs
 node --check .\src\app.js
 npm run build
 ```

@@ -2,9 +2,10 @@ import { parseGlb } from "./glb.js";
 import { applyTranslations, localizeValue, t } from "./i18n.js";
 import { createLandmarkMesh } from "./landmarks.js";
 import { createBoundaryPaths } from "./boundaries.js";
+import { VISUAL_CONFIG } from "./config.js";
 import { createMesh } from "./navmesh.js";
 import { createMapRenderer } from "./renderer.js";
-import { createIcons, Menu } from "lucide";
+import { createIcons, Menu, X } from "lucide";
 
 const mapElement = document.querySelector("#map");
 const mapSelect = document.querySelector("#map-select");
@@ -16,11 +17,20 @@ const panel = document.querySelector(".panel");
 const panelToggle = document.querySelector("#panel-toggle");
 const helpElement = document.querySelector("#help");
 const filterList = document.querySelector("#filter-list");
+const markerPopup = document.querySelector("#marker-popup");
+const markerPopupTitle = document.querySelector("#marker-popup-title");
+const markerPopupType = document.querySelector("#marker-popup-type");
+const markerPopupDescription = document.querySelector("#marker-popup-description");
+const markerPopupClose = document.querySelector("#marker-popup-close");
+const markerTooltip = document.querySelector("#marker-tooltip");
 const mobileMedia = window.matchMedia("(max-width: 640px)");
 const trailingZoneIds = ["operations", "other"];
 
 let loadController;
 let mainPathVisible = true;
+let activeMarker = null;
+let activeTooltipMarker = null;
+const pinCategoryVisibility = new Map();
 
 function mapTitle(map) {
 	return localizeValue(map.title, map.id);
@@ -70,29 +80,95 @@ function writeEmptyFilters() {
 	filterList.append(message);
 }
 
-function writeMainPathFilter(map) {
-	filterList.replaceChildren();
+function categoryTitle(category) {
+	const labelKey = VISUAL_CONFIG.runtime.pins.categories[category]?.labelKey;
 
-	if (!map.landmarks?.mainPath) {
-		writeEmptyFilters();
+	return labelKey ? t(labelKey) : category;
+}
 
-		return;
-	}
+function markerName(marker) {
+	return localizeValue(marker.name, categoryTitle(marker.category));
+}
 
+function colorStyle(color) {
+	return `rgb(${color[0]} ${color[1]} ${color[2]})`;
+}
+
+function createFilterOption(checked, labelText, color, onChange) {
 	const label = document.createElement("label");
 	const checkbox = document.createElement("input");
+	const swatch = document.createElement("span");
 	const text = document.createElement("span");
 
 	label.className = "filter-option";
 	checkbox.type = "checkbox";
-	checkbox.checked = mainPathVisible;
-	text.textContent = t("filterMainPath");
-	checkbox.addEventListener("change", () => {
-		mainPathVisible = checkbox.checked;
-		mapRenderer.setMainPathVisible(mainPathVisible);
-	});
-	label.append(checkbox, text);
-	filterList.append(label);
+	checkbox.checked = checked;
+	swatch.className = "filter-color";
+	swatch.style.background = colorStyle(color);
+	text.textContent = labelText;
+	checkbox.addEventListener("change", () => onChange(checkbox.checked));
+	label.append(checkbox, swatch, text);
+
+	return label;
+}
+
+function markerCategories(map) {
+	return [...new Set((map.markers?.pins ?? []).map((pin) => pin.category))]
+		.sort((left, right) => left.localeCompare(right));
+}
+
+function isPinCategoryVisible(category) {
+	return pinCategoryVisibility.get(category) ?? true;
+}
+
+function visiblePinCategorySet(map) {
+	return new Set(markerCategories(map).filter(isPinCategoryVisible));
+}
+
+function writeFilters(map) {
+	filterList.replaceChildren();
+
+	if (map.landmarks?.mainPath) {
+		filterList.append(createFilterOption(
+			mainPathVisible,
+			t("filterMainPath"),
+			VISUAL_CONFIG.runtime.mainPath.tubeColor,
+			(visible) => {
+				mainPathVisible = visible;
+				mapRenderer.setMainPathVisible(visible);
+			},
+		));
+	}
+
+	for (const category of markerCategories(map)) {
+		const config = VISUAL_CONFIG.runtime.pins.categories[category];
+
+		if (!config) {
+			continue;
+		}
+
+		filterList.append(createFilterOption(
+			isPinCategoryVisible(category),
+			categoryTitle(category),
+			config.color,
+			(visible) => {
+				pinCategoryVisibility.set(category, visible);
+				mapRenderer.setPinCategoryVisible(category, visible);
+
+				if (!visible && activeMarker?.category === category) {
+					hideMarkerPopup();
+				}
+
+				if (!visible && activeTooltipMarker?.category === category) {
+					hideMarkerTooltip();
+				}
+			},
+		));
+	}
+
+	if (filterList.children.length === 0) {
+		writeEmptyFilters();
+	}
 }
 
 function appendMapOption(parent, map) {
@@ -180,6 +256,83 @@ async function loadMainPathMeshes(mainPath, signal) {
 	return meshes;
 }
 
+function hideMarkerPopup() {
+	activeMarker = null;
+	markerPopup.hidden = true;
+}
+
+function hideMarkerTooltip() {
+	activeTooltipMarker = null;
+	markerTooltip.hidden = true;
+}
+
+function updateMarkerPopupPosition() {
+	if (!activeMarker || markerPopup.hidden) {
+		return;
+	}
+
+	const point = mapRenderer.projectPosition(activeMarker.position);
+
+	if (!point) {
+		return;
+	}
+
+	markerPopup.style.left = `${point.x}px`;
+	markerPopup.style.top = `${point.y}px`;
+}
+
+function updateMarkerTooltipPosition() {
+	if (!activeTooltipMarker || markerTooltip.hidden) {
+		return;
+	}
+
+	const point = mapRenderer.projectPosition(activeTooltipMarker.position);
+
+	if (!point) {
+		return;
+	}
+
+	const [offsetX, offsetY] = VISUAL_CONFIG.runtime.pins.tooltipOffset;
+
+	markerTooltip.style.left = `${point.x + offsetX}px`;
+	markerTooltip.style.top = `${point.y + offsetY}px`;
+}
+
+function updateMarkerOverlays() {
+	updateMarkerPopupPosition();
+	updateMarkerTooltipPosition();
+}
+
+function showMarkerPopup(marker) {
+	if (!marker) {
+		hideMarkerPopup();
+
+		return;
+	}
+
+	activeMarker = marker;
+	markerPopupTitle.textContent = markerName(marker);
+	markerPopupType.textContent = categoryTitle(marker.category);
+	markerPopupDescription.textContent = marker.description
+		? localizeValue(marker.description, "")
+		: t("markerNoDescription");
+	markerPopup.hidden = false;
+	updateMarkerPopupPosition();
+}
+
+function showMarkerTooltip(marker) {
+	if (!marker) {
+		hideMarkerTooltip();
+
+		return;
+	}
+
+	activeTooltipMarker = marker;
+	markerTooltip.textContent = markerName(marker);
+	markerTooltip.hidden = false;
+	updateMarkerTooltipPosition();
+}
+
 async function loadMap(map) {
 	if (loadController) {
 		loadController.abort();
@@ -187,6 +340,8 @@ async function loadMap(map) {
 
 	loadController = new AbortController();
 	errorBanner.hidden = true;
+	hideMarkerPopup();
+	hideMarkerTooltip();
 	setLoading(t("loadingMap", {
 		title: mapTitle(map),
 		size: formatBytes(map.assetBytes),
@@ -204,9 +359,17 @@ async function loadMap(map) {
 			{
 				mainPathVisible,
 				fitPositions: glb.positions,
+				markerPins: (map.markers?.pins ?? []).map((pin) => ({
+					...pin,
+					markerType: "pin",
+				})),
+				visiblePinCategories: visiblePinCategorySet(map),
+				onMarkerClick: showMarkerPopup,
+				onMarkerHover: showMarkerTooltip,
+				onViewChange: updateMarkerOverlays,
 			},
 		);
-		writeMainPathFilter(map);
+		writeFilters(map);
 		clearLoading();
 	} catch (error) {
 		if (error.name !== "AbortError") {
@@ -239,7 +402,7 @@ async function initialize() {
 }
 
 export function startApp() {
-	createIcons({ icons: { Menu } });
+	createIcons({ icons: { Menu, X } });
 	applyTranslations();
 	document.title = t("appTitle");
 	setPanelCollapsed(mobileMedia.matches);
@@ -254,6 +417,7 @@ export function startApp() {
 	errorDismiss.addEventListener("click", () => {
 		errorBanner.hidden = true;
 	});
+	markerPopupClose.addEventListener("click", hideMarkerPopup);
 
 	initialize().catch((error) => {
 		clearLoading();

@@ -13,21 +13,22 @@ Implemented runtime output:
 ```text
 binaries/dump/NavExporter/navmesh/<mission>.json
 binaries/dump/NavExporter/main_path/<mission>.json
+binaries/dump/NavExporter/markers/chests/<mission>.json
 binaries/dump/NavExporter/metadata/missions.json
 ```
 
-Navmesh and main path exports require an active mission. Table-based metadata
-does not require entering a mission and is exported by the `maptableexport`
-command.
+`missionexport` writes the active-mission files: navmesh, main path, and
+marker dumps. `tableexport` writes table-based metadata and does not require
+entering a mission.
 
 Reserved directory families:
 
 ```text
-binaries/dump/NavExporter/markers/
+binaries/dump/NavExporter/markers/<marker-family>/
 ```
 
-These directories describe ownership boundaries only. Their exporters and
-schemas must be based on confirmed game data sources before implementation.
+Marker families are independent so later marker types can be added without
+changing existing exports.
 
 ## Web asset build
 
@@ -42,19 +43,26 @@ The build reads:
 ```text
 navmesh/<mission>.json
 main_path/<mission>.json
+markers/chests/<mission>.json
 metadata/missions.json
-<project>/map-metadata.json
+<project>/metadata/map.json
+<project>/metadata/markers.json
 ```
 
 `metadata/missions.json` is optional for old dump sets. When present, it adds
 mission title keys and zone ids to the web manifest. A mission zone is included
-only when it exists in `map-metadata.json`; maps outside that list omit `zone`
+only when it exists in `metadata/map.json`; maps outside that list omit `zone`
 and are grouped as Other by the browser.
 
-`map-metadata.json` is a hand-maintained project metadata file. It contains
+`metadata/map.json` is a hand-maintained project metadata file. It contains
 accepted zone ids with app-owned display text, plus mission title localization
 values keyed by the exported game localization keys. The build does not call
 private localization lookup code.
+
+`metadata/markers.json` is the hand-maintained marker metadata file. It contains
+optional overrides keyed by stable generated marker ids. Build rules such as
+default names, merge distances, and id generation live in the preprocessing
+code, not in manual metadata.
 
 It writes:
 
@@ -69,6 +77,20 @@ render-ready GLB containing embedded `tube`, `arrows`, and `start` parts. The
 browser loads this optimized landmark asset instead of generating route geometry
 from raw JSON at runtime. Landmark colors are applied by the frontend visual
 config, not baked into the generated GLB.
+
+`markers/chests` is optional per mission. The dump contains one pin per chest
+unit and only includes fields consumed by the build: `mission`, `pins`,
+`position`, and `source.unit_id`. When present, the build may merge very close
+chest units into one display pin, then embeds marker pins into `maps.json`
+under the map entry's `markers.pins` field. Pin category colors and labels are
+frontend configuration.
+
+Chest marker ids are generated from the mission id plus stable source
+identifiers exported by the mod: `source.unit_id`. The mission id is part of the
+generated id because some maps reuse unit ids across missions. A merged chest
+marker id is generated from the sorted member source ids. Other marker families
+may use different id strategies when their source data requires it. A chest dump
+without `source.unit_id` is invalid.
 
 Generated `.glb` files that are no longer referenced by the refreshed manifest
 are removed.
@@ -116,6 +138,21 @@ metadata without requiring changes to generated base map assets:
 				"mainPath": {
 					"file": "./data/mission-id.main_path.glb"
 				}
+			},
+			"markers": {
+				"pins": [
+					{
+						"id": "chest_1a2b3c4d5e6f",
+						"category": "chest",
+						"name": {
+							"key": "markerChestStack",
+							"values": {
+								"count": 3
+							}
+						},
+						"position": [0, 0, 0]
+					}
+				]
 			}
 		}
 	]
@@ -125,5 +162,4 @@ metadata without requiring changes to generated base map assets:
 `zone` and `zones` are optional. Without metadata input, the UI lists mission ids
 under `other`.
 
-Marker category filters have a reserved HUD area. Marker schemas and filter
-behavior must be implemented together after marker data sources are confirmed.
+Marker category filters use frontend runtime configuration in `src/config.js`.

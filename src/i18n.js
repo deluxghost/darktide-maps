@@ -46,6 +46,10 @@ export function localizeValue(value, fallback) {
 		return fallback;
 	}
 
+	if (value.key) {
+		return t(value.key, value.values ?? {});
+	}
+
 	const locale = selectLocale(Object.keys(value));
 
 	return value[locale]

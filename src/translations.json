@@ -10,6 +10,10 @@
 		"helpMobile": "Drag to pan. Pinch to zoom. Twist or use three fingers to rotate.",
 		"loadingMap": "Loading {title} ({size})...",
 		"map": "Map",
+		"markerChest": "Chest",
+		"markerChestName": "Chest",
+		"markerChestStack": "Chests x{count}",
+		"markerNoDescription": "No description yet.",
 		"noMarkerCategories": "No marker categories available.",
 		"toggleMenu": "Toggle menu",
 		"zoneOther": "Other"
@@ -25,6 +29,10 @@
 		"helpMobile": "拖动平移。双指缩放。双指旋转或三指旋转地图。",
 		"loadingMap": "正在加载 {title}（{size}）...",
 		"map": "地图",
+		"markerChest": "箱子",
+		"markerChestName": "箱子",
+		"markerChestStack": "箱子×{count}",
+		"markerNoDescription": "暂无说明。",
 		"noMarkerCategories": "没有可用的地标类型。",
 		"toggleMenu": "切换菜单",
 		"zoneOther": "其他"
