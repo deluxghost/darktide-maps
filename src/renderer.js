@@ -21,6 +21,10 @@ const OVERLAY_LINE_PARAMETERS = {
 	polygonOffsetFill: false,
 };
 
+const INITIAL_ROTATION_X = 55;
+const INITIAL_VIEW_PADDING = 0.8;
+const MIN_WORLD_SIZE = 1;
+
 function midpoint(min, max) {
 	return [
 		(min[0] + max[0]) / 2,
@@ -29,24 +33,60 @@ function midpoint(min, max) {
 	];
 }
 
-function initialZoom(bounds) {
-	const width = Math.max(bounds.max[0] - bounds.min[0], 1);
-	const height = Math.max(bounds.max[1] - bounds.min[1], 1);
-	const scale = Math.min(window.innerWidth / width, window.innerHeight / height);
-
-	return Math.log2(scale) - 1;
+function clamp(value, min, max) {
+	return Math.min(Math.max(value, min), max);
 }
 
-function constrainedViewState(bounds) {
+function boundsFromPositions(positions) {
+	if (!positions?.length) {
+		return null;
+	}
+
+	const min = [Infinity, Infinity, Infinity];
+	const max = [-Infinity, -Infinity, -Infinity];
+
+	for (let index = 0; index < positions.length; index += 3) {
+		for (let axis = 0; axis < 3; axis++) {
+			const value = positions[index + axis];
+
+			min[axis] = Math.min(min[axis], value);
+			max[axis] = Math.max(max[axis], value);
+		}
+	}
+
+	return {min, max};
+}
+
+function boundsSize(bounds) {
 	return {
-		target: midpoint(bounds.min, bounds.max),
+		width: Math.max(bounds.max[0] - bounds.min[0], MIN_WORLD_SIZE),
+		height: Math.max(bounds.max[1] - bounds.min[1], MIN_WORLD_SIZE),
+	};
+}
+
+function initialZoom(bounds, viewport) {
+	const size = boundsSize(bounds);
+	const scale = Math.min(viewport.width / size.width, viewport.height / size.height);
+
+	return Math.log2(scale * INITIAL_VIEW_PADDING);
+}
+
+function constrainedViewState(bounds, positions, viewport) {
+	const fitBounds = boundsFromPositions(positions) ?? bounds;
+
+	return {
+		target: midpoint(fitBounds.min, fitBounds.max),
 		rotationOrbit: 0,
-		rotationX: 55,
+		rotationX: INITIAL_ROTATION_X,
 		minRotationX: 5,
 		maxRotationX: 90,
 		minZoom: VISUAL_CONFIG.runtime.view.minZoom,
 		maxZoom: VISUAL_CONFIG.runtime.view.maxZoom,
-		zoom: initialZoom(bounds),
+		zoom: clamp(
+			initialZoom(fitBounds, viewport),
+			VISUAL_CONFIG.runtime.view.minZoom,
+			VISUAL_CONFIG.runtime.view.maxZoom,
+		),
 	};
 }
 
@@ -116,7 +156,10 @@ export function createMapRenderer(mapElement, onError) {
 	}
 
 	function render(map, mesh, boundaryPaths, mainPathMeshes, options) {
-		const viewState = constrainedViewState(map.bounds);
+		const viewState = constrainedViewState(map.bounds, options.fitPositions, {
+			width: mapElement.clientWidth || window.innerWidth,
+			height: mapElement.clientHeight || window.innerHeight,
+		});
 
 		currentState = {
 			map,
