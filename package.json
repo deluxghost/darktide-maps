@@ -6,7 +6,7 @@
 		"build": "vite build",
 		"dev": "vite",
 		"preview": "vite preview",
-		"build:maps": "node ./scripts/build-nav-assets.mjs"
+		"build:maps": "node ./scripts/build-map-assets.mjs"
 	},
 	"dependencies": {
 		"@deck.gl/core": "9.1.14",

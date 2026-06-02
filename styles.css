@@ -128,6 +128,10 @@ option {
 	background: #1b241d;
 }
 
+input[type="checkbox"] {
+	accent-color: #d6b34a;
+}
+
 *::-webkit-scrollbar {
 	width: 10px;
 	height: 10px;
@@ -150,6 +154,22 @@ option {
 	margin-top: 16px;
 	padding-top: 14px;
 	border-top: 1px solid rgba(160, 183, 159, 0.22);
+}
+
+.filter-option {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	color: #dce6db;
+	font-size: 13px;
+	line-height: 1.35;
+	cursor: pointer;
+}
+
+.filter-option input {
+	width: 14px;
+	height: 14px;
+	margin: 0;
 }
 
 .muted,

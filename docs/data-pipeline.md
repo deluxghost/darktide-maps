@@ -12,6 +12,7 @@ Implemented runtime output:
 
 ```text
 binaries/dump/NavExporter/navmesh/<mission>.json
+binaries/dump/NavExporter/main_path/<mission>.json
 ```
 
 Navmesh export is mission-bound and slow. Keep other data families separate so
@@ -39,22 +40,47 @@ The build reads:
 
 ```text
 navmesh/<mission>.json
+main_path/<mission>.json
 ```
 
 It writes:
 
 ```text
 public/data/<mission>.glb
+public/data/<mission>.main_path.glb
 public/data/maps.json
 ```
+
+`main_path` is optional per mission. When present, the build converts it into a
+render-ready GLB containing embedded `tube`, `arrows`, and `start` parts. The
+browser loads this optimized landmark asset instead of generating route geometry
+from raw JSON at runtime. Landmark colors are applied by the frontend visual
+config, not baked into the generated GLB.
 
 Generated `.glb` files that are no longer referenced by the refreshed manifest
 are removed.
 
+## Visual config
+
+Visual values live in `src/config.js` and are split by when they take
+effect:
+
+```text
+VISUAL_CONFIG.runtime
+VISUAL_CONFIG.build
+```
+
+`runtime` values are applied by the browser. Changing map boundary colors or
+main path part colors only requires a frontend refresh.
+
+`build` values affect generated geometry, such as main path tube radius, segment
+side counts, arrow overlap/offset, arrow size, start sphere size, and vertical
+offset. Changing these requires rerunning `npm run build:maps`.
+
 ## Web manifest extension points
 
 The current manifest requires `maps`. The UI also accepts optional presentation
-metadata without requiring changes to navmesh assets:
+metadata without requiring changes to generated base map assets:
 
 ```json
 {
@@ -69,7 +95,12 @@ metadata without requiring changes to navmesh assets:
 		{
 			"id": "mission-id",
 			"regionId": "region-id",
-			"file": "./data/mission-id.glb"
+			"file": "./data/mission-id.glb",
+			"landmarks": {
+				"mainPath": {
+					"file": "./data/mission-id.main_path.glb"
+				}
+			}
 		}
 	]
 }
