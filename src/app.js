@@ -32,9 +32,10 @@ const dataUpdatedElement = document.querySelector("#data-updated");
 const rotationControl = document.querySelector("#rotation-control");
 const rotationControlHandle = document.querySelector("#rotation-control-handle");
 const mobileMedia = window.matchMedia(APP_CONFIG.ui.mobileMediaQuery);
-const touchMedia = window.matchMedia("(pointer: coarse)");
+const touchPrimaryMedia = window.matchMedia("(hover: none) and (pointer: coarse)");
 
 let loadController;
+let touchInputEnabled = shouldStartInTouchMode();
 
 function formatBytes(bytes) {
 	if (bytes < 1024) {
@@ -65,18 +66,38 @@ function setPanelCollapsed(collapsed) {
 }
 
 function writeHelp() {
-	helpElement.textContent = hasTouchInput()
+	helpElement.textContent = touchInputEnabled
 		? t("helpTouch")
 		: t("helpDesktop");
 }
 
-function hasTouchInput() {
-	return navigator.maxTouchPoints > 0 || touchMedia.matches;
+function writeInputMode() {
+	document.documentElement.classList.toggle("touch-input", touchInputEnabled);
+	writeHelp();
 }
 
-function writeInputMode() {
-	document.documentElement.classList.toggle("touch-input", hasTouchInput());
-	writeHelp();
+function shouldStartInTouchMode() {
+	return touchPrimaryMedia.matches || mobileMedia.matches;
+}
+
+function setTouchInputEnabled(enabled) {
+	if (touchInputEnabled === enabled) {
+		return;
+	}
+
+	touchInputEnabled = enabled;
+	writeInputMode();
+}
+
+function updateInputModeFromPointer(event) {
+	if (event.pointerType === "mouse") {
+		setTouchInputEnabled(false);
+		return;
+	}
+
+	if (event.pointerType === "touch" || event.pointerType === "pen") {
+		setTouchInputEnabled(true);
+	}
 }
 
 function writeDataUpdatedAt(unixTimestamp) {
@@ -221,7 +242,7 @@ export function startApp() {
 		handle: rotationControlHandle,
 		mapRenderer,
 	});
-	touchMedia.addEventListener("change", writeInputMode);
+	window.addEventListener("pointerdown", updateInputModeFromPointer, { capture: true });
 	mapElement.addEventListener("contextmenu", (event) => {
 		event.preventDefault();
 	});

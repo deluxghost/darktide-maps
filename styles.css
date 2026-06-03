@@ -2,6 +2,10 @@
 	color: #e4e8df;
 	background: #111512;
 	font-family: Arial, sans-serif;
+	--z-map-ui: 2;
+	--z-marker-tooltip: 3;
+	--z-marker-popup: 4;
+	--z-hud: 5;
 	--menu-button-size: 36px;
 	--marker-popup-anchor-offset: 44px;
 	--panel-separator: 1px solid rgba(160, 183, 159, 0.22);
@@ -50,7 +54,7 @@ img {
 	position: absolute;
 	top: 16px;
 	right: 12px;
-	z-index: 3;
+	z-index: var(--z-hud);
 	display: block;
 	line-height: 0;
 }
@@ -65,7 +69,7 @@ img {
 	position: absolute;
 	right: calc(env(safe-area-inset-right) + var(--rotation-control-edge-gap));
 	bottom: calc(env(safe-area-inset-bottom) + 24px);
-	z-index: 3;
+	z-index: var(--z-hud);
 	display: none;
 	touch-action: none;
 }
@@ -97,7 +101,7 @@ img {
 	position: absolute;
 	top: 16px;
 	left: 16px;
-	z-index: 3;
+	z-index: var(--z-hud);
 	display: flex;
 	flex-direction: column;
 	width: 340px;
@@ -270,7 +274,7 @@ option {
 .data-updated,
 .error-banner {
 	position: absolute;
-	z-index: 2;
+	z-index: var(--z-map-ui);
 }
 
 .data-updated {
@@ -330,7 +334,7 @@ option {
 }
 
 .marker-popup {
-	z-index: 3;
+	z-index: var(--z-marker-popup);
 	min-width: 160px;
 	max-width: 240px;
 	padding: 8px 10px 10px;
@@ -395,6 +399,7 @@ option {
 }
 
 .marker-tooltip {
+	z-index: var(--z-marker-tooltip);
 	padding: 5px 8px;
 	border: 1px solid rgba(214, 179, 74, 0.65);
 	color: #f3ead0;
