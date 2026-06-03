@@ -109,6 +109,15 @@ export function createMapRenderer(mapElement, onError) {
 	let deckInstance;
 	let currentState;
 
+	function setViewState(viewState) {
+		if (!currentState || !deckInstance) {
+			return;
+		}
+
+		currentState.viewState = viewState;
+		deckInstance.setProps({viewState});
+	}
+
 	function createLayers() {
 		if (!currentState) {
 			return [];
@@ -209,7 +218,7 @@ export function createMapRenderer(mapElement, onError) {
 
 		if (deckInstance) {
 			deckInstance.setProps({
-				initialViewState: viewState,
+				viewState,
 				layers: createLayers(),
 			});
 
@@ -229,13 +238,13 @@ export function createMapRenderer(mapElement, onError) {
 				orbitAxis: RUNTIME.controls.orbitAxis,
 				orthographic: RUNTIME.controls.orthographic,
 			}),
-			initialViewState: viewState,
+			viewState,
 			layers: createLayers(),
 			onError,
 			onViewStateChange: ({viewState: nextViewState}) => {
 				const previousViewState = currentState.viewState;
 
-				currentState.viewState = nextViewState;
+				setViewState(nextViewState);
 
 				if (
 					nextViewState.rotationOrbit !== previousViewState.rotationOrbit
@@ -305,9 +314,31 @@ export function createMapRenderer(mapElement, onError) {
 		updateLayers();
 	}
 
+	function rotateBy(delta) {
+		if (!currentState) {
+			return;
+		}
+
+		const viewState = currentState.viewState;
+		const nextViewState = {
+			...viewState,
+			rotationOrbit: viewState.rotationOrbit + delta.rotationOrbit,
+			rotationX: clamp(
+				viewState.rotationX + delta.rotationX,
+				viewState.minRotationX,
+				viewState.maxRotationX,
+			),
+		};
+
+		setViewState(nextViewState);
+		requestAnimationFrame(updateLayers);
+		requestAnimationFrame(() => currentState.onViewChange?.());
+	}
+
 	return {
 		render,
 		projectPosition,
+		rotateBy,
 		setMainPathVisible,
 		setPinCategoryVisible,
 	};

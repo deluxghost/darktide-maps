@@ -17,7 +17,9 @@ export const APP_CONFIG = {
 		},
 		controls: {
 			dragMode: "pan",
-			touchRotate: true,
+			joystickOrbitDegreesPerFrame: 1.2,
+			joystickPitchDegreesPerFrame: 0.8,
+			touchRotate: false,
 			orbitAxis: "Z",
 			orthographic: true,
 		},

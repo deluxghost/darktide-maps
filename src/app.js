@@ -8,6 +8,7 @@ import { createMapRenderer } from "./renderer.js";
 import { createFilterController } from "./filters.js";
 import { createMarkerOverlays } from "./marker-overlays.js";
 import { mapTitle, writeMapOptions } from "./manifest.js";
+import { createRotationControl } from "./rotation-control.js";
 import { formatLocalTimestampFromUnix } from "./time.js";
 import { createIcons, Menu, X } from "lucide";
 
@@ -28,7 +29,10 @@ const markerPopupDescription = document.querySelector("#marker-popup-description
 const markerPopupClose = document.querySelector("#marker-popup-close");
 const markerTooltip = document.querySelector("#marker-tooltip");
 const dataUpdatedElement = document.querySelector("#data-updated");
+const rotationControl = document.querySelector("#rotation-control");
+const rotationControlHandle = document.querySelector("#rotation-control-handle");
 const mobileMedia = window.matchMedia(APP_CONFIG.ui.mobileMediaQuery);
+const touchMedia = window.matchMedia("(pointer: coarse)");
 
 let loadController;
 
@@ -61,9 +65,18 @@ function setPanelCollapsed(collapsed) {
 }
 
 function writeHelp() {
-	helpElement.textContent = mobileMedia.matches
-		? t("helpMobile")
+	helpElement.textContent = hasTouchInput()
+		? t("helpTouch")
 		: t("helpDesktop");
+}
+
+function hasTouchInput() {
+	return navigator.maxTouchPoints > 0 || touchMedia.matches;
+}
+
+function writeInputMode() {
+	document.documentElement.classList.toggle("touch-input", hasTouchInput());
+	writeHelp();
 }
 
 function writeDataUpdatedAt(unixTimestamp) {
@@ -201,9 +214,14 @@ export function startApp() {
 	applyTranslations();
 	document.title = t("appTitle");
 	setPanelCollapsed(mobileMedia.matches);
-	writeHelp();
+	writeInputMode();
 	filters.initialize();
-	mobileMedia.addEventListener("change", writeHelp);
+	createRotationControl({
+		root: rotationControl,
+		handle: rotationControlHandle,
+		mapRenderer,
+	});
+	touchMedia.addEventListener("change", writeInputMode);
 	mapElement.addEventListener("contextmenu", (event) => {
 		event.preventDefault();
 	});
