@@ -2,7 +2,7 @@ import { parseGlb } from "./glb.js";
 import { applyTranslations, localizeValue, t } from "./i18n.js";
 import { createLandmarkMesh } from "./landmarks.js";
 import { createBoundaryPaths } from "./boundaries.js";
-import { VISUAL_CONFIG } from "./config.js";
+import { APP_CONFIG } from "./config.js";
 import { createMesh } from "./navmesh.js";
 import { createMapRenderer } from "./renderer.js";
 import { createIcons, Menu, X } from "lucide";
@@ -23,8 +23,7 @@ const markerPopupType = document.querySelector("#marker-popup-type");
 const markerPopupDescription = document.querySelector("#marker-popup-description");
 const markerPopupClose = document.querySelector("#marker-popup-close");
 const markerTooltip = document.querySelector("#marker-tooltip");
-const mobileMedia = window.matchMedia("(max-width: 640px)");
-const trailingZoneIds = ["operations", "other"];
+const mobileMedia = window.matchMedia(APP_CONFIG.ui.mobileMediaQuery);
 
 let loadController;
 let mainPathVisible = true;
@@ -81,7 +80,7 @@ function writeEmptyFilters() {
 }
 
 function categoryTitle(category) {
-	const labelKey = VISUAL_CONFIG.runtime.pins.categories[category]?.labelKey;
+	const labelKey = APP_CONFIG.runtime.visual.pins.categories[category]?.labelKey;
 
 	return labelKey ? t(labelKey) : category;
 }
@@ -132,7 +131,7 @@ function writeFilters(map) {
 		filterList.append(createFilterOption(
 			mainPathVisible,
 			t("filterMainPath"),
-			VISUAL_CONFIG.runtime.mainPath.tubeColor,
+			APP_CONFIG.runtime.visual.mainPath.tubeColor,
 			(visible) => {
 				mainPathVisible = visible;
 				mapRenderer.setMainPathVisible(visible);
@@ -141,7 +140,7 @@ function writeFilters(map) {
 	}
 
 	for (const category of markerCategories(map)) {
-		const config = VISUAL_CONFIG.runtime.pins.categories[category];
+		const config = APP_CONFIG.runtime.visual.pins.categories[category];
 
 		if (!config) {
 			continue;
@@ -203,10 +202,10 @@ function writeMapOptions(manifest) {
 	}
 
 	const zoneIds = [...groupedMaps.keys()]
-		.filter((zone) => !trailingZoneIds.includes(zone))
+		.filter((zone) => !APP_CONFIG.ui.trailingZoneIds.includes(zone))
 		.sort((left, right) => left.localeCompare(right));
 
-	for (const zone of trailingZoneIds) {
+	for (const zone of APP_CONFIG.ui.trailingZoneIds) {
 		if (groupedMaps.has(zone)) {
 			zoneIds.push(zone);
 		}
@@ -292,7 +291,7 @@ function updateMarkerTooltipPosition() {
 		return;
 	}
 
-	const [offsetX, offsetY] = VISUAL_CONFIG.runtime.pins.tooltipOffset;
+	const [offsetX, offsetY] = APP_CONFIG.runtime.visual.pins.tooltipOffset;
 
 	markerTooltip.style.left = `${point.x + offsetX}px`;
 	markerTooltip.style.top = `${point.y + offsetY}px`;
@@ -313,9 +312,10 @@ function showMarkerPopup(marker) {
 	activeMarker = marker;
 	markerPopupTitle.textContent = markerName(marker);
 	markerPopupType.textContent = categoryTitle(marker.category);
+	markerPopupDescription.hidden = !marker.description;
 	markerPopupDescription.textContent = marker.description
 		? localizeValue(marker.description, "")
-		: t("markerNoDescription");
+		: "";
 	markerPopup.hidden = false;
 	updateMarkerPopupPosition();
 }

@@ -1,37 +1,20 @@
 import { COORDINATE_SYSTEM, Deck, OrbitView } from "@deck.gl/core";
 import { IconLayer, PathLayer } from "@deck.gl/layers";
 import { SimpleMeshLayer } from "@deck.gl/mesh-layers";
-import { VISUAL_CONFIG } from "./config.js";
+import { APP_CONFIG } from "./config.js";
 import { pinIconForCategory } from "./icons.js";
 
-const OPAQUE_MESH_PARAMETERS = {
-	blend: false,
-	depthCompare: "less-equal",
-	depthMask: true,
-	depthTest: true,
-	depthWriteEnabled: true,
-	polygonOffsetFill: false,
-};
-
+const RUNTIME = APP_CONFIG.runtime;
+const VISUAL = RUNTIME.visual;
 const OVERLAY_LINE_PARAMETERS = {
 	blend: false,
 	depthCompare: "less-equal",
 	depthMask: false,
 	depthTest: true,
 	depthWriteEnabled: false,
-	polygonOffsetFill: false,
+	depthBias: VISUAL.navmesh.boundaryDepthBias,
+	depthBiasSlopeScale: VISUAL.navmesh.boundaryDepthBiasSlopeScale,
 };
-
-const SCREEN_MARKER_PARAMETERS = {
-	blend: true,
-	depthMask: false,
-	depthTest: false,
-	depthWriteEnabled: false,
-};
-
-const INITIAL_ROTATION_X = 55;
-const INITIAL_VIEW_PADDING = 0.8;
-const MIN_WORLD_SIZE = 1;
 
 function midpoint(min, max) {
 	return [
@@ -91,8 +74,8 @@ function boundsFromPositions(positions) {
 
 function boundsSize(bounds) {
 	return {
-		width: Math.max(bounds.max[0] - bounds.min[0], MIN_WORLD_SIZE),
-		height: Math.max(bounds.max[1] - bounds.min[1], MIN_WORLD_SIZE),
+		width: Math.max(bounds.max[0] - bounds.min[0], RUNTIME.view.minWorldSize),
+		height: Math.max(bounds.max[1] - bounds.min[1], RUNTIME.view.minWorldSize),
 	};
 }
 
@@ -100,7 +83,7 @@ function initialZoom(bounds, viewport) {
 	const size = boundsSize(bounds);
 	const scale = Math.min(viewport.width / size.width, viewport.height / size.height);
 
-	return Math.log2(scale * INITIAL_VIEW_PADDING);
+	return Math.log2(scale * RUNTIME.view.initialViewPadding);
 }
 
 function constrainedViewState(bounds, positions, viewport) {
@@ -109,15 +92,15 @@ function constrainedViewState(bounds, positions, viewport) {
 	return {
 		target: midpoint(fitBounds.min, fitBounds.max),
 		rotationOrbit: 0,
-		rotationX: INITIAL_ROTATION_X,
-		minRotationX: 5,
-		maxRotationX: 90,
-		minZoom: VISUAL_CONFIG.runtime.view.minZoom,
-		maxZoom: VISUAL_CONFIG.runtime.view.maxZoom,
+		rotationX: RUNTIME.view.initialRotationX,
+		minRotationX: RUNTIME.view.minRotationX,
+		maxRotationX: RUNTIME.view.maxRotationX,
+		minZoom: RUNTIME.view.minZoom,
+		maxZoom: RUNTIME.view.maxZoom,
 		zoom: clamp(
 			initialZoom(fitBounds, viewport),
-			VISUAL_CONFIG.runtime.view.minZoom,
-			VISUAL_CONFIG.runtime.view.maxZoom,
+			RUNTIME.view.minZoom,
+			RUNTIME.view.maxZoom,
 		),
 	};
 }
@@ -143,9 +126,9 @@ export function createMapRenderer(mapElement, onError) {
 				getPosition: [0, 0, 0],
 				getColor: [255, 255, 255, 255],
 				wireframe: false,
-				material: VISUAL_CONFIG.runtime.lighting.navmeshMaterial,
+				material: VISUAL.lighting.navmeshMaterial,
 				getPolygonOffset: () => [0, 0],
-				parameters: OPAQUE_MESH_PARAMETERS,
+				parameters: RUNTIME.layers.opaqueMeshParameters,
 			}),
 		];
 
@@ -154,8 +137,8 @@ export function createMapRenderer(mapElement, onError) {
 			data: boundaryPaths,
 			coordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
 			getPath: (boundary) => boundary.path,
-			getColor: VISUAL_CONFIG.runtime.navmesh.boundaryColor,
-			getWidth: VISUAL_CONFIG.runtime.navmesh.boundaryWidth,
+			getColor: VISUAL.navmesh.boundaryColor,
+			getWidth: VISUAL.navmesh.boundaryWidth,
 			widthUnits: "common",
 			jointRounded: true,
 			capRounded: true,
@@ -171,11 +154,11 @@ export function createMapRenderer(mapElement, onError) {
 					mesh: partMesh,
 					coordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
 					getPosition: [0, 0, 0],
-					getColor: VISUAL_CONFIG.runtime.mainPath[`${part}Color`],
+					getColor: VISUAL.mainPath[`${part}Color`],
 					wireframe: false,
-					material: VISUAL_CONFIG.runtime.lighting.mainPathMaterial,
+					material: VISUAL.lighting.mainPathMaterial,
 					getPolygonOffset: () => [0, 0],
-					parameters: OPAQUE_MESH_PARAMETERS,
+					parameters: RUNTIME.layers.opaqueMeshParameters,
 				}));
 			}
 		}
@@ -186,12 +169,13 @@ export function createMapRenderer(mapElement, onError) {
 			coordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
 			getPosition: (pin) => pin.position,
 			getIcon: (pin) => pinIconForCategory(pin.category),
-			getSize: VISUAL_CONFIG.runtime.pins.iconHeight,
+			getSize: VISUAL.pins.iconHeight,
 			sizeUnits: "pixels",
 			billboard: true,
 			pickable: true,
 			alphaCutoff: 0.05,
-			parameters: SCREEN_MARKER_PARAMETERS,
+			textureParameters: RUNTIME.layers.iconTextureParameters,
+			parameters: RUNTIME.layers.screenMarkerParameters,
 		}));
 
 		return layers;
@@ -236,14 +220,14 @@ export function createMapRenderer(mapElement, onError) {
 			parent: mapElement,
 			views: new OrbitView({
 				id: "map",
-				near: VISUAL_CONFIG.runtime.view.near,
-				far: VISUAL_CONFIG.runtime.view.far,
+				near: RUNTIME.view.near,
+				far: RUNTIME.view.far,
 				controller: {
-					dragMode: "pan",
-					touchRotate: true,
+					dragMode: RUNTIME.controls.dragMode,
+					touchRotate: RUNTIME.controls.touchRotate,
 				},
-				orbitAxis: "Z",
-				orthographic: true,
+				orbitAxis: RUNTIME.controls.orbitAxis,
+				orthographic: RUNTIME.controls.orthographic,
 			}),
 			initialViewState: viewState,
 			layers: createLayers(),

@@ -1,4 +1,6 @@
-const COORDINATE_PRECISION = 4;
+import { APP_CONFIG } from "./config.js";
+
+const COORDINATE_PRECISION = APP_CONFIG.processing.boundaries.coordinatePrecision;
 
 function addEdge(edgeCounts, a, b) {
 	if (a === b) {
