@@ -1,24 +1,27 @@
 {
-	"name": "darktide-maps",
-	"private": true,
-	"type": "module",
-	"scripts": {
-		"build": "vite build",
-		"dev": "vite",
-		"preview": "vite preview",
-		"build:maps": "node ./scripts/build-map-assets.mjs"
-	},
-	"dependencies": {
-		"@deck.gl/core": "9.1.14",
-		"@deck.gl/layers": "9.1.14",
-		"@deck.gl/mesh-layers": "9.1.14",
-		"@luma.gl/core": "9.1.9",
-		"@luma.gl/engine": "9.1.9",
-		"@luma.gl/shadertools": "9.1.9",
-		"@luma.gl/webgl": "9.1.9",
-		"lucide": "1.17.0"
-	},
-	"devDependencies": {
-		"vite": "7.3.5"
-	}
+  "name": "darktide-maps",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite",
+    "preview": "npm run build && wrangler dev",
+    "build:maps": "node ./scripts/build-map-assets.mjs",
+    "deploy": "npm run build && wrangler deploy"
+  },
+  "dependencies": {
+    "@deck.gl/core": "9.1.14",
+    "@deck.gl/layers": "9.1.14",
+    "@deck.gl/mesh-layers": "9.1.14",
+    "@luma.gl/core": "9.1.9",
+    "@luma.gl/engine": "9.1.9",
+    "@luma.gl/shadertools": "9.1.9",
+    "@luma.gl/webgl": "9.1.9",
+    "lucide": "1.17.0"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.39.2",
+    "vite": "7.3.5",
+    "wrangler": "^4.97.0"
+  }
 }
