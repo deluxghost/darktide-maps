@@ -1,5 +1,6 @@
 {
 	"schemaVersion": 1,
+	"dataUpdatedAt": "2026-06-04 00:54:57",
 	"zones": {
 		"dust": {
 			"en": "The Hourglass",
@@ -8048,7 +8049,7 @@
 						"id": "daemonhost_1bbef33838f9",
 						"category": "daemonhost",
 						"name": {
-							"key": "markerDaemonhost"
+							"key": "markerDaemonhostSpawn"
 						},
 						"position": [
 							180.86151123047,
@@ -8060,7 +8061,7 @@
 						"id": "daemonhost_2a3bc087f547",
 						"category": "daemonhost",
 						"name": {
-							"key": "markerDaemonhost"
+							"key": "markerDaemonhostSpawn"
 						},
 						"position": [
 							-228.69830322266,
@@ -8072,7 +8073,7 @@
 						"id": "daemonhost_338e4677074a",
 						"category": "daemonhost",
 						"name": {
-							"key": "markerDaemonhost"
+							"key": "markerDaemonhostSpawn"
 						},
 						"position": [
 							-381.86349487305,
@@ -8084,7 +8085,7 @@
 						"id": "daemonhost_3443d59866c3",
 						"category": "daemonhost",
 						"name": {
-							"key": "markerDaemonhost"
+							"key": "markerDaemonhostSpawn"
 						},
 						"position": [
 							-72.444351196289,
@@ -8096,7 +8097,7 @@
 						"id": "daemonhost_354d9970f266",
 						"category": "daemonhost",
 						"name": {
-							"key": "markerDaemonhost"
+							"key": "markerDaemonhostSpawn"
 						},
 						"position": [
 							-33.614597320557,
@@ -8108,7 +8109,7 @@
 						"id": "daemonhost_3b8affd90031",
 						"category": "daemonhost",
 						"name": {
-							"key": "markerDaemonhost"
+							"key": "markerDaemonhostSpawn"
 						},
 						"position": [
 							-184,
@@ -8120,7 +8121,7 @@
 						"id": "daemonhost_5eba055a26a4",
 						"category": "daemonhost",
 						"name": {
-							"key": "markerDaemonhost"
+							"key": "markerDaemonhostSpawn"
 						},
 						"position": [
 							-38.75,
@@ -8132,7 +8133,7 @@
 						"id": "daemonhost_90e470ee144e",
 						"category": "daemonhost",
 						"name": {
-							"key": "markerDaemonhost"
+							"key": "markerDaemonhostSpawn"
 						},
 						"position": [
 							-1.8151860237122,
@@ -8144,7 +8145,7 @@
 						"id": "daemonhost_93423982d725",
 						"category": "daemonhost",
 						"name": {
-							"key": "markerDaemonhost"
+							"key": "markerDaemonhostSpawn"
 						},
 						"position": [
 							-263.22393798828,
@@ -8156,7 +8157,7 @@
 						"id": "daemonhost_e27fb658c42e",
 						"category": "daemonhost",
 						"name": {
-							"key": "markerDaemonhost"
+							"key": "markerDaemonhostSpawn"
 						},
 						"position": [
 							82.34423828125,
@@ -8168,7 +8169,7 @@
 						"id": "daemonhost_e50adf92a350",
 						"category": "daemonhost",
 						"name": {
-							"key": "markerDaemonhost"
+							"key": "markerDaemonhostSpawn"
 						},
 						"position": [
 							-127.30540466309,
@@ -8180,7 +8181,7 @@
 						"id": "daemonhost_ea41428b5a24",
 						"category": "daemonhost",
 						"name": {
-							"key": "markerDaemonhost"
+							"key": "markerDaemonhostSpawn"
 						},
 						"position": [
 							-279.70788574219,
@@ -8192,7 +8193,7 @@
 						"id": "daemonhost_ed47bc61a30d",
 						"category": "daemonhost",
 						"name": {
-							"key": "markerDaemonhost"
+							"key": "markerDaemonhostSpawn"
 						},
 						"position": [
 							98.082275390625,
@@ -11737,7 +11738,7 @@
 						"id": "daemonhost_039ac8223d7a",
 						"category": "daemonhost",
 						"name": {
-							"key": "markerDaemonhost"
+							"key": "markerDaemonhostSpawn"
 						},
 						"position": [
 							-1.8151860237122,
@@ -11749,7 +11750,7 @@
 						"id": "daemonhost_3da3ca406418",
 						"category": "daemonhost",
 						"name": {
-							"key": "markerDaemonhost"
+							"key": "markerDaemonhostSpawn"
 						},
 						"position": [
 							82.34423828125,
@@ -11761,7 +11762,7 @@
 						"id": "daemonhost_456c74491ea8",
 						"category": "daemonhost",
 						"name": {
-							"key": "markerDaemonhost"
+							"key": "markerDaemonhostSpawn"
 						},
 						"position": [
 							-38.75,
@@ -11773,7 +11774,7 @@
 						"id": "daemonhost_96e67eb17406",
 						"category": "daemonhost",
 						"name": {
-							"key": "markerDaemonhost"
+							"key": "markerDaemonhostSpawn"
 						},
 						"position": [
 							180.86151123047,
@@ -11785,7 +11786,7 @@
 						"id": "daemonhost_a3de80ca07d9",
 						"category": "daemonhost",
 						"name": {
-							"key": "markerDaemonhost"
+							"key": "markerDaemonhostSpawn"
 						},
 						"position": [
 							-184,
@@ -11797,7 +11798,7 @@
 						"id": "daemonhost_acc7ad96881d",
 						"category": "daemonhost",
 						"name": {
-							"key": "markerDaemonhost"
+							"key": "markerDaemonhostSpawn"
 						},
 						"position": [
 							98.082275390625,
@@ -11809,7 +11810,7 @@
 						"id": "daemonhost_af67abfba23c",
 						"category": "daemonhost",
 						"name": {
-							"key": "markerDaemonhost"
+							"key": "markerDaemonhostSpawn"
 						},
 						"position": [
 							-127.30540466309,
@@ -11821,7 +11822,7 @@
 						"id": "daemonhost_ceda8125adc6",
 						"category": "daemonhost",
 						"name": {
-							"key": "markerDaemonhost"
+							"key": "markerDaemonhostSpawn"
 						},
 						"position": [
 							-72.444351196289,
@@ -14295,7 +14296,7 @@
 						"id": "daemonhost_119b08581cf3",
 						"category": "daemonhost",
 						"name": {
-							"key": "markerDaemonhost"
+							"key": "markerDaemonhostSpawn"
 						},
 						"position": [
 							79.707107543945,
@@ -14307,7 +14308,7 @@
 						"id": "daemonhost_1f6a9e921c53",
 						"category": "daemonhost",
 						"name": {
-							"key": "markerDaemonhost"
+							"key": "markerDaemonhostSpawn"
 						},
 						"position": [
 							-61.75724029541,
@@ -14319,7 +14320,7 @@
 						"id": "daemonhost_32d2fec682b0",
 						"category": "daemonhost",
 						"name": {
-							"key": "markerDaemonhost"
+							"key": "markerDaemonhostSpawn"
 						},
 						"position": [
 							-69,
@@ -14331,7 +14332,7 @@
 						"id": "daemonhost_5faccc6ce2c0",
 						"category": "daemonhost",
 						"name": {
-							"key": "markerDaemonhost"
+							"key": "markerDaemonhostSpawn"
 						},
 						"position": [
 							141.70710754395,
@@ -14343,7 +14344,7 @@
 						"id": "daemonhost_920fa303de3b",
 						"category": "daemonhost",
 						"name": {
-							"key": "markerDaemonhost"
+							"key": "markerDaemonhostSpawn"
 						},
 						"position": [
 							-37,
@@ -14355,7 +14356,7 @@
 						"id": "daemonhost_971574265867",
 						"category": "daemonhost",
 						"name": {
-							"key": "markerDaemonhost"
+							"key": "markerDaemonhostSpawn"
 						},
 						"position": [
 							-72,
@@ -14367,7 +14368,7 @@
 						"id": "daemonhost_a2aa69a0e1ac",
 						"category": "daemonhost",
 						"name": {
-							"key": "markerDaemonhost"
+							"key": "markerDaemonhostSpawn"
 						},
 						"position": [
 							-74.751998901367,
@@ -14379,7 +14380,7 @@
 						"id": "daemonhost_b65dd75f3b6c",
 						"category": "daemonhost",
 						"name": {
-							"key": "markerDaemonhost"
+							"key": "markerDaemonhostSpawn"
 						},
 						"position": [
 							-99,
@@ -14391,7 +14392,7 @@
 						"id": "daemonhost_be7f0653902e",
 						"category": "daemonhost",
 						"name": {
-							"key": "markerDaemonhost"
+							"key": "markerDaemonhostSpawn"
 						},
 						"position": [
 							-42.5,
@@ -14403,7 +14404,7 @@
 						"id": "daemonhost_cc4e43b8c760",
 						"category": "daemonhost",
 						"name": {
-							"key": "markerDaemonhost"
+							"key": "markerDaemonhostSpawn"
 						},
 						"position": [
 							-51.984840393066,
@@ -14415,7 +14416,7 @@
 						"id": "daemonhost_d000b7c71c63",
 						"category": "daemonhost",
 						"name": {
-							"key": "markerDaemonhost"
+							"key": "markerDaemonhostSpawn"
 						},
 						"position": [
 							94.207107543945,
@@ -14427,7 +14428,7 @@
 						"id": "daemonhost_d72b66e6a4e2",
 						"category": "daemonhost",
 						"name": {
-							"key": "markerDaemonhost"
+							"key": "markerDaemonhostSpawn"
 						},
 						"position": [
 							12.804621696472,
@@ -14439,7 +14440,7 @@
 						"id": "daemonhost_fc32f32ea7aa",
 						"category": "daemonhost",
 						"name": {
-							"key": "markerDaemonhost"
+							"key": "markerDaemonhostSpawn"
 						},
 						"position": [
 							81.707107543945,

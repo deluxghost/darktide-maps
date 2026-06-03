@@ -21,6 +21,24 @@ function sanitizeFileName(value) {
 	return String(value).replace(/[^A-Za-z0-9_-]/g, "_");
 }
 
+function padDatePart(value) {
+	return String(value).padStart(2, "0");
+}
+
+function formatLocalTimestamp(date) {
+	return [
+		date.getFullYear(),
+		padDatePart(date.getMonth() + 1),
+		padDatePart(date.getDate()),
+	].join("-")
+		+ " "
+		+ [
+			padDatePart(date.getHours()),
+			padDatePart(date.getMinutes()),
+			padDatePart(date.getSeconds()),
+		].join(":");
+}
+
 async function readDirectoryIfExists(directory) {
 	try {
 		return await readdir(directory);
@@ -230,6 +248,7 @@ await writeFile(
 	path.join(outputDirectory, "maps.json"),
 	`${JSON.stringify(compactObject({
 		schemaVersion: 1,
+		dataUpdatedAt: formatLocalTimestamp(new Date()),
 		zones: Object.keys(mapMetadata.zones).length ? mapMetadata.zones : undefined,
 		maps,
 	}), null, "\t")}\n`,

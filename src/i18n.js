@@ -71,4 +71,8 @@ export function applyTranslations(root = document) {
 	for (const element of root.querySelectorAll("[data-i18n-aria-label]")) {
 		element.setAttribute("aria-label", t(element.dataset.i18nAriaLabel));
 	}
+
+	for (const element of root.querySelectorAll("[data-i18n-title]")) {
+		element.title = t(element.dataset.i18nTitle);
+	}
 }

@@ -8,6 +8,18 @@ function colorToCss(color) {
 	return `rgba(${red}, ${green}, ${blue}, ${alpha / 255})`;
 }
 
+function outlineColorFor(fillColor) {
+	const [red, green, blue] = fillColor;
+	const scale = 0.28;
+
+	return [
+		Math.round(red * scale),
+		Math.round(green * scale),
+		Math.round(blue * scale),
+		255,
+	];
+}
+
 function svgDataUrl(svg) {
 	return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
@@ -24,11 +36,11 @@ export function pinIconForCategory(category) {
 	const pinsConfig = APP_CONFIG.runtime.visual.pins;
 	const categoryConfig = pinsConfig.categories[category] ?? {};
 	const color = categoryConfig.color ?? [255, 255, 255, 245];
-	const outlineColor = categoryConfig.outlineColor ?? [0, 0, 0, 255];
+	const outlineColor = outlineColorFor(color);
 	const textureScale = pinsConfig.iconTextureScale ?? 1;
 	const textureWidth = pinsConfig.iconWidth * textureScale;
 	const textureHeight = pinsConfig.iconHeight * textureScale;
-	const cacheKey = `${textureWidth}x${textureHeight}:${color.join(",")}:${outlineColor.join(",")}`;
+	const cacheKey = `${textureWidth}x${textureHeight}:${color.join(",")}`;
 
 	if (!iconCache.has(cacheKey)) {
 		iconCache.set(cacheKey, {
