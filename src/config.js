@@ -88,42 +88,34 @@ export const APP_CONFIG = {
 					chest: {
 						labelKey: "markerChest",
 						color: [244, 190, 76, 245],
-						outlineColor: [43, 32, 12, 255],
 					},
 					health_station: {
 						labelKey: "markerHealthStation",
 						color: [96, 226, 132, 245],
-						outlineColor: [14, 54, 30, 255],
 					},
 					respawn_point: {
 						labelKey: "markerRespawnPoint",
 						color: [92, 190, 255, 245],
-						outlineColor: [13, 37, 64, 255],
 					},
 					supply_spawn: {
 						labelKey: "markerSupplySpawn",
-						color: [220, 220, 235, 245],
-						outlineColor: [45, 45, 58, 255],
+						color: [189, 163, 132, 245],
 					},
 					side_mission_spawn: {
 						labelKey: "markerSideMissionSpawn",
-						color: [184, 124, 255, 245],
-						outlineColor: [42, 23, 66, 255],
+						color: [154, 132, 188, 245],
 					},
 					boss_spawn: {
 						labelKey: "markerBossSpawn",
 						color: [255, 92, 75, 245],
-						outlineColor: [74, 20, 15, 255],
 					},
 					daemonhost: {
-						labelKey: "markerDaemonhost",
+						labelKey: "markerDaemonhostSpawn",
 						color: [210, 86, 255, 245],
-						outlineColor: [54, 12, 68, 255],
 					},
 					havoc_boss_spawn: {
 						labelKey: "markerHavocBossSpawn",
 						color: [255, 128, 96, 245],
-						outlineColor: [76, 28, 18, 255],
 					},
 				},
 			},

@@ -216,7 +216,7 @@ function markerFamilies(directories) {
 		},
 		{
 			category: "daemonhost",
-			defaultName: {key: "markerDaemonhost"},
+			defaultName: {key: "markerDaemonhostSpawn"},
 			directory: path.join(directories.root, "daemonhosts"),
 			fileLabel: "Daemonhost marker",
 			id: markerId("daemonhost"),
