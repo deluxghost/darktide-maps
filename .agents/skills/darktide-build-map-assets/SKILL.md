@@ -15,11 +15,10 @@ scripts/build-map-assets.mjs
 
 The script converts `navmesh/<mission>.json` dumps into standard glTF 2.0
 binary `.glb` files. When `main_path/<mission>.json` exists, it also converts
-that route into an optimized landmark `.glb` with embedded parts. When
-`markers/chests/<mission>.json` exists, it embeds chest pin marker positions in
-the map manifest. When
-`metadata/missions.json` exists, it merges mission title and zone metadata into the
-manifest. It refreshes:
+that route into an optimized landmark `.glb` with embedded parts. Marker dumps
+under `markers/<marker-family>/<mission>.json` are embedded as map manifest pins.
+When `metadata/missions.json` exists, it merges mission title and zone metadata
+into the manifest. It refreshes:
 
 ```text
 public/data/maps.json
@@ -34,7 +33,7 @@ its declared landmark assets.
 `NavExporter` uses two dump commands:
 
 - `missionexport` writes active-mission data under `navmesh/`, `main_path/`,
-  and `markers/chests/`.
+  and marker family directories.
 - `tableexport` writes table-based metadata under `metadata/`.
 
 ## Input path
@@ -44,7 +43,7 @@ its declared landmark assets.
 ```text
 binaries/dump/NavExporter/navmesh/
 binaries/dump/NavExporter/main_path/
-binaries/dump/NavExporter/markers/chests/
+binaries/dump/NavExporter/markers/<marker-family>/
 binaries/dump/NavExporter/metadata/
 ```
 
@@ -87,6 +86,9 @@ public/data/<mission>.main_path.glb
 public/data/maps.json
 ```
 
+`maps.json` includes `dataUpdatedAtUnix`, the Unix timestamp in seconds from
+the asset build completion time. The browser formats it as local time.
+
 Do not copy navmesh JSON dump files into `public/data/`. Keep the verbose
 JSON dumps as build inputs outside the webapp. Navmesh file names must use the
 exact `<mission>.json` format. Main path assets are optional and only generated
@@ -96,12 +98,11 @@ Main path colors are frontend configuration, not baked into generated GLB
 vertex colors. The generated `main_path` GLB embeds `tube`, `arrows`, and
 `start` part ids.
 
-Chest marker colors and labels are frontend configuration. The generated
-manifest stores chest marker pins under `markers.pins` on each map entry. The
-chest dump contains one pin per chest unit; very close chest units may be merged
-during the build. Chest marker ids are generated from the mission id plus
-exported source unit ids. A chest dump without `source.unit_id` is invalid.
-Other marker families may use their own id strategy.
+Marker colors and labels are frontend configuration. The generated manifest
+stores marker pins under `markers.pins` on each map entry. Chest dumps contain
+one pin per chest unit; very close chest units may be merged during the build.
+Marker ids are generated from the mission id plus stable exported source ids.
+A marker dump without the source fields required by its family is invalid.
 
 Mission metadata is stored in `maps.json`. It includes mission title keys and
 zone ids. A mission zone is included only when it exists in `metadata/map.json`;
@@ -109,9 +110,9 @@ maps outside that list omit `zone` and are grouped as Other by the browser.
 
 `src/config.js` separates runtime and build-time values:
 
-- `VISUAL_CONFIG.runtime` is applied by the browser. Color-only changes do not
+- `APP_CONFIG.runtime` is applied by the browser. Color-only changes do not
   require rebuilding map assets.
-- `VISUAL_CONFIG.build` changes generated geometry. Radius, side count, arrow
+- `APP_CONFIG.build` changes generated geometry. Radius, side count, arrow
   overlap/offset, arrow size, sphere size, and vertical offset changes require
   `npm run build:maps`.
 
