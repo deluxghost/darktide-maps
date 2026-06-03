@@ -1,10 +1,11 @@
 import {createHash} from "node:crypto";
 import {readFile} from "node:fs/promises";
 import path from "node:path";
+import {APP_CONFIG} from "../src/config.js";
 import {arrayFromLuaJson} from "./json.js";
 
-const CHEST_MERGE_HORIZONTAL_DISTANCE = 2;
-const CHEST_MERGE_VERTICAL_DISTANCE = 1;
+const MARKERS = APP_CONFIG.build.markers;
+const SUPPLY_DISTRIBUTIONS = new Set(MARKERS.supplyDistributions);
 
 function stableHash(value) {
 	return createHash("sha1").update(value).digest("hex").slice(0, 12);
@@ -32,6 +33,16 @@ function chestSourceKey(pin) {
 	}
 
 	throw new Error("Chest marker pin is missing source.unit_id.");
+}
+
+function sourceKey(pin) {
+	if (pin.source && typeof pin.source === "object") {
+		return JSON.stringify(Object.keys(pin.source)
+			.sort()
+			.map((key) => [key, pin.source[key]]));
+	}
+
+	throw new Error("Marker pin is missing source.");
 }
 
 function horizontalDistanceSquared(left, right) {
@@ -105,6 +116,10 @@ function markerName(group, family) {
 		};
 	}
 
+	if (group[0].name_key) {
+		return {key: group[0].name_key};
+	}
+
 	return group[0].name ?? family.defaultName;
 }
 
@@ -122,29 +137,98 @@ function buildMarkerGroup(missionId, group, markerMetadata, family) {
 }
 
 function buildMarkerPins(missionId, pins, markerMetadata, family) {
+	const selectedPins = family.selectPins ? pins.filter(family.selectPins) : pins;
 	const groups = family.mergeHorizontalDistance > 0 && family.mergeVerticalDistance >= 0
-		? clusterPins(pins, family.mergeHorizontalDistance, family.mergeVerticalDistance)
-		: pins.map((pin) => [pin]);
+		? clusterPins(selectedPins, family.mergeHorizontalDistance, family.mergeVerticalDistance)
+		: selectedPins.map((pin) => [pin]);
 
 	return groups
 		.map((group) => buildMarkerGroup(missionId, group, markerMetadata, family))
 		.sort((left, right) => left.id.localeCompare(right.id));
 }
 
+function markerId(prefix) {
+	return (missionId, sourceKeys) => `${prefix}_${stableHash(`${missionId}|${sourceKeys.join("|")}`)}`;
+}
+
 function markerFamilies(directories) {
 	return [
 		{
 			category: "chest",
-			defaultName: {key: "markerChestName"},
-			directory: directories.chests,
+			defaultName: {key: "markerChest"},
+			directory: path.join(directories.root, "chests"),
 			fileLabel: "Chest marker",
 			id(missionId, sourceKeys) {
 				return `chest_${stableHash(`${missionId}|${sourceKeys.join("|")}`)}`;
 			},
-			mergeHorizontalDistance: CHEST_MERGE_HORIZONTAL_DISTANCE,
-			mergeVerticalDistance: CHEST_MERGE_VERTICAL_DISTANCE,
+			mergeHorizontalDistance: MARKERS.chestMergeHorizontalDistance,
+			mergeVerticalDistance: MARKERS.chestMergeVerticalDistance,
 			sourceKey: chestSourceKey,
 			stackName: {key: "markerChestStack"},
+		},
+		{
+			category: "health_station",
+			defaultName: {key: "markerHealthStation"},
+			directory: path.join(directories.root, "health_stations"),
+			fileLabel: "Health station marker",
+			id: markerId("health_station"),
+			sourceKey,
+		},
+		{
+			category: "respawn_point",
+			defaultName: {key: "markerRespawnPoint"},
+			directory: path.join(directories.root, "respawn_points"),
+			fileLabel: "Respawn point marker",
+			id: markerId("respawn_point"),
+			mergeHorizontalDistance: MARKERS.respawnPointMergeHorizontalDistance,
+			mergeVerticalDistance: MARKERS.respawnPointMergeVerticalDistance,
+			sourceKey,
+		},
+		{
+			category: "supply_spawn",
+			defaultName: {key: "markerSupplySpawn"},
+			directory: path.join(directories.root, "pickups"),
+			fileLabel: "Supply spawn marker",
+			id: markerId("supply_spawn"),
+			selectPins(pin) {
+				return SUPPLY_DISTRIBUTIONS.has(pin.source?.distribution_type);
+			},
+			sourceKey,
+		},
+		{
+			category: "side_mission_spawn",
+			defaultName: {key: "markerSideMissionSpawn"},
+			directory: path.join(directories.root, "pickups"),
+			fileLabel: "Side mission spawn marker",
+			id: markerId("side_mission_spawn"),
+			selectPins(pin) {
+				return pin.source?.distribution_type === "side_mission";
+			},
+			sourceKey,
+		},
+		{
+			category: "boss_spawn",
+			defaultName: {key: "markerBossSpawn"},
+			directory: path.join(directories.root, "boss_spawns"),
+			fileLabel: "Boss spawn marker",
+			id: markerId("boss_spawn"),
+			sourceKey,
+		},
+		{
+			category: "daemonhost",
+			defaultName: {key: "markerDaemonhost"},
+			directory: path.join(directories.root, "daemonhosts"),
+			fileLabel: "Daemonhost marker",
+			id: markerId("daemonhost"),
+			sourceKey,
+		},
+		{
+			category: "havoc_boss_spawn",
+			defaultName: {key: "markerHavocBossSpawn"},
+			directory: path.join(directories.root, "havoc_boss_spawns"),
+			fileLabel: "Havoc boss spawn marker",
+			id: markerId("havoc_boss_spawn"),
+			sourceKey,
 		},
 	];
 }
@@ -152,10 +236,16 @@ function markerFamilies(directories) {
 export async function buildMarkers(missionId, markerMetadata, directories) {
 	const markerOutputs = [];
 	let sourceBytes = 0;
+	const sources = new Map();
 
 	for (const family of markerFamilies(directories)) {
 		const inputPath = path.join(family.directory, `${sanitizeFileName(missionId)}.json`);
-		const source = await readOptionalFile(inputPath);
+		let source = sources.get(inputPath);
+
+		if (source === undefined) {
+			source = await readOptionalFile(inputPath);
+			sources.set(inputPath, source);
+		}
 
 		if (!source) {
 			continue;
@@ -167,7 +257,11 @@ export async function buildMarkers(missionId, markerMetadata, directories) {
 			throw new Error(`${family.fileLabel} mission mismatch: ${inputPath}. Expected ${missionId}, got ${data.mission}.`);
 		}
 
-		sourceBytes += source.length;
+		if (!sources.has(`${inputPath}:counted`)) {
+			sourceBytes += source.length;
+			sources.set(`${inputPath}:counted`, true);
+		}
+
 		markerOutputs.push(...buildMarkerPins(
 			missionId,
 			arrayFromLuaJson(data.pins, `${family.fileLabel} pins in ${inputPath}`),

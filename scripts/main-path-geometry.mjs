@@ -1,7 +1,7 @@
-import { VISUAL_CONFIG } from "../src/config.js";
+import {APP_CONFIG} from "../src/config.js";
 import {arrayFromLuaJson} from "./json.js";
 
-const MAIN_PATH = VISUAL_CONFIG.build.mainPath;
+const MAIN_PATH = APP_CONFIG.build.mainPath;
 
 function createMesh() {
 	return {

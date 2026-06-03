@@ -14,6 +14,12 @@ Implemented runtime output:
 binaries/dump/NavExporter/navmesh/<mission>.json
 binaries/dump/NavExporter/main_path/<mission>.json
 binaries/dump/NavExporter/markers/chests/<mission>.json
+binaries/dump/NavExporter/markers/health_stations/<mission>.json
+binaries/dump/NavExporter/markers/respawn_points/<mission>.json
+binaries/dump/NavExporter/markers/pickups/<mission>.json
+binaries/dump/NavExporter/markers/boss_spawns/<mission>.json
+binaries/dump/NavExporter/markers/daemonhosts/<mission>.json
+binaries/dump/NavExporter/markers/havoc_boss_spawns/<mission>.json
 binaries/dump/NavExporter/metadata/missions.json
 ```
 
@@ -43,7 +49,7 @@ The build reads:
 ```text
 navmesh/<mission>.json
 main_path/<mission>.json
-markers/chests/<mission>.json
+markers/<marker-family>/<mission>.json
 metadata/missions.json
 <project>/metadata/map.json
 <project>/metadata/markers.json
@@ -78,39 +84,50 @@ browser loads this optimized landmark asset instead of generating route geometry
 from raw JSON at runtime. Landmark colors are applied by the frontend visual
 config, not baked into the generated GLB.
 
-`markers/chests` is optional per mission. The dump contains one pin per chest
-unit and only includes fields consumed by the build: `mission`, `pins`,
-`position`, and `source.unit_id`. When present, the build may merge very close
-chest units into one display pin, then embeds marker pins into `maps.json`
-under the map entry's `markers.pins` field. Pin category colors and labels are
-frontend configuration.
+Marker dumps are optional per mission. Each dump contains one pin per exported
+source location and only includes fields consumed by the build: `mission`,
+`pins`, `position`, `source`, and optional `name_key` for pins whose display
+name differs from their category label. When present, the build embeds marker
+pins into `maps.json` under the map entry's `markers.pins` field. Pin category
+colors and labels are frontend configuration.
 
-Chest marker ids are generated from the mission id plus stable source
-identifiers exported by the mod: `source.unit_id`. The mission id is part of the
-generated id because some maps reuse unit ids across missions. A merged chest
-marker id is generated from the sorted member source ids. Other marker families
-may use different id strategies when their source data requires it. A chest dump
-without `source.unit_id` is invalid.
+Pickup spawner data is dumped as one family under `markers/pickups`. The dump
+keeps each component's `distribution_type`; the build derives current UI marker
+categories from that single source. `primary`, `secondary`, `mid_event`, and
+`end_event` become supply spawn pins. `side_mission` becomes side mission spawn
+pins. Other pickup distributions remain in the raw dump for later analysis and
+future marker categories.
+
+Marker ids are generated from the mission id plus stable source identifiers
+exported by the mod. The mission id is part of the generated id because some
+maps reuse source ids across missions. Chest pins may be merged when very close
+units represent one visible chest pile; the merged id is generated from the
+sorted member source ids. A marker dump without `source` is invalid.
 
 Generated `.glb` files that are no longer referenced by the refreshed manifest
 are removed.
 
-## Visual config
+## Project config
 
-Visual values live in `src/config.js` and are split by when they take
-effect:
+Project configuration lives in `src/config.js` under `APP_CONFIG`. The main
+sections are:
 
 ```text
-VISUAL_CONFIG.runtime
-VISUAL_CONFIG.build
+APP_CONFIG.ui
+APP_CONFIG.runtime
+APP_CONFIG.processing
+APP_CONFIG.build
 ```
 
-`runtime` values are applied by the browser. Changing map boundary colors or
-main path part colors only requires a frontend refresh.
+`ui` values control browser UI behavior such as the mobile media query and
+zone ordering. `runtime` values are applied by the browser, including camera
+limits, controls, layer parameters, colors, lighting, and pin category styles.
 
-`build` values affect generated geometry, such as main path tube radius, segment
-side counts, arrow overlap/offset, arrow size, start sphere size, and vertical
-offset. Changing these requires rerunning `npm run build:maps`.
+`processing` values affect runtime data processing, such as navmesh boundary
+coordinate precision. `build` values affect generated assets and marker
+preprocessing, such as main path geometry, marker merge distances, and pickup
+distribution classification. Changing `build` values requires rerunning
+`npm run build:maps`.
 
 ## Web manifest extension points
 

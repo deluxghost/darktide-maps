@@ -1,14 +1,7 @@
 import { Geometry } from "@luma.gl/engine";
+import { APP_CONFIG } from "./config.js";
 
-const HEIGHT_COLORS = [
-	[94, 132, 185],
-	[73, 154, 196],
-	[66, 177, 184],
-	[78, 190, 151],
-	[132, 201, 111],
-	[190, 211, 93],
-	[226, 214, 100],
-];
+const HEIGHT_COLORS = APP_CONFIG.runtime.visual.navmesh.heightColors;
 
 function addTriangleNormal(normals, positions, a, b, c) {
 	const abX = positions[b] - positions[a];

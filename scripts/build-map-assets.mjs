@@ -8,7 +8,7 @@ const inputDirectory = process.argv[2];
 const outputDirectory = process.argv[3] ?? path.resolve("public", "data");
 const navmeshDirectory = inputDirectory && path.join(inputDirectory, "navmesh");
 const mainPathDirectory = inputDirectory && path.join(inputDirectory, "main_path");
-const chestMarkersDirectory = inputDirectory && path.join(inputDirectory, "markers", "chests");
+const markersDirectory = inputDirectory && path.join(inputDirectory, "markers");
 const metadataDirectory = inputDirectory && path.join(inputDirectory, "metadata");
 const mapMetadataPath = path.resolve("metadata", "map.json");
 const markerMetadataPath = path.resolve("metadata", "markers.json");
@@ -193,7 +193,7 @@ for (const inputFileName of inputFiles) {
 	const glb = createNavmeshGlb(data);
 	const mainPath = await buildMainPathAsset(data.mission);
 	const markers = await buildMarkers(data.mission, markerMetadata, {
-		chests: chestMarkersDirectory,
+		root: markersDirectory,
 	});
 
 	await writeFile(outputPath, glb);

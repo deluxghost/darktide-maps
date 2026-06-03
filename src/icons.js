@@ -1,4 +1,4 @@
-import { VISUAL_CONFIG } from "./config.js";
+import { APP_CONFIG } from "./config.js";
 
 const iconCache = new Map();
 
@@ -21,19 +21,22 @@ function pinIconSvg(width, height, fillColor, outlineColor) {
 }
 
 export function pinIconForCategory(category) {
-	const pinsConfig = VISUAL_CONFIG.runtime.pins;
+	const pinsConfig = APP_CONFIG.runtime.visual.pins;
 	const categoryConfig = pinsConfig.categories[category] ?? {};
 	const color = categoryConfig.color ?? [255, 255, 255, 245];
 	const outlineColor = categoryConfig.outlineColor ?? [0, 0, 0, 255];
-	const cacheKey = `${pinsConfig.iconWidth}x${pinsConfig.iconHeight}:${color.join(",")}:${outlineColor.join(",")}`;
+	const textureScale = pinsConfig.iconTextureScale ?? 1;
+	const textureWidth = pinsConfig.iconWidth * textureScale;
+	const textureHeight = pinsConfig.iconHeight * textureScale;
+	const cacheKey = `${textureWidth}x${textureHeight}:${color.join(",")}:${outlineColor.join(",")}`;
 
 	if (!iconCache.has(cacheKey)) {
 		iconCache.set(cacheKey, {
-			url: svgDataUrl(pinIconSvg(pinsConfig.iconWidth, pinsConfig.iconHeight, colorToCss(color), colorToCss(outlineColor))),
-			width: pinsConfig.iconWidth,
-			height: pinsConfig.iconHeight,
-			anchorX: pinsConfig.iconWidth / 2,
-			anchorY: pinsConfig.iconHeight,
+			url: svgDataUrl(pinIconSvg(textureWidth, textureHeight, colorToCss(color), colorToCss(outlineColor))),
+			width: textureWidth,
+			height: textureHeight,
+			anchorX: textureWidth / 2,
+			anchorY: textureHeight,
 		});
 	}
 
