@@ -132,10 +132,36 @@ function writeHelp() {
 		: t("helpDesktop");
 }
 
-function writeDataUpdatedAt(value) {
-	dataUpdatedElement.hidden = !value;
-	dataUpdatedElement.textContent = value
-		? t("dataUpdatedAt", {time: value})
+function padDatePart(value) {
+	return String(value).padStart(2, "0");
+}
+
+function formatLocalTimestampFromUnix(value) {
+	const timestamp = Number(value);
+
+	if (!Number.isFinite(timestamp)) {
+		throw new Error(`Invalid data update timestamp: ${value}`);
+	}
+
+	const date = new Date(timestamp * 1000);
+
+	return [
+		date.getFullYear(),
+		padDatePart(date.getMonth() + 1),
+		padDatePart(date.getDate()),
+	].join("-")
+		+ " "
+		+ [
+			padDatePart(date.getHours()),
+			padDatePart(date.getMinutes()),
+			padDatePart(date.getSeconds()),
+		].join(":");
+}
+
+function writeDataUpdatedAt(unixTimestamp) {
+	dataUpdatedElement.hidden = !unixTimestamp;
+	dataUpdatedElement.textContent = unixTimestamp
+		? t("dataUpdatedAt", {time: formatLocalTimestampFromUnix(unixTimestamp)})
 		: "";
 }
 
@@ -624,7 +650,7 @@ async function initialize() {
 	}
 
 	writeMapOptions(manifest);
-	writeDataUpdatedAt(manifest.dataUpdatedAt);
+	writeDataUpdatedAt(manifest.dataUpdatedAtUnix);
 
 	mapSelect.addEventListener("change", () => {
 		loadMap(manifest.maps.find((map) => map.id === mapSelect.value));

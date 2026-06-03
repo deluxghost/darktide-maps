@@ -232,6 +232,7 @@ option {
 	color: #9eae9d;
 	font-size: 13px;
 	line-height: 1.35;
+	pointer-events: none;
 	text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
 	white-space: pre-line;
 }
