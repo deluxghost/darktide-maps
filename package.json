@@ -6,7 +6,7 @@
     "build": "vite build",
     "dev": "vite",
     "preview": "npm run build && wrangler dev",
-    "build:maps": "node ./scripts/build-map-assets.mjs",
+    "build:maps": "node ./scripts/preprocess/index.mjs",
     "deploy": "npm run build && wrangler deploy"
   },
   "dependencies": {

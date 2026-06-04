@@ -160,25 +160,45 @@ async function loadMainPathMeshes(mainPath, signal) {
 	return meshes;
 }
 
-async function loadMap(map) {
+async function loadMapData(mapEntry, signal) {
+	const response = await fetch(mapEntry.file, { signal });
+
+	if (!response.ok) {
+		throw new Error(`HTTP ${response.status} while loading ${mapEntry.file}`);
+	}
+
+	const map = await response.json();
+
+	if (map.id !== mapEntry.id) {
+		throw new Error(`Map data id mismatch: ${mapEntry.file}. Expected ${mapEntry.id}, got ${map.id}.`);
+	}
+
+	return {
+		...mapEntry,
+		...map,
+	};
+}
+
+async function loadMap(mapEntry) {
 	if (loadController) {
 		loadController.abort();
 	}
 
 	loadController = new AbortController();
-	filters.setCurrentMap(map);
 	errorBanner.hidden = true;
 	markerOverlays.hidePopup();
 	markerOverlays.hideTooltip();
 	setLoading(t("loadingMap", {
-		title: mapTitle(map),
-		size: formatBytes(map.assetBytes),
+		title: mapTitle(mapEntry),
+		size: formatBytes(mapEntry.resourceBytes),
 	}));
 
 	try {
+		const map = await loadMapData(mapEntry, loadController.signal);
 		const glb = await loadGlb(map.file, loadController.signal);
 		const mainPathMeshes = await loadMainPathMeshes(map.landmarks?.mainPath, loadController.signal);
 
+		filters.setCurrentMap(map);
 		mapRenderer.render(
 			map,
 			createMesh(glb),
