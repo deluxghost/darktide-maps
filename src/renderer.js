@@ -36,7 +36,7 @@ function viewDepth(pin, viewport) {
 }
 
 function sortedPins(pins, visibleCategories, viewport) {
-	const visiblePins = pins.filter((pin) => visibleCategories.has(pin.category));
+	const visiblePins = pins.filter((pin) => visibleCategories.has(pin.category) || pin.markerType === "relation_pin");
 
 	if (!viewport) {
 		return visiblePins;
@@ -50,6 +50,25 @@ function sortedPins(pins, visibleCategories, viewport) {
 		}))
 		.sort((left, right) => left.depth - right.depth || left.index - right.index)
 		.map((entry) => entry.pin);
+}
+
+function bossTriggerRelation(marker) {
+	return marker?.relations?.find((relation) => relation.type === "boss_trigger" && relation.position);
+}
+
+function relationPinForMarker(marker) {
+	const relation = bossTriggerRelation(marker);
+
+	if (!relation) {
+		return null;
+	}
+
+	return {
+		id: `relation_pin:${marker.id}`,
+		category: marker.category,
+		markerType: "relation_pin",
+		position: relation.position,
+	};
 }
 
 function boundsFromPositions(positions) {
@@ -123,9 +142,14 @@ export function createMapRenderer(mapElement, onError) {
 			return [];
 		}
 
-		const { map, mesh, boundaryPaths, mainPathMeshes, mainPathVisible, markerPins, visiblePinCategories } = currentState;
+		const { map, mesh, boundaryPaths, mainPathMeshes, mainPathVisible, markerPins, relationMarker, visiblePinCategories } = currentState;
 		const viewport = deckInstance?.getViewports()[0];
-		const visiblePins = sortedPins(markerPins, visiblePinCategories, viewport);
+		const relationPin = relationPinForMarker(relationMarker);
+		const visiblePins = sortedPins(
+			relationPin ? [...markerPins, relationPin] : markerPins,
+			visiblePinCategories,
+			viewport,
+		);
 		const layers = [
 			new SimpleMeshLayer({
 				id: `navmesh-surface-${map.id}`,
@@ -177,8 +201,15 @@ export function createMapRenderer(mapElement, onError) {
 			data: visiblePins,
 			coordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
 			getPosition: (pin) => pin.position,
-			getIcon: (pin) => pinIconForCategory(pin.category),
-			getSize: VISUAL.pins.iconHeight,
+			getIcon: (pin) => pinIconForCategory(pin.category, {
+				centerCircle: pin.markerType !== "relation_pin",
+				iconWidth: pin.markerType === "relation_pin" ? VISUAL.pins.iconWidth * VISUAL.relations.triggerPinScale : undefined,
+				iconHeight: pin.markerType === "relation_pin" ? VISUAL.pins.iconHeight * VISUAL.relations.triggerPinScale : undefined,
+				strokeWidth: pin.markerType === "relation_pin" ? VISUAL.relations.triggerPinStrokeWidth : undefined,
+			}),
+			getSize: (pin) => pin.markerType === "relation_pin"
+				? VISUAL.pins.iconHeight * VISUAL.relations.triggerPinScale
+				: VISUAL.pins.iconHeight,
 			sizeUnits: "pixels",
 			billboard: true,
 			pickable: true,
@@ -213,6 +244,7 @@ export function createMapRenderer(mapElement, onError) {
 			onMarkerClick: options.onMarkerClick,
 			onMarkerHover: options.onMarkerHover,
 			onViewChange: options.onViewChange,
+			relationMarker: null,
 			viewState,
 		};
 
@@ -256,6 +288,10 @@ export function createMapRenderer(mapElement, onError) {
 				requestAnimationFrame(() => currentState.onViewChange?.());
 			},
 			onClick: (info) => {
+				if (info.object?.markerType === "relation_pin") {
+					return true;
+				}
+
 				if (info.object?.markerType === "pin") {
 					currentState.onMarkerClick(info.object, info.x, info.y);
 
@@ -314,6 +350,15 @@ export function createMapRenderer(mapElement, onError) {
 		updateLayers();
 	}
 
+	function setRelationMarker(marker) {
+		if (!currentState || currentState.relationMarker === marker) {
+			return;
+		}
+
+		currentState.relationMarker = marker;
+		updateLayers();
+	}
+
 	function rotateBy(delta) {
 		if (!currentState) {
 			return;
@@ -339,6 +384,7 @@ export function createMapRenderer(mapElement, onError) {
 		render,
 		projectPosition,
 		rotateBy,
+		setRelationMarker,
 		setMainPathVisible,
 		setPinCategoryVisible,
 	};

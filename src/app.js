@@ -6,9 +6,9 @@ import { APP_CONFIG } from "./config.js";
 import { createMesh } from "./navmesh.js";
 import { createMapRenderer } from "./renderer.js";
 import { createFilterController } from "./filters.js";
-import { createMarkerOverlays } from "./marker-overlays.js";
+import { createMarkerOverlays } from "./overlays.js";
 import { mapTitle, writeMapOptions } from "./manifest.js";
-import { createRotationControl } from "./rotation-control.js";
+import { createRotationControl } from "./joystick.js";
 import { formatLocalTimestampFromUnix } from "./time.js";
 import { createIcons, Menu, X } from "lucide";
 
@@ -28,6 +28,10 @@ const markerPopupType = document.querySelector("#marker-popup-type");
 const markerPopupDescription = document.querySelector("#marker-popup-description");
 const markerPopupClose = document.querySelector("#marker-popup-close");
 const markerTooltip = document.querySelector("#marker-tooltip");
+const relationArrow = document.querySelector("#relation-arrow");
+const relationArrowArc = document.querySelector("#relation-arrow-arc");
+const relationArrowArcOutline = document.querySelector("#relation-arrow-arc-outline");
+const relationTooltip = document.querySelector("#relation-tooltip");
 const dataUpdatedElement = document.querySelector("#data-updated");
 const rotationControl = document.querySelector("#rotation-control");
 const rotationControlHandle = document.querySelector("#rotation-control-handle");
@@ -124,6 +128,10 @@ const markerOverlays = createMarkerOverlays({
 	markerPopupType,
 	markerPopupDescription,
 	markerTooltip,
+	relationArrow,
+	relationArrowArc,
+	relationArrowArcOutline,
+	relationTooltip,
 	mapRenderer,
 	categoryTitle,
 	markerName,

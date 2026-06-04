@@ -1,7 +1,7 @@
 import {mkdir, readFile, rm, writeFile} from "node:fs/promises";
 import path from "node:path";
 import {createGeometryPartsGlb, createNavmeshGlb} from "./gltf.mjs";
-import {createMainPathMeshes} from "./main_path.mjs";
+import {createMainPathMeshes, createMainPathSampler} from "./main_path.mjs";
 import {buildMarkers} from "./markers.mjs";
 import {
 	compactObject,
@@ -69,7 +69,10 @@ async function buildMainPathAsset(missionId, context) {
 	await writeFile(outputPath, glb);
 
 	return {
-		file: `./data/maps/${sanitizeFileName(missionId)}/${fileName}`,
+		asset: {
+			file: `./data/maps/${sanitizeFileName(missionId)}/${fileName}`,
+		},
+		data,
 	};
 }
 
@@ -104,8 +107,11 @@ export async function buildMissionAssets(inputFileName, context) {
 		...context,
 		missionDirectory,
 	});
+	const mainPathSampler = mainPath ? createMainPathSampler(mainPath.data) : null;
 	const markers = await buildMarkers(data.mission, context.markerMetadata, {
 		root: context.directories.markers,
+	}, {
+		mainPathSampler,
 	});
 
 	await writeFile(outputPath, glb);
@@ -119,7 +125,7 @@ export async function buildMissionAssets(inputFileName, context) {
 		id: data.mission,
 		file: `./data/maps/${sanitizeFileName(data.mission)}/${fileName}`,
 		bounds: data.bounds,
-		landmarks: mainPath ? {mainPath} : {},
+		landmarks: mainPath ? {mainPath: mainPath.asset} : {},
 		markers: markers ?? undefined,
 	};
 	const mapJson = `${JSON.stringify(compactObject(mapData), null, "\t")}\n`;

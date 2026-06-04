@@ -250,3 +250,43 @@ export function createMainPathMeshes(data) {
 
 	return meshes;
 }
+
+export function createMainPathSampler(data) {
+	const nodes = arrayFromLuaJson(data.unified_nodes ?? [], "main path unified nodes")
+		.filter((node) => typeof node.travel_distance === "number")
+		.sort((left, right) => left.travel_distance - right.travel_distance);
+
+	if (nodes.length === 0) {
+		throw new Error(`Main path ${data.mission} has no travel distance nodes.`);
+	}
+
+	return {
+		positionAt(travelDistance) {
+			if (typeof travelDistance !== "number") {
+				throw new Error(`Main path ${data.mission} travel distance must be a number.`);
+			}
+
+			if (travelDistance < nodes[0].travel_distance || travelDistance > nodes[nodes.length - 1].travel_distance) {
+				throw new Error(`Main path ${data.mission} travel distance is out of range: ${travelDistance}.`);
+			}
+
+			for (let index = 1; index < nodes.length; index++) {
+				const left = nodes[index - 1];
+				const right = nodes[index];
+
+				if (travelDistance > right.travel_distance) {
+					continue;
+				}
+
+				const distance = right.travel_distance - left.travel_distance;
+				const amount = distance === 0
+					? 0
+					: (travelDistance - left.travel_distance) / distance;
+
+				return left.position.map((value, axis) => value + (right.position[axis] - value) * amount);
+			}
+
+			return nodes[nodes.length - 1].position;
+		},
+	};
+}

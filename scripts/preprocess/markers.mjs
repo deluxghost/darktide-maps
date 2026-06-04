@@ -3,6 +3,7 @@ import {PREPROCESS_CONFIG} from "./config.mjs";
 import {arrayFromLuaJson, readOptionalFile, sanitizeFileName, stableHash} from "./utils.mjs";
 
 const MARKERS = PREPROCESS_CONFIG.markers;
+const MAIN_PATH = PREPROCESS_CONFIG.mainPath;
 const SUPPLY_DISTRIBUTIONS = new Set(MARKERS.supplyDistributions);
 
 function chestSourceKey(pin) {
@@ -101,27 +102,62 @@ function markerName(group, family) {
 	return group[0].name ?? family.defaultName;
 }
 
-function buildMarkerGroup(missionId, group, markerMetadata, family) {
+function buildMarkerRelations(group, family, options) {
+	if (!family.relations) {
+		return undefined;
+	}
+
+	if (group.length !== 1) {
+		throw new Error(`${family.fileLabel} relation markers must not be merged.`);
+	}
+
+	return family.relations(group[0], options);
+}
+
+function bossTriggerRelations(pin, options) {
+	const travelDistance = pin.trigger?.travel_distance;
+
+	if (travelDistance === undefined) {
+		return undefined;
+	}
+
+	if (!options.mainPathSampler) {
+		throw new Error("Boss trigger marker requires main path data.");
+	}
+
+	const position = options.mainPathSampler.positionAt(travelDistance);
+
+	return [
+		{
+			type: "boss_trigger",
+			position: [position[0], position[1], position[2] + MAIN_PATH.verticalOffset],
+		},
+	];
+}
+
+function buildMarkerGroup(missionId, group, markerMetadata, family, options) {
 	const sourceKeys = group.map((pin) => family.sourceKey(pin)).sort();
 	const id = family.id(missionId, sourceKeys);
 	const override = markerMetadata.overrides?.[id] ?? {};
+	const relations = buildMarkerRelations(group, family, options);
 
 	return {
 		id,
 		category: family.category,
 		name: override.name ?? markerName(group, family),
 		position: override.position ?? centerPosition(group),
+		relations,
 	};
 }
 
-function buildMarkerPins(missionId, pins, markerMetadata, family) {
+function buildMarkerPins(missionId, pins, markerMetadata, family, options) {
 	const selectedPins = family.selectPins ? pins.filter(family.selectPins) : pins;
 	const groups = family.mergeHorizontalDistance > 0 && family.mergeVerticalDistance >= 0
 		? clusterPins(selectedPins, family.mergeHorizontalDistance, family.mergeVerticalDistance)
 		: selectedPins.map((pin) => [pin]);
 
 	return groups
-		.map((group) => buildMarkerGroup(missionId, group, markerMetadata, family))
+		.map((group) => buildMarkerGroup(missionId, group, markerMetadata, family, options))
 		.sort((left, right) => left.id.localeCompare(right.id));
 }
 
@@ -190,6 +226,7 @@ function markerFamilies(directories) {
 			directory: path.join(directories.root, "boss_spawns"),
 			fileLabel: "Boss spawn marker",
 			id: markerId("boss_spawn"),
+			relations: bossTriggerRelations,
 			sourceKey,
 		},
 		{
@@ -206,12 +243,13 @@ function markerFamilies(directories) {
 			directory: path.join(directories.root, "havoc_boss_spawns"),
 			fileLabel: "Havoc boss spawn marker",
 			id: markerId("havoc_boss_spawn"),
+			relations: bossTriggerRelations,
 			sourceKey,
 		},
 	];
 }
 
-export async function buildMarkers(missionId, markerMetadata, directories) {
+export async function buildMarkers(missionId, markerMetadata, directories, options = {}) {
 	const markerOutputs = [];
 	const sources = new Map();
 
@@ -239,6 +277,7 @@ export async function buildMarkers(missionId, markerMetadata, directories) {
 			arrayFromLuaJson(data.pins, `${family.fileLabel} pins in ${inputPath}`),
 			markerMetadata,
 			family,
+			options,
 		));
 	}
 

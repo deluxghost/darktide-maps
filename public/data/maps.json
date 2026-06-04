@@ -1,6 +1,6 @@
 {
 	"schemaVersion": 1,
-	"dataUpdatedAtUnix": 1780563882,
+	"dataUpdatedAtUnix": 1780591014,
 	"zones": {
 		"dust": {
 			"en": "The Hourglass",
@@ -55,7 +55,7 @@
 				"pl": "Archivum Sycorax",
 				"pt-br": "Archivum Sycorax"
 			},
-			"resourceBytes": 871069
+			"resourceBytes": 874403
 		},
 		{
 			"id": "cm_habs",
@@ -76,7 +76,7 @@
 				"pl": "Hab Dreyko",
 				"pt-br": "Hab Dreyko"
 			},
-			"resourceBytes": 841542
+			"resourceBytes": 846446
 		},
 		{
 			"id": "cm_raid",
@@ -97,7 +97,7 @@
 				"pl": "Nora 6-19",
 				"pt-br": "Toca 6-19"
 			},
-			"resourceBytes": 971632
+			"resourceBytes": 974954
 		},
 		{
 			"id": "core_research",
@@ -118,7 +118,7 @@
 				"pl": "Clandestium Gloriana",
 				"pt-br": "Clandestium Gloriana"
 			},
-			"resourceBytes": 623885
+			"resourceBytes": 629671
 		},
 		{
 			"id": "dm_forge",
@@ -139,7 +139,7 @@
 				"pl": "Kompleks huty HL-17-36",
 				"pt-br": "Fundição HL-17-36"
 			},
-			"resourceBytes": 757758
+			"resourceBytes": 763042
 		},
 		{
 			"id": "dm_propaganda",
@@ -160,7 +160,7 @@
 				"pl": "Stacja przekazywania TRS-150",
 				"pt-br": "Estação Retransmissora TRS-150"
 			},
-			"resourceBytes": 799336
+			"resourceBytes": 802801
 		},
 		{
 			"id": "dm_rise",
@@ -181,7 +181,7 @@
 				"pl": "Unośnik 31",
 				"pt-br": "Ascensor 31"
 			},
-			"resourceBytes": 1148416
+			"resourceBytes": 1153187
 		},
 		{
 			"id": "dm_stockpile",
@@ -202,7 +202,7 @@
 				"pl": "Klaster silosów 18-66/a",
 				"pt-br": "Conjunto de Armazéns 18-66/a"
 			},
-			"resourceBytes": 711472
+			"resourceBytes": 716923
 		},
 		{
 			"id": "fm_armoury",
@@ -223,7 +223,7 @@
 				"pl": "Handlowa HL-70-04",
 				"pt-br": "Mercantil HL-70-04"
 			},
-			"resourceBytes": 1018512
+			"resourceBytes": 1022788
 		},
 		{
 			"id": "fm_cargo",
@@ -244,7 +244,7 @@
 				"pl": "Plac dostawczy HL-17-36",
 				"pt-br": "Pátio de Cargas HL-17-36"
 			},
-			"resourceBytes": 782163
+			"resourceBytes": 786932
 		},
 		{
 			"id": "fm_resurgence",
@@ -265,7 +265,7 @@
 				"pl": "Enclavum Baross",
 				"pt-br": "Enclavum Baross"
 			},
-			"resourceBytes": 1021344
+			"resourceBytes": 1027230
 		},
 		{
 			"id": "hm_cartel",
@@ -286,7 +286,7 @@
 				"pl": "Posterunek Zapomnienie",
 				"pt-br": "Estação de Vigília Oblivium"
 			},
-			"resourceBytes": 853138
+			"resourceBytes": 858608
 		},
 		{
 			"id": "hm_complex",
@@ -307,7 +307,7 @@
 				"pl": "Kom-pleks 154/2f",
 				"pt-br": "Complexo de Comunicação 154/2f"
 			},
-			"resourceBytes": 940860
+			"resourceBytes": 945442
 		},
 		{
 			"id": "hm_strain",
@@ -328,7 +328,7 @@
 				"pl": "Rafineria Delta-17",
 				"pt-br": "Refinaria Delta-17"
 			},
-			"resourceBytes": 876147
+			"resourceBytes": 879444
 		},
 		{
 			"id": "hub_ship",
@@ -369,7 +369,7 @@
 				"pl": "Cela więzienna TM8-707",
 				"pt-br": "Magistrati Oubliette TM8-707"
 			},
-			"resourceBytes": 893691
+			"resourceBytes": 898831
 		},
 		{
 			"id": "km_enforcer_twins",
@@ -390,7 +390,7 @@
 				"pl": "Ofensywa Orthus",
 				"pt-br": "A Ofensiva Orthus"
 			},
-			"resourceBytes": 550880
+			"resourceBytes": 552485
 		},
 		{
 			"id": "km_heresy",
@@ -411,7 +411,7 @@
 				"pl": "Komunia Ciemności",
 				"pt-br": "Comunhão sombria"
 			},
-			"resourceBytes": 791189
+			"resourceBytes": 796025
 		},
 		{
 			"id": "km_station",
@@ -432,7 +432,7 @@
 				"pl": "Stacja Otchłań HL-16-11",
 				"pt-br": "Estação do Abismo HL-16-11"
 			},
-			"resourceBytes": 802662
+			"resourceBytes": 809428
 		},
 		{
 			"id": "lm_cooling",
@@ -453,7 +453,7 @@
 				"pl": "Sieć zasilania HL-17-36",
 				"pt-br": "Matriz de Força HL-17-36"
 			},
-			"resourceBytes": 716895
+			"resourceBytes": 721317
 		},
 		{
 			"id": "lm_rails",
@@ -474,7 +474,7 @@
 				"pl": "Logistratum Otchłań",
 				"pt-br": "Logistratum do Abismo"
 			},
-			"resourceBytes": 779806
+			"resourceBytes": 786489
 		},
 		{
 			"id": "lm_scavenge",
@@ -495,7 +495,7 @@
 				"pl": "Krypta akcyzy Iglica-13",
 				"pt-br": "Cofre de Contenção de Spireside-13"
 			},
-			"resourceBytes": 1013258
+			"resourceBytes": 1017284
 		},
 		{
 			"id": "op_no_mans_land",
@@ -516,7 +516,7 @@
 				"pl": "Ziemia niczyja",
 				"pt-br": "Terra de Ninguém"
 			},
-			"resourceBytes": 648825
+			"resourceBytes": 650604
 		},
 		{
 			"id": "op_train",

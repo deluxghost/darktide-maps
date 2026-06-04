@@ -3,9 +3,10 @@
 	background: #111512;
 	font-family: Arial, sans-serif;
 	--z-map-ui: 2;
-	--z-marker-tooltip: 3;
-	--z-marker-popup: 4;
-	--z-hud: 5;
+	--z-relation-overlay: 3;
+	--z-marker-tooltip: 4;
+	--z-marker-popup: 5;
+	--z-hud: 6;
 	--menu-button-size: 36px;
 	--marker-popup-anchor-offset: 44px;
 	--panel-separator: 1px solid rgba(160, 183, 159, 0.22);
@@ -415,7 +416,6 @@ option {
 .marker-tooltip::before {
 	position: absolute;
 	top: 50%;
-	left: -6px;
 	width: 10px;
 	height: 10px;
 	border-left: 1px solid rgba(214, 179, 74, 0.65);
@@ -423,6 +423,53 @@ option {
 	background: rgba(28, 22, 11, 0.94);
 	content: "";
 	transform: translateY(-50%) rotate(45deg);
+}
+
+.marker-tooltip.tooltip-side-right::before {
+	left: -6px;
+}
+
+.marker-tooltip.tooltip-side-left::before {
+	right: -6px;
+	transform: translateY(-50%) rotate(225deg);
+}
+
+.relation-arrow {
+	position: fixed;
+	inset: 0;
+	z-index: var(--z-relation-overlay);
+	display: block;
+	visibility: hidden;
+	width: 100vw;
+	height: 100vh;
+	overflow: visible;
+	pointer-events: none;
+}
+
+.relation-arrow path {
+	fill: none;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+	vector-effect: non-scaling-stroke;
+}
+
+.relation-arrow-outline {
+	opacity: 0.95;
+}
+
+.relation-arrow-line {
+	opacity: 0.98;
+}
+
+.relation-tooltip {
+	border-color: rgba(255, 230, 120, 0.7);
+	color: #fff0a8;
+	background: rgba(34, 30, 13, 0.94);
+}
+
+.relation-tooltip::before {
+	border-color: rgba(255, 230, 120, 0.7);
+	background: rgba(34, 30, 13, 0.94);
 }
 
 .filter-color {

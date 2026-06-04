@@ -24,27 +24,54 @@ function svgDataUrl(svg) {
 	return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 
-function pinIconSvg(width, height, fillColor, outlineColor) {
+function scaledPinPath(width, height) {
+	const sx = width / 28;
+	const sy = height / 36;
+	const point = (x, y) => `${(x * sx).toFixed(3)} ${(y * sy).toFixed(3)}`;
+
+	return [
+		`M ${point(14, 34)}`,
+		`C ${point(11.4, 30.5)} ${point(3, 20.8)} ${point(3, 12.8)}`,
+		`C ${point(3, 6.3)} ${point(7.9, 2)} ${point(14, 2)}`,
+		`C ${point(20.1, 2)} ${point(25, 6.3)} ${point(25, 12.8)}`,
+		`C ${point(25, 20.8)} ${point(16.6, 30.5)} ${point(14, 34)}`,
+		"Z",
+	].join(" ");
+}
+
+function pinIconSvg(width, height, fillColor, outlineColor, options = {}) {
+	const strokeWidth = options.strokeWidth ?? 2;
+	const centerCircle = options.centerCircle === false
+		? ""
+		: `\n\t<circle cx="${(width / 2).toFixed(3)}" cy="${(height * 12.8 / 36).toFixed(3)}" r="${(height * 5.2 / 36).toFixed(3)}" fill="rgba(10, 12, 18, 0.22)" stroke="rgba(255, 255, 255, 0.55)" stroke-width="${options.centerStrokeWidth ?? 1.4}"/>`;
+
 	return `
-<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 28 36">
-	<path d="M14 34C11.4 30.5 3 20.8 3 12.8C3 6.3 7.9 2 14 2C20.1 2 25 6.3 25 12.8C25 20.8 16.6 30.5 14 34Z" fill="${fillColor}" stroke="${outlineColor}" stroke-width="2" stroke-linejoin="round"/>
-	<circle cx="14" cy="12.8" r="5.2" fill="rgba(10, 12, 18, 0.22)" stroke="rgba(255, 255, 255, 0.55)" stroke-width="1.4"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+	<path d="${scaledPinPath(width, height)}" fill="${fillColor}" stroke="${outlineColor}" stroke-width="${strokeWidth}" stroke-linejoin="round"/>${centerCircle}
 </svg>`;
 }
 
-export function pinIconForCategory(category) {
+export function pinIconForCategory(category, options = {}) {
 	const pinsConfig = APP_CONFIG.runtime.visual.pins;
 	const categoryConfig = pinsConfig.categories[category] ?? {};
 	const color = categoryConfig.color ?? [255, 255, 255, 245];
 	const outlineColor = outlineColorFor(color);
 	const textureScale = pinsConfig.iconTextureScale ?? 1;
-	const textureWidth = pinsConfig.iconWidth * textureScale;
-	const textureHeight = pinsConfig.iconHeight * textureScale;
-	const cacheKey = `${textureWidth}x${textureHeight}:${color.join(",")}`;
+	const iconWidth = options.iconWidth ?? pinsConfig.iconWidth;
+	const iconHeight = options.iconHeight ?? pinsConfig.iconHeight;
+	const textureWidth = iconWidth * textureScale;
+	const textureHeight = iconHeight * textureScale;
+	const strokeWidth = (options.strokeWidth ?? 2) * textureScale;
+	const centerStrokeWidth = (options.centerStrokeWidth ?? 1.4) * textureScale;
+	const cacheKey = `${textureWidth}x${textureHeight}:${color.join(",")}:${options.centerCircle !== false}:${strokeWidth}:${centerStrokeWidth}`;
 
 	if (!iconCache.has(cacheKey)) {
 		iconCache.set(cacheKey, {
-			url: svgDataUrl(pinIconSvg(textureWidth, textureHeight, colorToCss(color), colorToCss(outlineColor))),
+			url: svgDataUrl(pinIconSvg(textureWidth, textureHeight, colorToCss(color), colorToCss(outlineColor), {
+				...options,
+				centerStrokeWidth,
+				strokeWidth,
+			})),
 			width: textureWidth,
 			height: textureHeight,
 			anchorX: textureWidth / 2,
