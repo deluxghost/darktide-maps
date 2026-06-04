@@ -104,11 +104,22 @@ img {
 }
 
 .rotation-control-handle {
+	display: grid;
+	place-items: center;
 	width: var(--rotation-control-handle-size);
 	height: var(--rotation-control-handle-size);
 	border: 1px solid rgba(214, 179, 74, 0.85);
 	border-radius: 50%;
 	background: rgba(214, 179, 74, 0.28);
+}
+
+.rotation-control-handle svg {
+	display: block;
+	width: 22px;
+	height: 22px;
+	color: #f0cf68;
+	stroke-width: 2;
+	pointer-events: none;
 }
 
 .panel {
@@ -215,8 +226,8 @@ button {
 
 .panel-toggle svg {
 	display: block;
-	width: 15px;
-	height: 15px;
+	width: 20px;
+	height: 20px;
 	stroke-width: 2;
 	stroke-linecap: square;
 	stroke-linejoin: miter;

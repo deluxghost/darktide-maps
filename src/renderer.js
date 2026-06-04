@@ -127,6 +127,24 @@ function constrainedViewState(bounds, positions, viewport) {
 export function createMapRenderer(mapElement, onError) {
 	let deckInstance;
 	let currentState;
+	let viewChangeFrame = 0;
+
+	function requestViewChange() {
+		if (viewChangeFrame) {
+			return;
+		}
+
+		viewChangeFrame = requestAnimationFrame(() => {
+			viewChangeFrame = 0;
+			currentState?.onViewChange?.();
+		});
+	}
+
+	function requestViewChangeAfterResize() {
+		requestAnimationFrame(() => {
+			requestViewChange();
+		});
+	}
 
 	function setViewState(viewState) {
 		if (!currentState || !deckInstance) {
@@ -253,6 +271,7 @@ export function createMapRenderer(mapElement, onError) {
 				viewState,
 				layers: createLayers(),
 			});
+			requestViewChange();
 
 			return;
 		}
@@ -285,7 +304,7 @@ export function createMapRenderer(mapElement, onError) {
 					requestAnimationFrame(updateLayers);
 				}
 
-				requestAnimationFrame(() => currentState.onViewChange?.());
+				requestViewChange();
 			},
 			onClick: (info) => {
 				if (info.object?.markerType === "relation_pin") {
@@ -309,6 +328,7 @@ export function createMapRenderer(mapElement, onError) {
 		});
 
 		requestAnimationFrame(updateLayers);
+		requestViewChange();
 	}
 
 	function projectPosition(position) {
@@ -377,8 +397,10 @@ export function createMapRenderer(mapElement, onError) {
 
 		setViewState(nextViewState);
 		requestAnimationFrame(updateLayers);
-		requestAnimationFrame(() => currentState.onViewChange?.());
+		requestViewChange();
 	}
+
+	new ResizeObserver(requestViewChangeAfterResize).observe(mapElement);
 
 	return {
 		render,

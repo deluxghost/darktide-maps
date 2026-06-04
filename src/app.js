@@ -10,7 +10,7 @@ import { createMarkerOverlays } from "./overlays.js";
 import { mapTitle, writeMapOptions } from "./manifest.js";
 import { createRotationControl } from "./joystick.js";
 import { formatLocalTimestampFromUnix } from "./time.js";
-import { createIcons, Menu, X } from "lucide";
+import { createIcons, Menu, Rotate3d, X } from "lucide";
 
 const mapElement = document.querySelector("#map");
 const mapSelect = document.querySelector("#map-select");
@@ -259,7 +259,7 @@ async function initialize() {
 }
 
 export function startApp() {
-	createIcons({ icons: { Menu, X } });
+	createIcons({ icons: { Menu, Rotate3d, X } });
 	applyTranslations();
 	document.title = t("appTitle");
 	setPanelCollapsed(mobileMedia.matches);
