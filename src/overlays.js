@@ -503,10 +503,11 @@ export function createMarkerOverlays({
 		const color = markerColor(marker);
 		const outlineColor = outlineColorFor(color);
 		const arrowPath = relationGeometry(points);
-		const width = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
-		const height = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+		const bounds = relationArrow.getBoundingClientRect();
+		const width = bounds.width;
+		const height = bounds.height;
 
-		if (!arrowPath) {
+		if (!arrowPath || width <= 0 || height <= 0) {
 			setRelationArrowVisibility(false);
 			return false;
 		}
