@@ -12,10 +12,5 @@
 			439.4700012207,
 			0.82527339458466
 		]
-	},
-	"landmarks": {
-		"mainPath": {
-			"file": "./data/maps/tg_shooting_range/main_path.glb"
-		}
 	}
 }

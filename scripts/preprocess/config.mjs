@@ -18,4 +18,29 @@ export const PREPROCESS_CONFIG = {
 		respawnPointMergeVerticalDistance: 2,
 		supplyDistributions: ["primary", "secondary", "mid_event", "end_event"],
 	},
+	omit: {
+		byMission: {
+			km_enforcer_twins: {
+				markerCategories: ["boss_spawn", "daemonhost", "side_mission_spawn"],
+			},
+			psykhanium: {
+				mainPath: true,
+			},
+			tg_shooting_range: {
+				mainPath: true,
+			},
+		},
+	},
 };
+
+export function missionOmitConfig(missionId) {
+	return PREPROCESS_CONFIG.omit.byMission[missionId] ?? {};
+}
+
+export function shouldOmitMainPath(missionId) {
+	return missionOmitConfig(missionId).mainPath === true;
+}
+
+export function shouldOmitMarkerCategory(missionId, category) {
+	return (missionOmitConfig(missionId).markerCategories ?? []).includes(category);
+}

@@ -1,6 +1,6 @@
 {
 	"schemaVersion": 1,
-	"dataUpdatedAtUnix": 1780591014,
+	"dataUpdatedAtUnix": 1780597694,
 	"zones": {
 		"dust": {
 			"en": "The Hourglass",
@@ -390,7 +390,7 @@
 				"pl": "Ofensywa Orthus",
 				"pt-br": "A Ofensiva Orthus"
 			},
-			"resourceBytes": 552485
+			"resourceBytes": 536093
 		},
 		{
 			"id": "km_heresy",
@@ -577,7 +577,7 @@
 				"pl": "Próby Mortis",
 				"pt-br": "Provações Mortis"
 			},
-			"resourceBytes": 483397
+			"resourceBytes": 396491
 		},
 		{
 			"id": "tg_shooting_range",
@@ -597,7 +597,7 @@
 				"pl": "Psikhanium",
 				"pt-br": "Psykhanium"
 			},
-			"resourceBytes": 78387
+			"resourceBytes": 68266
 		}
 	]
 }

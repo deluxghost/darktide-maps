@@ -1,5 +1,5 @@
 import path from "node:path";
-import {PREPROCESS_CONFIG} from "./config.mjs";
+import {PREPROCESS_CONFIG, shouldOmitMarkerCategory} from "./config.mjs";
 import {arrayFromLuaJson, readOptionalFile, sanitizeFileName, stableHash} from "./utils.mjs";
 
 const MARKERS = PREPROCESS_CONFIG.markers;
@@ -254,6 +254,10 @@ export async function buildMarkers(missionId, markerMetadata, directories, optio
 	const sources = new Map();
 
 	for (const family of markerFamilies(directories)) {
+		if (shouldOmitMarkerCategory(missionId, family.category)) {
+			continue;
+		}
+
 		const inputPath = path.join(family.directory, `${sanitizeFileName(missionId)}.json`);
 		let source = sources.get(inputPath);
 

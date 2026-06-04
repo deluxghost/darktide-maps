@@ -3,6 +3,7 @@ import path from "node:path";
 import {createGeometryPartsGlb, createNavmeshGlb} from "./gltf.mjs";
 import {createMainPathMeshes, createMainPathSampler} from "./main_path.mjs";
 import {buildMarkers} from "./markers.mjs";
+import {shouldOmitMainPath} from "./config.mjs";
 import {
 	compactObject,
 	directoryFileBytes,
@@ -31,6 +32,10 @@ function buildMapMetadata(mission, mapMetadata) {
 }
 
 async function buildMainPathAsset(missionId, context) {
+	if (shouldOmitMainPath(missionId)) {
+		return null;
+	}
+
 	const inputPath = path.join(context.directories.mainPath, `${sanitizeFileName(missionId)}.json`);
 	const source = await readOptionalFile(inputPath);
 

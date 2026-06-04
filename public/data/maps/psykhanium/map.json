@@ -13,11 +13,6 @@
 			20.399728775024
 		]
 	},
-	"landmarks": {
-		"mainPath": {
-			"file": "./data/maps/psykhanium/main_path.glb"
-		}
-	},
 	"markers": {
 		"pins": [
 			{
