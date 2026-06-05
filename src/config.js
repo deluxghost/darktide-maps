@@ -81,7 +81,7 @@ export const APP_CONFIG = {
 				arrowsColor: [255, 61, 41, 255],
 				startColor: [86, 255, 131, 255],
 			},
-			relations: {
+			auxiliaryLinks: {
 				arcDistanceRatio: 0.38,
 				arcMaxTiltDegrees: 35,
 				arcWidth: 3,
@@ -89,8 +89,8 @@ export const APP_CONFIG = {
 				arrowPadding: 7,
 				arrowHeadLength: 14,
 				arrowHeadWidth: 10,
-				triggerPinScale: 0.65,
-				triggerPinStrokeWidth: 1.9,
+				auxiliaryPinScale: 0.65,
+				auxiliaryPinStrokeWidth: 1.9,
 				tooltipOffset: [7, 0],
 			},
 			pins: {

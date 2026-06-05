@@ -31,9 +31,12 @@
 					-196.5,
 					-32.999881744385
 				],
-				"relations": [
+				"auxiliaryMarkers": [
 					{
-						"type": "boss_trigger",
+						"id": "boss_spawn_aux_7468053f0996",
+						"name": {
+							"key": "bossTriggerPoint"
+						},
 						"position": [
 							42.16246465390033,
 							-176.74191032671388,
@@ -53,9 +56,12 @@
 					41.275146484375,
 					-19.999727249146
 				],
-				"relations": [
+				"auxiliaryMarkers": [
 					{
-						"type": "boss_trigger",
+						"id": "boss_spawn_aux_1057b7ccb042",
+						"name": {
+							"key": "bossTriggerPoint"
+						},
 						"position": [
 							-153.98832145307594,
 							-5.392187664578602,
@@ -75,9 +81,12 @@
 					-119.5,
 					-33.005821228027
 				],
-				"relations": [
+				"auxiliaryMarkers": [
 					{
-						"type": "boss_trigger",
+						"id": "boss_spawn_aux_45753b1d9633",
+						"name": {
+							"key": "bossTriggerPoint"
+						},
 						"position": [
 							45.76986705962231,
 							-165.7740756727926,
@@ -97,9 +106,12 @@
 					-145.65690612793,
 					-10.999960899353
 				],
-				"relations": [
+				"auxiliaryMarkers": [
 					{
-						"type": "boss_trigger",
+						"id": "boss_spawn_aux_d18a8f909865",
+						"name": {
+							"key": "bossTriggerPoint"
+						},
 						"position": [
 							-251.82685492762954,
 							-168.3147831947933,
@@ -119,9 +131,12 @@
 					-143.57666015625,
 					-24.500350952148
 				],
-				"relations": [
+				"auxiliaryMarkers": [
 					{
-						"type": "boss_trigger",
+						"id": "boss_spawn_aux_7d4585d9b0f8",
+						"name": {
+							"key": "bossTriggerPoint"
+						},
 						"position": [
 							-58.68644949995082,
 							-86.15480836990744,
@@ -141,9 +156,12 @@
 					-62.5,
 					-11.957382202148
 				],
-				"relations": [
+				"auxiliaryMarkers": [
 					{
-						"type": "boss_trigger",
+						"id": "boss_spawn_aux_feb19d102f1b",
+						"name": {
+							"key": "bossTriggerPoint"
+						},
 						"position": [
 							-111.08825697216689,
 							-32.685822989138615,
@@ -163,9 +181,12 @@
 					-75,
 					-8.5299606323242
 				],
-				"relations": [
+				"auxiliaryMarkers": [
 					{
-						"type": "boss_trigger",
+						"id": "boss_spawn_aux_ae9bf7d38132",
+						"name": {
+							"key": "bossTriggerPoint"
+						},
 						"position": [
 							-181.63324257049226,
 							-78.34903190078604,
@@ -185,9 +206,12 @@
 					-38.684276580811,
 					-15.000350952148
 				],
-				"relations": [
+				"auxiliaryMarkers": [
 					{
-						"type": "boss_trigger",
+						"id": "boss_spawn_aux_bf1a35fb1ae0",
+						"name": {
+							"key": "bossTriggerPoint"
+						},
 						"position": [
 							-178.00389975492914,
 							-57.091479608428685,
@@ -207,9 +231,12 @@
 					-101.99997711182,
 					-12.991897583008
 				],
-				"relations": [
+				"auxiliaryMarkers": [
 					{
-						"type": "boss_trigger",
+						"id": "boss_spawn_aux_027117d9d648",
+						"name": {
+							"key": "bossTriggerPoint"
+						},
 						"position": [
 							-255.2953063517456,
 							-132.95651365219769,
@@ -229,9 +256,12 @@
 					-189,
 					-28.5
 				],
-				"relations": [
+				"auxiliaryMarkers": [
 					{
-						"type": "boss_trigger",
+						"id": "boss_spawn_aux_06c689245606",
+						"name": {
+							"key": "bossTriggerPoint"
+						},
 						"position": [
 							17.67199220646939,
 							-171.23523436499184,
@@ -251,9 +281,12 @@
 					-23.707107543945,
 					-19.944063186646
 				],
-				"relations": [
+				"auxiliaryMarkers": [
 					{
-						"type": "boss_trigger",
+						"id": "boss_spawn_aux_6ca15ff3d49d",
+						"name": {
+							"key": "bossTriggerPoint"
+						},
 						"position": [
 							-173.59351601015823,
 							-26.883837928018405,
@@ -799,14 +832,20 @@
 				"name": {
 					"key": "markerHavocBossSpawn"
 				},
+				"description": {
+					"key": "markerHavocBossSpawnDescription"
+				},
 				"position": [
 					-223,
 					-362,
 					1.499960899353
 				],
-				"relations": [
+				"auxiliaryMarkers": [
 					{
-						"type": "boss_trigger",
+						"id": "havoc_boss_spawn_aux_38f3fb44dffa",
+						"name": {
+							"key": "bossTriggerPoint"
+						},
 						"position": [
 							-220.03087440070652,
 							-315.66206734498195,
@@ -821,14 +860,20 @@
 				"name": {
 					"key": "markerHavocBossSpawn"
 				},
+				"description": {
+					"key": "markerHavocBossSpawnDescription"
+				},
 				"position": [
 					-214,
 					-63,
 					-11.000702857971
 				],
-				"relations": [
+				"auxiliaryMarkers": [
 					{
-						"type": "boss_trigger",
+						"id": "havoc_boss_spawn_aux_4c54ffaebc6b",
+						"name": {
+							"key": "bossTriggerPoint"
+						},
 						"position": [
 							-205.22964545712432,
 							-110.08170123356241,
@@ -843,14 +888,20 @@
 				"name": {
 					"key": "markerHavocBossSpawn"
 				},
+				"description": {
+					"key": "markerHavocBossSpawnDescription"
+				},
 				"position": [
 					-27,
 					-72,
 					-21.499687194824
 				],
-				"relations": [
+				"auxiliaryMarkers": [
 					{
-						"type": "boss_trigger",
+						"id": "havoc_boss_spawn_aux_315881630e57",
+						"name": {
+							"key": "bossTriggerPoint"
+						},
 						"position": [
 							-74.55230453697732,
 							-51.182226556307015,
@@ -865,14 +916,20 @@
 				"name": {
 					"key": "markerHavocBossSpawn"
 				},
+				"description": {
+					"key": "markerHavocBossSpawnDescription"
+				},
 				"position": [
 					-156,
 					-72,
 					-13.457344055176
 				],
-				"relations": [
+				"auxiliaryMarkers": [
 					{
-						"type": "boss_trigger",
+						"id": "havoc_boss_spawn_aux_30aa03954e58",
+						"name": {
+							"key": "bossTriggerPoint"
+						},
 						"position": [
 							-198.3255104350616,
 							-110.51161290483837,
@@ -887,14 +944,20 @@
 				"name": {
 					"key": "markerHavocBossSpawn"
 				},
+				"description": {
+					"key": "markerHavocBossSpawnDescription"
+				},
 				"position": [
 					54,
 					-152,
 					-32.989490509033
 				],
-				"relations": [
+				"auxiliaryMarkers": [
 					{
-						"type": "boss_trigger",
+						"id": "havoc_boss_spawn_aux_3d022046a86d",
+						"name": {
+							"key": "bossTriggerPoint"
+						},
 						"position": [
 							19.650490260887302,
 							-174.6201183428624,
@@ -909,14 +972,20 @@
 				"name": {
 					"key": "markerHavocBossSpawn"
 				},
+				"description": {
+					"key": "markerHavocBossSpawnDescription"
+				},
 				"position": [
 					-261,
 					-105,
 					-13.077332496643
 				],
-				"relations": [
+				"auxiliaryMarkers": [
 					{
-						"type": "boss_trigger",
+						"id": "havoc_boss_spawn_aux_2ba5d606a227",
+						"name": {
+							"key": "bossTriggerPoint"
+						},
 						"position": [
 							-251.72423590656777,
 							-168.44005104170174,
@@ -931,14 +1000,20 @@
 				"name": {
 					"key": "markerHavocBossSpawn"
 				},
+				"description": {
+					"key": "markerHavocBossSpawnDescription"
+				},
 				"position": [
 					-205,
 					-320,
 					-18.000272750854
 				],
-				"relations": [
+				"auxiliaryMarkers": [
 					{
-						"type": "boss_trigger",
+						"id": "havoc_boss_spawn_aux_5f55ef678833",
+						"name": {
+							"key": "bossTriggerPoint"
+						},
 						"position": [
 							-202.2349138977646,
 							-368.8081272379871,
@@ -953,14 +1028,20 @@
 				"name": {
 					"key": "markerHavocBossSpawn"
 				},
+				"description": {
+					"key": "markerHavocBossSpawnDescription"
+				},
 				"position": [
 					-55,
 					-61,
 					-11.987812042236
 				],
-				"relations": [
+				"auxiliaryMarkers": [
 					{
-						"type": "boss_trigger",
+						"id": "havoc_boss_spawn_aux_8b083d3d3190",
+						"name": {
+							"key": "bossTriggerPoint"
+						},
 						"position": [
 							-106.38142850059059,
 							-37.5128692252199,
@@ -975,14 +1056,20 @@
 				"name": {
 					"key": "markerHavocBossSpawn"
 				},
+				"description": {
+					"key": "markerHavocBossSpawnDescription"
+				},
 				"position": [
 					-240,
 					-232,
 					-19.473937988281
 				],
-				"relations": [
+				"auxiliaryMarkers": [
 					{
-						"type": "boss_trigger",
+						"id": "havoc_boss_spawn_aux_4ef74da8b9b7",
+						"name": {
+							"key": "bossTriggerPoint"
+						},
 						"position": [
 							-233.09759774860046,
 							-283.82760779484846,
@@ -997,14 +1084,20 @@
 				"name": {
 					"key": "markerHavocBossSpawn"
 				},
+				"description": {
+					"key": "markerHavocBossSpawnDescription"
+				},
 				"position": [
 					-196,
 					-196,
 					-19.470012664795
 				],
-				"relations": [
+				"auxiliaryMarkers": [
 					{
-						"type": "boss_trigger",
+						"id": "havoc_boss_spawn_aux_159cbdec1e13",
+						"name": {
+							"key": "bossTriggerPoint"
+						},
 						"position": [
 							-224.5098831015439,
 							-259.49316831784586,
@@ -1019,14 +1112,20 @@
 				"name": {
 					"key": "markerHavocBossSpawn"
 				},
+				"description": {
+					"key": "markerHavocBossSpawnDescription"
+				},
 				"position": [
 					-121,
 					7,
 					-19.999727249146
 				],
-				"relations": [
+				"auxiliaryMarkers": [
 					{
-						"type": "boss_trigger",
+						"id": "havoc_boss_spawn_aux_3cfad25f107e",
+						"name": {
+							"key": "bossTriggerPoint"
+						},
 						"position": [
 							-166.6441542087822,
 							-18.557327245267054,
@@ -1041,14 +1140,20 @@
 				"name": {
 					"key": "markerHavocBossSpawn"
 				},
+				"description": {
+					"key": "markerHavocBossSpawnDescription"
+				},
 				"position": [
 					-67,
 					-134,
 					-24.500350952148
 				],
-				"relations": [
+				"auxiliaryMarkers": [
 					{
-						"type": "boss_trigger",
+						"id": "havoc_boss_spawn_aux_0e82f5f4b3ea",
+						"name": {
+							"key": "bossTriggerPoint"
+						},
 						"position": [
 							-55.37550864417666,
 							-80.4059560709424,

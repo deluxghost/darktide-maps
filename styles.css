@@ -3,7 +3,7 @@
 	background: #111512;
 	font-family: Arial, sans-serif;
 	--z-map-ui: 2;
-	--z-relation-overlay: 3;
+	--z-auxiliary-overlay: 3;
 	--z-marker-tooltip: 4;
 	--z-marker-popup: 5;
 	--z-hud: 6;
@@ -297,7 +297,7 @@ option {
 .marker-popup,
 .marker-tooltip,
 .data-updated,
-.error-banner {
+.notifications {
 	position: fixed;
 	z-index: var(--z-map-ui);
 }
@@ -324,33 +324,66 @@ option {
 	font-size: 13px;
 }
 
-.error-banner {
+.notifications {
 	top: 16px;
 	left: 50%;
 	display: flex;
+	flex-direction: column;
 	align-items: center;
+	gap: 8px;
+	pointer-events: none;
+	transform: translateX(-50%);
+}
+
+.notification {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
 	gap: 12px;
 	max-width: min(620px, calc(100vw - 32px));
 	padding: 10px 12px;
+	font-size: 13px;
+	line-height: 1.35;
+	pointer-events: auto;
+}
+
+.notification span {
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow-wrap: anywhere;
+}
+
+.notification-info {
+	border: 1px solid rgba(114, 164, 242, 0.65);
+	color: #d7e5ff;
+	background: rgba(17, 31, 57, 0.94);
+}
+
+.notification-warning {
+	border: 1px solid rgba(214, 179, 74, 0.72);
+	color: #f3ead0;
+	background: rgba(50, 39, 13, 0.94);
+}
+
+.notification-error {
 	border: 1px solid rgba(232, 144, 130, 0.65);
 	color: #f2cac3;
 	background: rgba(63, 25, 21, 0.94);
-	transform: translateX(-50%);
-	font-size: 13px;
 }
 
-.error-dismiss {
+.notification-close {
 	display: grid;
+	flex: 0 0 auto;
 	place-items: center;
 	width: 24px;
 	height: 24px;
 	padding: 0;
 	border: 0;
-	color: #f2cac3;
+	color: currentColor;
 	background: transparent;
 }
 
-.error-dismiss svg,
+.notification-close svg,
 .marker-popup-close svg {
 	display: block;
 	width: 14px;
@@ -394,6 +427,10 @@ option {
 .marker-popup strong {
 	font-size: 16px;
 	line-height: 1.2;
+}
+
+.dev-tools .marker-popup strong {
+	cursor: pointer;
 }
 
 .marker-popup small {
@@ -458,10 +495,10 @@ option {
 	transform: translateY(-50%) rotate(225deg);
 }
 
-.relation-arrow {
+.auxiliary-arrow {
 	position: fixed;
 	inset: 0;
-	z-index: var(--z-relation-overlay);
+	z-index: var(--z-auxiliary-overlay);
 	display: block;
 	visibility: hidden;
 	width: 100%;
@@ -470,30 +507,19 @@ option {
 	pointer-events: none;
 }
 
-.relation-arrow path {
+.auxiliary-arrow path {
 	fill: none;
 	stroke-linecap: round;
 	stroke-linejoin: round;
 	vector-effect: non-scaling-stroke;
 }
 
-.relation-arrow-outline {
+.auxiliary-arrow-outline {
 	opacity: 0.95;
 }
 
-.relation-arrow-line {
+.auxiliary-arrow-line {
 	opacity: 0.98;
-}
-
-.relation-tooltip {
-	border-color: rgba(255, 230, 120, 0.7);
-	color: #fff0a8;
-	background: rgba(34, 30, 13, 0.94);
-}
-
-.relation-tooltip::before {
-	border-color: rgba(255, 230, 120, 0.7);
-	background: rgba(34, 30, 13, 0.94);
 }
 
 .filter-color {
@@ -610,9 +636,8 @@ option {
 		margin-left: 12px;
 	}
 
-	.error-banner {
+	.notifications {
 		top: 8px;
-		max-width: calc(100vw - 16px);
 	}
 
 	.data-updated {

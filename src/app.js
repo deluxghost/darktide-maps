@@ -10,14 +10,13 @@ import { createMarkerOverlays } from "./overlays.js";
 import { mapTitle, writeMapOptions } from "./manifest.js";
 import { createRotationControl } from "./joystick.js";
 import { formatLocalTimestampFromUnix } from "./time.js";
-import { createIcons, Menu, Rotate3d, X } from "lucide";
+import { createNotifications } from "./notifications.js";
+import { createElement as createLucideElement, createIcons, Menu, Rotate3d, X } from "lucide";
 
 const mapElement = document.querySelector("#map");
 const mapSelect = document.querySelector("#map-select");
 const loadingOverlay = document.querySelector("#loading-overlay");
-const errorBanner = document.querySelector("#error-banner");
-const errorMessageElement = document.querySelector("#error-message");
-const errorDismiss = document.querySelector("#error-dismiss");
+const notificationsElement = document.querySelector("#notifications");
 const panel = document.querySelector(".panel");
 const panelToggle = document.querySelector("#panel-toggle");
 const helpElement = document.querySelector("#help");
@@ -28,10 +27,9 @@ const markerPopupType = document.querySelector("#marker-popup-type");
 const markerPopupDescription = document.querySelector("#marker-popup-description");
 const markerPopupClose = document.querySelector("#marker-popup-close");
 const markerTooltip = document.querySelector("#marker-tooltip");
-const relationArrow = document.querySelector("#relation-arrow");
-const relationArrowArc = document.querySelector("#relation-arrow-arc");
-const relationArrowArcOutline = document.querySelector("#relation-arrow-arc-outline");
-const relationTooltip = document.querySelector("#relation-tooltip");
+const auxiliaryArrow = document.querySelector("#auxiliary-arrow");
+const auxiliaryArrowArc = document.querySelector("#auxiliary-arrow-arc");
+const auxiliaryArrowArcOutline = document.querySelector("#auxiliary-arrow-arc-outline");
 const dataUpdatedElement = document.querySelector("#data-updated");
 const rotationControl = document.querySelector("#rotation-control");
 const rotationControlHandle = document.querySelector("#rotation-control-handle");
@@ -40,6 +38,11 @@ const touchPrimaryMedia = window.matchMedia("(hover: none) and (pointer: coarse)
 
 let loadController;
 let touchInputEnabled = shouldStartInTouchMode();
+const notifications = createNotifications({
+	container: notificationsElement,
+	createIcon: () => createLucideElement(X, {"aria-hidden": "true"}),
+	dismissLabel: () => t("dismiss"),
+});
 
 function formatBytes(bytes) {
 	if (bytes < 1024) {
@@ -59,9 +62,37 @@ function clearLoading() {
 }
 
 function showError(error) {
-	errorMessageElement.textContent = error.message;
-	errorBanner.hidden = false;
-	console.error(error);
+	notifications.error(error);
+}
+
+function showInfo(message) {
+	notifications.info(message);
+}
+
+function showWarning(message) {
+	notifications.warning(message);
+}
+
+async function copyMarkerId(markerId) {
+	await navigator.clipboard.writeText(markerId);
+	showInfo(`Copied ID: ${markerId}`);
+}
+
+function formatCoordinate(position) {
+	return `[${position.map((value) => Number(value.toFixed(3))).join(", ")}]`;
+}
+
+function copyMapCoordinate(position) {
+	if (!position) {
+		showWarning("No navmesh position picked.");
+		return;
+	}
+
+	const text = formatCoordinate(position);
+
+	navigator.clipboard.writeText(text)
+		.then(() => showInfo(`Copied coordinate: ${text}`))
+		.catch(showError);
 }
 
 function setPanelCollapsed(collapsed) {
@@ -128,13 +159,14 @@ const markerOverlays = createMarkerOverlays({
 	markerPopupType,
 	markerPopupDescription,
 	markerTooltip,
-	relationArrow,
-	relationArrowArc,
-	relationArrowArcOutline,
-	relationTooltip,
+	auxiliaryArrow,
+	auxiliaryArrowArc,
+	auxiliaryArrowArcOutline,
 	mapRenderer,
 	categoryTitle,
 	markerName,
+	onCopyMarkerId: import.meta.env.DEV ? copyMarkerId : null,
+	onCopyMarkerIdError: showError,
 });
 const filters = createFilterController({
 	filterList,
@@ -193,7 +225,6 @@ async function loadMap(mapEntry) {
 	}
 
 	loadController = new AbortController();
-	errorBanner.hidden = true;
 	markerOverlays.hidePopup();
 	markerOverlays.hideTooltip();
 	setLoading(t("loadingMap", {
@@ -222,6 +253,7 @@ async function loadMap(mapEntry) {
 				visiblePinCategories: filters.visiblePinCategorySet(map),
 				onMarkerClick: markerOverlays.showPopup,
 				onMarkerHover: markerOverlays.showTooltip,
+				onMapCoordinatePick: import.meta.env.DEV ? copyMapCoordinate : null,
 				onViewChange: markerOverlays.update,
 			},
 		);
@@ -262,6 +294,7 @@ export function startApp() {
 	createIcons({ icons: { Menu, Rotate3d, X } });
 	applyTranslations();
 	document.title = t("appTitle");
+	document.documentElement.classList.toggle("dev-tools", import.meta.env.DEV);
 	setPanelCollapsed(mobileMedia.matches);
 	writeInputMode();
 	filters.initialize();
@@ -276,9 +309,6 @@ export function startApp() {
 	});
 	panelToggle.addEventListener("click", () => {
 		setPanelCollapsed(!panel.classList.contains("collapsed"));
-	});
-	errorDismiss.addEventListener("click", () => {
-		errorBanner.hidden = true;
 	});
 	markerPopupClose.addEventListener("click", markerOverlays.hidePopup);
 

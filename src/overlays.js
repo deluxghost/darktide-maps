@@ -12,19 +12,25 @@ export function createMarkerOverlays({
 	markerPopupType,
 	markerPopupDescription,
 	markerTooltip,
-	relationArrow,
-	relationArrowArc,
-	relationArrowArcOutline,
-	relationTooltip,
+	auxiliaryArrow,
+	auxiliaryArrowArc,
+	auxiliaryArrowArcOutline,
 	mapRenderer,
 	categoryTitle,
 	markerName,
+	onCopyMarkerId,
+	onCopyMarkerIdError,
 }) {
 	let activeMarker = null;
 	let activeTooltipMarker = null;
+	let auxiliaryTooltipElements = [];
 
-	function bossTriggerRelation(marker) {
-		return marker?.relations?.find((relation) => relation.type === "boss_trigger" && relation.position);
+	function auxiliaryMarkers(marker) {
+		return marker?.auxiliaryMarkers ?? [];
+	}
+
+	function isAuxiliaryMarker(marker) {
+		return marker?.markerType === "auxiliary_pin" && marker.parentMarker;
 	}
 
 	function colorToCss(color) {
@@ -49,16 +55,16 @@ export function createMarkerOverlays({
 		return APP_CONFIG.runtime.visual.pins.categories[marker.category]?.color ?? [255, 255, 255, 245];
 	}
 
-	function relationPoints(marker, relation) {
+	function auxiliaryPoints(marker, auxiliary) {
 		const start = mapRenderer.projectPosition(marker.position);
-		const end = mapRenderer.projectPosition(relation.position);
+		const end = mapRenderer.projectPosition(auxiliary.position);
 
 		if (!start || !end) {
 			return null;
 		}
 
 		const pinHeight = APP_CONFIG.runtime.visual.pins.iconHeight;
-		const relationPinHeight = pinHeight * APP_CONFIG.runtime.visual.relations.triggerPinScale;
+		const auxiliaryPinHeight = pinHeight * APP_CONFIG.runtime.visual.auxiliaryLinks.auxiliaryPinScale;
 
 		return {
 			start: {
@@ -67,7 +73,7 @@ export function createMarkerOverlays({
 			},
 			end: {
 				x: end.x,
-				y: end.y - relationPinHeight * PIN_BELLY_CENTER_FROM_TIP,
+				y: end.y - auxiliaryPinHeight * PIN_BELLY_CENTER_FROM_TIP,
 			},
 		};
 	}
@@ -121,7 +127,7 @@ export function createMarkerOverlays({
 		return Math.min(Math.max(value, min), max);
 	}
 
-	function relationControl(start, end) {
+	function auxiliaryArrowControl(start, end) {
 		const direction = normalize({
 			x: end.x - start.x,
 			y: end.y - start.y,
@@ -138,7 +144,7 @@ export function createMarkerOverlays({
 			x: (start.x + end.x) / 2,
 			y: (start.y + end.y) / 2,
 		};
-		const relations = APP_CONFIG.runtime.visual.relations;
+		const links = APP_CONFIG.runtime.visual.auxiliaryLinks;
 		const distance = Math.hypot(end.x - start.x, end.y - start.y);
 		const horizontalness = Math.abs(direction.x);
 		const firstNormal = {x: -direction.y, y: direction.x};
@@ -152,8 +158,8 @@ export function createMarkerOverlays({
 			return midpoint;
 		}
 
-		const curve = distance * relations.arcDistanceRatio * horizontalness;
-		const maxTilt = relations.arcMaxTiltDegrees * Math.PI / 180;
+		const curve = distance * links.arcDistanceRatio * horizontalness;
+		const maxTilt = links.arcMaxTiltDegrees * Math.PI / 180;
 		const upwardAngle = -Math.PI / 2;
 		const normalAngle = angleOf(upperNormal);
 		const controlAngle = normalAngle + clamp(
@@ -215,7 +221,7 @@ export function createMarkerOverlays({
 	}
 
 	function arrowShapePath(centerline, tangent) {
-		const relations = APP_CONFIG.runtime.visual.relations;
+		const links = APP_CONFIG.runtime.visual.auxiliaryLinks;
 		const tip = centerline[centerline.length - 1];
 		const totalLength = centerline[centerline.length - 1]?.length ?? 0;
 
@@ -223,14 +229,14 @@ export function createMarkerOverlays({
 			return "";
 		}
 
-		const baseDistance = totalLength - relations.arrowHeadLength;
+		const baseDistance = totalLength - links.arrowHeadLength;
 
-		if (baseDistance <= relations.arcWidth * 2) {
+		if (baseDistance <= links.arcWidth * 2) {
 			return "";
 		}
 
 		const base = pointOnCenterline(centerline, baseDistance);
-		const shaftHalfWidth = relations.arcWidth / 2;
+		const shaftHalfWidth = links.arcWidth / 2;
 		const left = [];
 		const right = [];
 		const shaft = centerline
@@ -261,8 +267,8 @@ export function createMarkerOverlays({
 		}
 
 		const headNormal = {x: -tangent.y, y: tangent.x};
-		const headLeft = offsetPoint(base, headNormal, relations.arrowHeadWidth / 2);
-		const headRight = offsetPoint(base, {x: -headNormal.x, y: -headNormal.y}, relations.arrowHeadWidth / 2);
+		const headLeft = offsetPoint(base, headNormal, links.arrowHeadWidth / 2);
+		const headRight = offsetPoint(base, {x: -headNormal.x, y: -headNormal.y}, links.arrowHeadWidth / 2);
 		const points = [
 			...left,
 			headLeft,
@@ -307,17 +313,17 @@ export function createMarkerOverlays({
 
 	function pinGapForDirection(direction, scale) {
 		const pins = APP_CONFIG.runtime.visual.pins;
-		const relations = APP_CONFIG.runtime.visual.relations;
+		const links = APP_CONFIG.runtime.visual.auxiliaryLinks;
 		const horizontalRadius = pins.iconWidth * scale * 0.5;
 		const bottomRadius = pins.iconHeight * scale * 0.64;
 		const bottomFactor = Math.max(0, direction.y) ** 2;
 
-		return mix(horizontalRadius, bottomRadius, bottomFactor) + relations.arrowPadding;
+		return mix(horizontalRadius, bottomRadius, bottomFactor) + links.arrowPadding;
 	}
 
-	function relationGeometry(points) {
-		const relations = APP_CONFIG.runtime.visual.relations;
-		const baseControl = relationControl(points.start, points.end);
+	function auxiliaryArrowGeometry(points) {
+		const links = APP_CONFIG.runtime.visual.auxiliaryLinks;
+		const baseControl = auxiliaryArrowControl(points.start, points.end);
 		const startTangent = curveTangentAtStart(points.start, baseControl);
 		const endTangent = curveTangentAtEnd(points.end, baseControl);
 
@@ -327,12 +333,12 @@ export function createMarkerOverlays({
 
 		const startGap = pinGapForDirection(startTangent, 1);
 		const endDirection = {x: -endTangent.x, y: -endTangent.y};
-		const endGap = pinGapForDirection(endDirection, relations.triggerPinScale);
+		const endGap = pinGapForDirection(endDirection, links.auxiliaryPinScale);
 		const start = offsetPoint(points.start, startTangent, startGap);
 		const end = offsetPoint(points.end, endDirection, endGap);
-		const control = relationControl(start, end);
+		const control = auxiliaryArrowControl(start, end);
 		const curve = sampleCurve(start, control, end, 36);
-		const minimumLength = relations.arrowHeadLength + relations.arcWidth * 2;
+		const minimumLength = links.arrowHeadLength + links.arcWidth * 2;
 
 		if (curve.length < minimumLength) {
 			return null;
@@ -341,24 +347,39 @@ export function createMarkerOverlays({
 		return arrowShapePath(curve.points, curveTangentAtEnd(end, control));
 	}
 
-	function setRelationArrowVisibility(visible) {
-		relationArrow.style.visibility = visible ? "visible" : "hidden";
+	function setAuxiliaryArrowVisibility(visible) {
+		auxiliaryArrow.style.visibility = visible ? "visible" : "hidden";
 	}
 
-	function relationSides(marker) {
-		const relation = bossTriggerRelation(marker);
-		const points = relation ? relationPoints(marker, relation) : null;
+	function auxiliarySide(marker) {
+		if (isAuxiliaryMarker(marker)) {
+			const points = auxiliaryPoints(marker.parentMarker, marker);
 
-		if (!points) {
-			return null;
+			if (!points) {
+				return null;
+			}
+
+			return points.end.x >= points.start.x ? "right" : "left";
 		}
 
-		const relationOnRight = points.end.x >= points.start.x;
+		let leftCount = 0;
+		let rightCount = 0;
 
-		return {
-			marker: relationOnRight ? "left" : "right",
-			relation: relationOnRight ? "right" : "left",
-		};
+		for (const auxiliary of auxiliaryMarkers(marker)) {
+			const points = auxiliaryPoints(marker, auxiliary);
+
+			if (!points) {
+				continue;
+			}
+
+			if (points.end.x >= points.start.x) {
+				rightCount++;
+			} else {
+				leftCount++;
+			}
+		}
+
+		return rightCount > leftCount ? "left" : "right";
 	}
 
 	function setTooltipSide(element, side) {
@@ -380,38 +401,104 @@ export function createMarkerOverlays({
 		element.style.top = `${anchor.y}px`;
 	}
 
-	function activeRelationMarker() {
-		const marker = activeMarker ?? activeTooltipMarker;
+	function ensureAuxiliaryTooltipCount(count) {
+		const parent = markerTooltip.parentElement;
 
-		return bossTriggerRelation(marker) ? marker : null;
+		while (auxiliaryTooltipElements.length < count) {
+			const element = document.createElement("div");
+
+			element.className = "marker-tooltip auxiliary-tooltip";
+			element.hidden = true;
+			parent.append(element);
+			auxiliaryTooltipElements.push(element);
+		}
+
+		while (auxiliaryTooltipElements.length > count) {
+			auxiliaryTooltipElements.pop().remove();
+		}
 	}
 
-	function updateRelationMarker() {
-		const marker = activeRelationMarker();
+	function hideAuxiliaryTooltips() {
+		for (const element of auxiliaryTooltipElements) {
+			element.hidden = true;
+		}
+	}
+
+	function activeAuxiliaryOwner() {
+		const marker = isAuxiliaryMarker(activeTooltipMarker)
+			? activeTooltipMarker.parentMarker
+			: activeTooltipMarker;
+		const owner = activeMarker ?? marker;
+
+		return auxiliaryMarkers(owner).length > 0 ? owner : null;
+	}
+
+	function updateAuxiliaryTooltips() {
+		const marker = activeAuxiliaryOwner();
 
 		if (!marker) {
-			setRelationArrowVisibility(false);
-			relationTooltip.hidden = true;
-			mapRenderer.setRelationMarker(null);
+			hideAuxiliaryTooltips();
 			return;
 		}
 
-		relationTooltip.hidden = false;
-		mapRenderer.setRelationMarker(marker);
-		updateRelationArrow();
-		updateRelationTooltipPosition();
+		const auxiliaries = auxiliaryMarkers(marker);
+		const [offsetX, offsetY] = APP_CONFIG.runtime.visual.auxiliaryLinks.tooltipOffset;
+		const pinHeight = APP_CONFIG.runtime.visual.pins.iconHeight * APP_CONFIG.runtime.visual.auxiliaryLinks.auxiliaryPinScale;
+		const pinWidth = APP_CONFIG.runtime.visual.pins.iconWidth * APP_CONFIG.runtime.visual.auxiliaryLinks.auxiliaryPinScale;
+
+		ensureAuxiliaryTooltipCount(auxiliaries.length);
+
+		for (let index = 0; index < auxiliaries.length; index++) {
+			const auxiliary = auxiliaries[index];
+			const element = auxiliaryTooltipElements[index];
+			const point = mapRenderer.projectPosition(auxiliary.position);
+
+			if (!point) {
+				element.hidden = true;
+				continue;
+			}
+
+			const side = auxiliarySide({
+				...auxiliary,
+				markerType: "auxiliary_pin",
+				parentMarker: marker,
+			}) ?? "right";
+			const anchor = {
+				x: point.x,
+				y: point.y - pinHeight * PIN_BELLY_CENTER_FROM_TIP + offsetY,
+			};
+
+			element.textContent = markerName(auxiliary);
+			element.hidden = false;
+			placeTooltip(element, anchor, side, pinWidth / 2 + offsetX);
+		}
+	}
+
+	function updateAuxiliaryMarkers() {
+		const marker = activeAuxiliaryOwner();
+
+		if (!marker) {
+			setAuxiliaryArrowVisibility(false);
+			hideAuxiliaryTooltips();
+			mapRenderer.setAuxiliaryMarkerOwner(null);
+			return;
+		}
+
+		mapRenderer.setAuxiliaryMarkerOwner(marker);
+		updateAuxiliaryArrow();
+		updateAuxiliaryTooltips();
 	}
 
 	function hidePopup() {
 		activeMarker = null;
 		markerPopup.hidden = true;
-		updateRelationMarker();
+		updateAuxiliaryMarkers();
 	}
 
 	function hideTooltip() {
 		activeTooltipMarker = null;
 		markerTooltip.hidden = true;
-		updateRelationMarker();
+		updateAuxiliaryMarkers();
 	}
 
 	function updatePopupPosition() {
@@ -441,15 +528,18 @@ export function createMarkerOverlays({
 		}
 
 		const [offsetX, offsetY] = APP_CONFIG.runtime.visual.pins.tooltipOffset;
-		const sides = relationSides(activeTooltipMarker);
+		const side = auxiliarySide(activeTooltipMarker);
 
-		if (sides) {
+		if (side) {
+			const iconHeight = isAuxiliaryMarker(activeTooltipMarker)
+				? APP_CONFIG.runtime.visual.pins.iconHeight * APP_CONFIG.runtime.visual.auxiliaryLinks.auxiliaryPinScale
+				: APP_CONFIG.runtime.visual.pins.iconHeight;
 			const anchor = {
 				x: point.x,
-				y: point.y - APP_CONFIG.runtime.visual.pins.iconHeight * PIN_BELLY_CENTER_FROM_TIP,
+				y: point.y - iconHeight * PIN_BELLY_CENTER_FROM_TIP,
 			};
 
-			placeTooltip(markerTooltip, anchor, sides.marker, offsetX);
+			placeTooltip(markerTooltip, anchor, side, offsetX);
 			return;
 		}
 
@@ -458,74 +548,47 @@ export function createMarkerOverlays({
 		markerTooltip.style.top = `${point.y + offsetY}px`;
 	}
 
-	function updateRelationTooltipPosition() {
-		const relation = bossTriggerRelation(activeRelationMarker());
+	function updateAuxiliaryArrow() {
+		const marker = activeAuxiliaryOwner();
 
-		if (!relation || relationTooltip.hidden) {
-			return;
-		}
-
-		const point = mapRenderer.projectPosition(relation.position);
-
-		if (!point) {
-			return;
-		}
-
-		const [offsetX, offsetY] = APP_CONFIG.runtime.visual.relations.tooltipOffset;
-		const pinHeight = APP_CONFIG.runtime.visual.pins.iconHeight * APP_CONFIG.runtime.visual.relations.triggerPinScale;
-		const pinWidth = APP_CONFIG.runtime.visual.pins.iconWidth * APP_CONFIG.runtime.visual.relations.triggerPinScale;
-		const marker = activeRelationMarker();
-		const sides = relationSides(marker);
-		const anchor = {
-			x: point.x,
-			y: point.y - pinHeight * PIN_BELLY_CENTER_FROM_TIP + offsetY,
-		};
-
-		placeTooltip(relationTooltip, anchor, sides?.relation ?? "right", pinWidth / 2 + offsetX);
-	}
-
-	function updateRelationArrow() {
-		const marker = activeRelationMarker();
-		const relation = bossTriggerRelation(marker);
-
-		if (!relation) {
-			setRelationArrowVisibility(false);
-			return false;
-		}
-
-		const points = relationPoints(marker, relation);
-
-		if (!points) {
-			setRelationArrowVisibility(false);
+		if (!marker) {
+			setAuxiliaryArrowVisibility(false);
 			return false;
 		}
 
 		const color = markerColor(marker);
 		const outlineColor = outlineColorFor(color);
-		const arrowPath = relationGeometry(points);
-		const bounds = relationArrow.getBoundingClientRect();
+		const arrowPath = auxiliaryMarkers(marker)
+			.map((auxiliary) => {
+				const points = auxiliaryPoints(marker, auxiliary);
+
+				return points ? auxiliaryArrowGeometry(points) : null;
+			})
+			.filter(Boolean)
+			.join(" ");
+		const bounds = auxiliaryArrow.getBoundingClientRect();
 		const width = bounds.width;
 		const height = bounds.height;
 
 		if (!arrowPath || width <= 0 || height <= 0) {
-			setRelationArrowVisibility(false);
+			setAuxiliaryArrowVisibility(false);
 			return false;
 		}
 
-		relationArrow.setAttribute("viewBox", `0 0 ${width} ${height}`);
-		relationArrow.setAttribute("width", width);
-		relationArrow.setAttribute("height", height);
+		auxiliaryArrow.setAttribute("viewBox", `0 0 ${width} ${height}`);
+		auxiliaryArrow.setAttribute("width", width);
+		auxiliaryArrow.setAttribute("height", height);
 
-		relationArrowArc.setAttribute("stroke", colorToCss(color));
-		relationArrowArc.setAttribute("stroke-width", 0);
-		relationArrowArc.style.fill = colorToCss(color);
-		relationArrowArcOutline.setAttribute("stroke", colorToCss(outlineColor));
-		relationArrowArcOutline.setAttribute("stroke-width", APP_CONFIG.runtime.visual.relations.arcOutlineWidth);
-		relationArrowArcOutline.style.fill = colorToCss(color);
+		auxiliaryArrowArc.setAttribute("stroke", colorToCss(color));
+		auxiliaryArrowArc.setAttribute("stroke-width", 0);
+		auxiliaryArrowArc.style.fill = colorToCss(color);
+		auxiliaryArrowArcOutline.setAttribute("stroke", colorToCss(outlineColor));
+		auxiliaryArrowArcOutline.setAttribute("stroke-width", APP_CONFIG.runtime.visual.auxiliaryLinks.arcOutlineWidth);
+		auxiliaryArrowArcOutline.style.fill = colorToCss(color);
 
-		relationArrowArc.setAttribute("d", arrowPath);
-		relationArrowArcOutline.setAttribute("d", arrowPath);
-		setRelationArrowVisibility(true);
+		auxiliaryArrowArc.setAttribute("d", arrowPath);
+		auxiliaryArrowArcOutline.setAttribute("d", arrowPath);
+		setAuxiliaryArrowVisibility(true);
 
 		return true;
 	}
@@ -533,8 +596,8 @@ export function createMarkerOverlays({
 	function update() {
 		updatePopupPosition();
 		updateTooltipPosition();
-		updateRelationArrow();
-		updateRelationTooltipPosition();
+		updateAuxiliaryArrow();
+		updateAuxiliaryTooltips();
 	}
 
 	function showPopup(marker) {
@@ -553,7 +616,7 @@ export function createMarkerOverlays({
 			: "";
 		markerPopup.hidden = false;
 		updatePopupPosition();
-		updateRelationMarker();
+		updateAuxiliaryMarkers();
 	}
 
 	function showTooltip(marker) {
@@ -564,11 +627,28 @@ export function createMarkerOverlays({
 		}
 
 		activeTooltipMarker = marker;
+
+		if (isAuxiliaryMarker(marker)) {
+			markerTooltip.hidden = true;
+			updateAuxiliaryMarkers();
+			return;
+		}
+
 		markerTooltip.textContent = markerName(marker);
 		markerTooltip.hidden = false;
 		updateTooltipPosition();
-		updateRelationMarker();
+		updateAuxiliaryMarkers();
 	}
+
+	function copyActiveMarkerId() {
+		if (!onCopyMarkerId || !activeMarker) {
+			return;
+		}
+
+		onCopyMarkerId(activeMarker.id).catch(onCopyMarkerIdError);
+	}
+
+	markerPopupTitle.addEventListener("click", copyActiveMarkerId);
 
 	function hideForCategory(category) {
 		if (activeMarker?.category === category) {
