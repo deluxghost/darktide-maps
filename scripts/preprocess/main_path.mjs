@@ -251,6 +251,21 @@ export function createMainPathMeshes(data) {
 	return meshes;
 }
 
+export function createMainPathSummary(data) {
+	const nodes = arrayFromLuaJson(data.unified_nodes ?? [], "main path unified nodes")
+		.filter((node) => typeof node.travel_distance === "number")
+		.sort((left, right) => left.travel_distance - right.travel_distance);
+
+	if (nodes.length < 2) {
+		return null;
+	}
+
+	return {
+		start: nodes[0].position,
+		end: nodes[nodes.length - 1].position,
+	};
+}
+
 export function createMainPathSampler(data) {
 	const nodes = arrayFromLuaJson(data.unified_nodes ?? [], "main path unified nodes")
 		.filter((node) => typeof node.travel_distance === "number")

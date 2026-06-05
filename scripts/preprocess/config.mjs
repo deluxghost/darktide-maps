@@ -18,6 +18,9 @@ export const PREPROCESS_CONFIG = {
 		respawnPointMergeVerticalDistance: 2,
 		supplyDistributions: ["primary", "secondary", "mid_event", "end_event"],
 	},
+	view: {
+		fitGridSize: 96,
+	},
 	omit: {
 		byMission: {
 			km_enforcer_twins: {

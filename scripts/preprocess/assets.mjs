@@ -1,9 +1,10 @@
 import {mkdir, readFile, rm, writeFile} from "node:fs/promises";
 import path from "node:path";
 import {createGeometryPartsGlb, createNavmeshGlb} from "./gltf.mjs";
-import {createMainPathMeshes, createMainPathSampler} from "./main_path.mjs";
+import {createMainPathMeshes, createMainPathSampler, createMainPathSummary} from "./main_path.mjs";
 import {buildMarkers} from "./markers.mjs";
 import {shouldOmitMainPath} from "./config.mjs";
+import {createViewMetadata} from "./view.mjs";
 import {
 	compactObject,
 	directoryFileBytes,
@@ -76,6 +77,7 @@ async function buildMainPathAsset(missionId, context) {
 	return {
 		asset: {
 			file: `./data/maps/${sanitizeFileName(missionId)}/${fileName}`,
+			...createMainPathSummary(data),
 		},
 		data,
 	};
@@ -130,6 +132,7 @@ export async function buildMissionAssets(inputFileName, context) {
 		id: data.mission,
 		file: `./data/maps/${sanitizeFileName(data.mission)}/${fileName}`,
 		bounds: data.bounds,
+		view: createViewMetadata(data),
 		landmarks: mainPath ? {mainPath: mainPath.asset} : {},
 		markers: markers ?? undefined,
 	};
