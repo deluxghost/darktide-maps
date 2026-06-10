@@ -30,6 +30,11 @@ export const APP_CONFIG = {
 			touchRotate: false,
 			orbitAxis: "Z",
 			orthographic: true,
+			rotationAnchor: {
+				sampleRadius: 96,
+				sampleStep: 32,
+				heightTolerance: 3,
+			},
 		},
 		layers: {
 			opaqueMeshParameters: {

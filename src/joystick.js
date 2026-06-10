@@ -67,12 +67,14 @@ export function createRotationControl({root, handle, mapRenderer}) {
 		vector = [0, 0];
 		setHandlePosition(0, 0);
 		stopAnimation();
+		mapRenderer.clearRotationAnchor();
 	}
 
 	root.addEventListener("pointerdown", (event) => {
 		event.preventDefault();
 		activePointerId = event.pointerId;
 		root.setPointerCapture(event.pointerId);
+		mapRenderer.clearRotationAnchor();
 		updatePointer(event);
 		startAnimation();
 	});

@@ -116,6 +116,21 @@ function createOrbitViewport(viewport, target, rotationOrbit, zoom = 0) {
 	});
 }
 
+function createOrbitViewportForViewState(viewport, viewState) {
+	return new OrbitViewport({
+		width: viewport.width,
+		height: viewport.height,
+		target: viewState.target,
+		zoom: viewState.zoom,
+		rotationOrbit: viewState.rotationOrbit,
+		rotationX: viewState.rotationX,
+		orbitAxis: RUNTIME.controls.orbitAxis,
+		orthographic: RUNTIME.controls.orthographic,
+		near: RUNTIME.view.near,
+		far: RUNTIME.view.far,
+	});
+}
+
 function viewportCenter(viewport) {
 	return [
 		viewport.width / 2,
@@ -293,6 +308,10 @@ function normalizeRotation(degrees) {
 	return ((degrees + 180) % 360 + 360) % 360 - 180;
 }
 
+function squaredDistance2d(left, right) {
+	return (left[0] - right[0]) ** 2 + (left[1] - right[1]) ** 2;
+}
+
 function constrainedViewState(map, positions, viewport) {
 	const fitBounds = boundsFromPositions(positions) ?? map.bounds;
 	const rotationOrbit = initialRotationOrbit(map, positions, viewport);
@@ -318,6 +337,161 @@ export function createMapRenderer(mapElement, onError) {
 	let deckInstance;
 	let currentState;
 	let viewChangeFrame = 0;
+
+	function navmeshSurfaceLayerIds() {
+		return currentState ? [`navmesh-surface-${currentState.map.id}`] : [];
+	}
+
+	function pickNavmeshCoordinate(pixel) {
+		if (!deckInstance || !currentState) {
+			return null;
+		}
+
+		const picked = deckInstance.pickObject({
+			x: pixel[0],
+			y: pixel[1],
+			layerIds: navmeshSurfaceLayerIds(),
+			unproject3D: true,
+		});
+
+		return picked?.coordinate ?? null;
+	}
+
+	function rotationAnchorSamples(viewport) {
+		const center = viewportCenter(viewport);
+		const {sampleRadius, sampleStep} = RUNTIME.controls.rotationAnchor;
+		const samples = [];
+
+		for (let y = -sampleRadius; y <= sampleRadius; y += sampleStep) {
+			for (let x = -sampleRadius; x <= sampleRadius; x += sampleStep) {
+				if (x * x + y * y > sampleRadius * sampleRadius) {
+					continue;
+				}
+
+				const pixel = [center[0] + x, center[1] + y];
+
+				if (pixel[0] < 0 || pixel[0] > viewport.width || pixel[1] < 0 || pixel[1] > viewport.height) {
+					continue;
+				}
+
+				samples.push({
+					pixel,
+					distance: squaredDistance2d(pixel, center),
+				});
+			}
+		}
+
+		return samples.sort((left, right) => left.distance - right.distance);
+	}
+
+	function groupedRotationAnchorHits(hits) {
+		const groups = [];
+		const tolerance = RUNTIME.controls.rotationAnchor.heightTolerance;
+
+		for (const hit of hits) {
+			const height = hit.coordinate[2];
+			let group = groups.find((entry) => Math.abs(entry.height - height) <= tolerance);
+
+			if (!group) {
+				group = {
+					height,
+					hits: [],
+					minDistance: Infinity,
+				};
+				groups.push(group);
+			}
+
+			group.hits.push(hit);
+			group.height += (height - group.height) / group.hits.length;
+			group.minDistance = Math.min(group.minDistance, hit.distance);
+		}
+
+		return groups;
+	}
+
+	function dominantRotationAnchorHit(hits) {
+		const groups = groupedRotationAnchorHits(hits);
+
+		if (groups.length === 0) {
+			return null;
+		}
+
+		groups.sort((left, right) => (
+			right.hits.length - left.hits.length
+			|| left.minDistance - right.minDistance
+		));
+
+		return [...groups[0].hits]
+			.sort((left, right) => left.distance - right.distance)[0];
+	}
+
+	function sampleRotationAnchor() {
+		const viewport = deckInstance?.getViewports()[0];
+
+		if (!viewport) {
+			return null;
+		}
+
+		const hits = [];
+
+		for (const sample of rotationAnchorSamples(viewport)) {
+			const coordinate = pickNavmeshCoordinate(sample.pixel);
+
+			if (!coordinate) {
+				continue;
+			}
+
+			hits.push({
+				...sample,
+				coordinate,
+			});
+		}
+
+		const hit = dominantRotationAnchorHit(hits);
+
+		return hit ? {
+			pixel: hit.pixel,
+			coordinate: hit.coordinate,
+		} : null;
+	}
+
+	function clearRotationAnchor() {
+		if (currentState) {
+			currentState.rotationAnchor = undefined;
+		}
+	}
+
+	function rotationAnchor() {
+		if (!currentState) {
+			return null;
+		}
+
+		if (currentState.rotationAnchor === undefined) {
+			currentState.rotationAnchor = sampleRotationAnchor();
+		}
+
+		return currentState.rotationAnchor;
+	}
+
+	function applyRotationAnchor(viewState) {
+		const anchor = rotationAnchor();
+		const viewport = deckInstance?.getViewports()[0];
+
+		if (!anchor || !viewport) {
+			return viewState;
+		}
+
+		const anchoredViewport = createOrbitViewportForViewState(viewport, viewState);
+
+		return {
+			...viewState,
+			target: anchoredViewport.panByPosition(anchor.coordinate, anchor.pixel).target,
+		};
+	}
+
+	function rotationChanged(left, right) {
+		return left.rotationOrbit !== right.rotationOrbit || left.rotationX !== right.rotationX;
+	}
 
 	function isCtrlClick(event) {
 		return Boolean(event?.srcEvent?.ctrlKey);
@@ -371,7 +545,7 @@ export function createMapRenderer(mapElement, onError) {
 				getPosition: [0, 0, 0],
 				getColor: [255, 255, 255, 255],
 				wireframe: false,
-				pickable: Boolean(currentState.onMapCoordinatePick),
+				pickable: true,
 				material: VISUAL.lighting.navmeshMaterial,
 				getPolygonOffset: () => [0, 0],
 				parameters: RUNTIME.layers.opaqueMeshParameters,
@@ -557,19 +731,26 @@ export function createMapRenderer(mapElement, onError) {
 			viewState,
 			layers: createLayers(),
 			onError,
-			onViewStateChange: ({viewState: nextViewState}) => {
+			onViewStateChange: ({viewState: nextViewState, interactionState}) => {
 				const previousViewState = currentState.viewState;
+				const rotating = Boolean(interactionState?.isRotating);
+				const adjustedViewState = rotating && rotationChanged(nextViewState, previousViewState)
+					? applyRotationAnchor(nextViewState)
+					: nextViewState;
 
-				setViewState(nextViewState);
+				if (!rotating) {
+					clearRotationAnchor();
+				}
 
-				if (
-					nextViewState.rotationOrbit !== previousViewState.rotationOrbit
-					|| nextViewState.rotationX !== previousViewState.rotationX
-				) {
+				setViewState(adjustedViewState);
+
+				if (rotationChanged(adjustedViewState, previousViewState)) {
 					requestAnimationFrame(updateLayers);
 				}
 
 				requestViewChange();
+
+				return adjustedViewState;
 			},
 			onClick: (info, event) => {
 				if (isCtrlClick(event) && currentState.onMapCoordinatePick) {
@@ -679,8 +860,9 @@ export function createMapRenderer(mapElement, onError) {
 				viewState.maxRotationX,
 			),
 		};
+		const adjustedViewState = applyRotationAnchor(nextViewState);
 
-		setViewState(nextViewState);
+		setViewState(adjustedViewState);
 		requestAnimationFrame(updateLayers);
 		requestViewChange();
 	}
@@ -689,6 +871,7 @@ export function createMapRenderer(mapElement, onError) {
 
 	return {
 		render,
+		clearRotationAnchor,
 		projectPosition,
 		rotateBy,
 		setAuxiliaryMarkerOwner,
