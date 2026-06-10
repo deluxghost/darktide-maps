@@ -1,5 +1,6 @@
 import { t } from "./i18n.js";
 import { APP_CONFIG } from "./config.js";
+import { readStoredObject, writeStoredObject } from "./storage.js";
 
 const FILTER_STORAGE_KEY = "darktide-maps.filterVisibility.v1";
 const MAIN_PATH_FILTER_ID = "main_path";
@@ -39,7 +40,7 @@ function loadFilterVisibility() {
 	]));
 
 	try {
-		const stored = JSON.parse(localStorage.getItem(FILTER_STORAGE_KEY) ?? "{}");
+		const stored = readStoredObject(FILTER_STORAGE_KEY);
 
 		if (stored && typeof stored === "object") {
 			for (const itemId of ALL_FILTER_ITEM_IDS) {
@@ -52,7 +53,7 @@ function loadFilterVisibility() {
 		console.warn("Ignoring invalid filter visibility storage.");
 	}
 
-	localStorage.setItem(FILTER_STORAGE_KEY, JSON.stringify(visibility));
+	writeStoredObject(FILTER_STORAGE_KEY, visibility);
 
 	return visibility;
 }
@@ -70,11 +71,11 @@ export function createFilterController({
 
 	function saveFilterVisibilityValue(itemId, visible) {
 		storedFilterVisibility[itemId] = visible;
-		localStorage.setItem(FILTER_STORAGE_KEY, JSON.stringify(storedFilterVisibility));
+		writeStoredObject(FILTER_STORAGE_KEY, storedFilterVisibility);
 	}
 
 	function saveFilterVisibility() {
-		localStorage.setItem(FILTER_STORAGE_KEY, JSON.stringify(storedFilterVisibility));
+		writeStoredObject(FILTER_STORAGE_KEY, storedFilterVisibility);
 	}
 
 	function writeEmptyFilters() {

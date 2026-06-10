@@ -46,6 +46,23 @@ export const APP_CONFIG = {
 				depthTest: false,
 				depthWriteEnabled: false,
 			},
+			diagnosticFillParameters: {
+				blend: true,
+				depthCompare: "less-equal",
+				depthMask: false,
+				depthTest: true,
+				depthWriteEnabled: false,
+				polygonOffsetFill: false,
+			},
+			diagnosticOutlineParameters: {
+				blend: true,
+				depthCompare: "less-equal",
+				depthMask: false,
+				depthTest: true,
+				depthWriteEnabled: false,
+				depthBias: -1,
+				depthBiasSlopeScale: -1,
+			},
 			iconTextureParameters: {
 				minFilter: "linear",
 				magFilter: "linear",
@@ -68,6 +85,12 @@ export const APP_CONFIG = {
 					shininess: 8,
 					specularColor: [12, 12, 12],
 				},
+				blockedEdgesMaterial: {
+					ambient: 0.9,
+					diffuse: 0.1,
+					shininess: 4,
+					specularColor: [0, 0, 0],
+				},
 			},
 			navmesh: {
 				heightColors: [
@@ -88,6 +111,11 @@ export const APP_CONFIG = {
 				tubeColor: [255, 125, 0, 255],
 				arrowsColor: [255, 61, 41, 255],
 				startColor: [86, 255, 131, 255],
+			},
+			blockedEdges: {
+				fillColor: [255, 0, 0, 70],
+				outlineColor: [255, 0, 0, 235],
+				outlineWidth: 0.45,
 			},
 			auxiliaryLinks: {
 				arcDistanceRatio: 0.38,
@@ -141,11 +169,6 @@ export const APP_CONFIG = {
 					},
 				},
 			},
-		},
-	},
-	processing: {
-		boundaries: {
-			coordinatePrecision: 4,
 		},
 	},
 };

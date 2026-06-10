@@ -145,13 +145,72 @@ img {
 	padding: 0 12px 0 var(--panel-toolbar-height);
 }
 
+.developer-row {
+	display: flex;
+	flex: 0 0 auto;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 0 16px;
+}
+
 .author {
 	flex: 0 0 auto;
 	margin: 0;
-	padding: 0 16px;
 	color: #9eae9d;
 	font-size: 13px;
 	line-height: 1.35;
+}
+
+.debug-root {
+	position: relative;
+	display: none;
+	flex: 0 0 auto;
+}
+
+.dev-tools .debug-root {
+	display: block;
+}
+
+.debug-toggle {
+	display: grid;
+	place-items: center;
+	width: 26px;
+	height: 26px;
+	padding: 0;
+	border-color: rgba(84, 100, 83, 0.8);
+	background: rgba(27, 36, 29, 0.82);
+}
+
+.debug-toggle svg {
+	width: 15px;
+	height: 15px;
+	stroke-width: 2;
+	stroke-linecap: square;
+	stroke-linejoin: miter;
+}
+
+.debug-panel {
+	position: absolute;
+	top: calc(100% + 6px);
+	right: 0;
+	z-index: 1;
+	width: max-content;
+	min-width: 190px;
+	padding: 8px;
+	border: 1px solid rgba(160, 183, 159, 0.35);
+	background: rgba(13, 18, 15, 0.96);
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+}
+
+.debug-option {
+	display: flex;
+	align-items: center;
+	gap: 7px;
+	color: #dce6db;
+	font-size: 13px;
+	line-height: 1.2;
+	white-space: nowrap;
 }
 
 .panel-content {
@@ -171,7 +230,7 @@ img {
 
 .panel.collapsed h1,
 .panel.collapsed .app-badge,
-.panel.collapsed .author,
+.panel.collapsed .developer-row,
 .panel.collapsed .help,
 .panel.collapsed .panel-content {
 	display: none;
@@ -627,7 +686,7 @@ option {
 		padding: 0 12px 12px;
 	}
 
-	.author {
+	.developer-row {
 		padding: 0 12px;
 	}
 

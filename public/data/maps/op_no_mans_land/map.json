@@ -70,6 +70,13 @@
 			]
 		]
 	},
+	"boundaries": {
+		"file": "./data/maps/op_no_mans_land/navmesh_boundaries.glb",
+		"stats": {
+			"paths": 368,
+			"points": 17180
+		}
+	},
 	"landmarks": {
 		"mainPath": {
 			"file": "./data/maps/op_no_mans_land/main_path.glb",
@@ -1550,5 +1557,36 @@
 				]
 			}
 		]
+	},
+	"diagnostics": {
+		"blockedEdges": {
+			"file": "./data/maps/op_no_mans_land/blocked_edges.glb",
+			"stats": {
+				"inputEdges": 3333,
+				"doorFilteredEdges": 262,
+				"dynamicVolumeFilteredEdges": 0,
+				"markerCollisionFilteredEdges": 82,
+				"inputComponents": 614,
+				"includedComponents": 1,
+				"splitComponents": 46,
+				"renderedComponents": 117,
+				"renderedFragments": 107,
+				"keptRenderedFragments": 41,
+				"filteredEdges": 2667,
+				"renderedEdges": 666,
+				"sourcePolygons": 53,
+				"manualExcludePoints": 0,
+				"manualExcludedPolygons": 0,
+				"renderedTriangles": 2034,
+				"renderedPolygons": 1175
+			},
+			"navmeshCarve": {
+				"inputTriangles": 37109,
+				"outputTriangles": 38164,
+				"carvedTriangles": 1112,
+				"blockerFootprints": 1175,
+				"skippedDegenerateTriangles": 0
+			}
+		}
 	}
 }

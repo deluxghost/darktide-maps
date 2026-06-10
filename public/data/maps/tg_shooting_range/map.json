@@ -125,5 +125,43 @@
 				402.6278135776491
 			]
 		]
+	},
+	"boundaries": {
+		"file": "./data/maps/tg_shooting_range/navmesh_boundaries.glb",
+		"stats": {
+			"paths": 22,
+			"points": 825
+		}
+	},
+	"diagnostics": {
+		"blockedEdges": {
+			"file": "./data/maps/tg_shooting_range/blocked_edges.glb",
+			"stats": {
+				"inputEdges": 292,
+				"doorFilteredEdges": 0,
+				"dynamicVolumeFilteredEdges": 0,
+				"markerCollisionFilteredEdges": 0,
+				"inputComponents": 15,
+				"includedComponents": 0,
+				"splitComponents": 3,
+				"renderedComponents": 5,
+				"renderedFragments": 5,
+				"keptRenderedFragments": 1,
+				"filteredEdges": 225,
+				"renderedEdges": 67,
+				"sourcePolygons": 1,
+				"manualExcludePoints": 0,
+				"manualExcludedPolygons": 0,
+				"renderedTriangles": 98,
+				"renderedPolygons": 62
+			},
+			"navmeshCarve": {
+				"inputTriangles": 5238,
+				"outputTriangles": 5257,
+				"carvedTriangles": 62,
+				"blockerFootprints": 62,
+				"skippedDegenerateTriangles": 0
+			}
+		}
 	}
 }

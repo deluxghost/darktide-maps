@@ -354,7 +354,7 @@ export function createMapRenderer(mapElement, onError) {
 			return [];
 		}
 
-		const { map, mesh, boundaryPaths, mainPathMeshes, mainPathVisible, markerPins, auxiliaryMarkerOwner, visiblePinCategories } = currentState;
+		const { map, mesh, boundaryPaths, mainPathMeshes, blockedEdgeMeshes, blockedEdgesVisible, mainPathVisible, markerPins, auxiliaryMarkerOwner, visiblePinCategories } = currentState;
 		const viewport = deckInstance?.getViewports()[0];
 		const auxiliaryPins = auxiliaryPinsForMarker(auxiliaryMarkerOwner);
 		const visiblePins = sortedPins(
@@ -378,6 +378,32 @@ export function createMapRenderer(mapElement, onError) {
 			}),
 		];
 
+		function addPartMeshLayers(parts, createLayer) {
+			if (!parts) {
+				return;
+			}
+
+			for (const [part, partData] of Object.entries(parts)) {
+				layers.push(createLayer(part, partData));
+			}
+		}
+
+		function createStaticMeshLayer({id, layerMesh, color, material, parameters = RUNTIME.layers.opaqueMeshParameters, pickable = false}) {
+			return new SimpleMeshLayer({
+				id,
+				data: [{}],
+				mesh: layerMesh,
+				coordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
+				getPosition: [0, 0, 0],
+				getColor: color,
+				wireframe: false,
+				pickable,
+				material,
+				getPolygonOffset: () => [0, 0],
+				parameters,
+			});
+		}
+
 		layers.push(new PathLayer({
 			id: `navmesh-boundaries-${map.id}`,
 			data: boundaryPaths,
@@ -393,20 +419,36 @@ export function createMapRenderer(mapElement, onError) {
 		}));
 
 		if (mainPathMeshes && mainPathVisible) {
-			for (const [part, partMesh] of Object.entries(mainPathMeshes)) {
-				layers.push(new SimpleMeshLayer({
-					id: `landmark-main-path-${part}-${map.id}`,
-					data: [{}],
-					mesh: partMesh,
-					coordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
-					getPosition: [0, 0, 0],
-					getColor: VISUAL.mainPath[`${part}Color`],
-					wireframe: false,
-					material: VISUAL.lighting.mainPathMaterial,
-					getPolygonOffset: () => [0, 0],
-					parameters: RUNTIME.layers.opaqueMeshParameters,
-				}));
-			}
+			addPartMeshLayers(mainPathMeshes, (part, partData) => createStaticMeshLayer({
+				id: `landmark-main-path-${part}-${map.id}`,
+				layerMesh: partData.mesh,
+				color: VISUAL.mainPath[`${part}Color`],
+				material: VISUAL.lighting.mainPathMaterial,
+			}));
+		}
+
+		if (blockedEdgesVisible) {
+			addPartMeshLayers(blockedEdgeMeshes, (part, partData) => createStaticMeshLayer({
+				id: `diagnostic-blocked-edges-fill-${part}-${map.id}`,
+				layerMesh: partData.mesh,
+				color: VISUAL.blockedEdges.fillColor,
+				material: VISUAL.lighting.blockedEdgesMaterial,
+				parameters: RUNTIME.layers.diagnosticFillParameters,
+				pickable: Boolean(currentState.onMapCoordinatePick),
+			}));
+			addPartMeshLayers(blockedEdgeMeshes, (part, partData) => new PathLayer({
+				id: `diagnostic-blocked-edges-outline-${part}-${map.id}`,
+				data: partData.boundaryPaths,
+				coordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
+				getPath: (boundary) => boundary.path,
+				getColor: VISUAL.blockedEdges.outlineColor,
+				getWidth: VISUAL.blockedEdges.outlineWidth,
+				widthUnits: "common",
+				jointRounded: true,
+				capRounded: true,
+				getPolygonOffset: () => [0, 0],
+				parameters: RUNTIME.layers.diagnosticOutlineParameters,
+			}));
 		}
 
 		layers.push(new IconLayer({
@@ -445,10 +487,20 @@ export function createMapRenderer(mapElement, onError) {
 			return;
 		}
 
+		const layerIds = [];
+
+		if (currentState.blockedEdgesVisible && currentState.blockedEdgeMeshes) {
+			for (const part of Object.keys(currentState.blockedEdgeMeshes)) {
+				layerIds.push(`diagnostic-blocked-edges-fill-${part}-${currentState.map.id}`);
+			}
+		}
+
+		layerIds.push(`navmesh-surface-${currentState.map.id}`);
+
 		const picked = deckInstance.pickObject({
 			x,
 			y,
-			layerIds: [`navmesh-surface-${currentState.map.id}`],
+			layerIds,
 			unproject3D: true,
 		});
 
@@ -466,6 +518,8 @@ export function createMapRenderer(mapElement, onError) {
 			mesh,
 			boundaryPaths,
 			mainPathMeshes,
+			blockedEdgeMeshes: options.blockedEdgeMeshes,
+			blockedEdgesVisible: options.blockedEdgesVisible,
 			mainPathVisible: options.mainPathVisible,
 			markerPins: options.markerPins,
 			visiblePinCategories: new Set(options.visiblePinCategories),
@@ -592,6 +646,15 @@ export function createMapRenderer(mapElement, onError) {
 		updateLayers();
 	}
 
+	function setBlockedEdgesVisible(visible) {
+		if (!currentState) {
+			return;
+		}
+
+		currentState.blockedEdgesVisible = visible;
+		updateLayers();
+	}
+
 	function setAuxiliaryMarkerOwner(marker) {
 		if (!currentState || currentState.auxiliaryMarkerOwner === marker) {
 			return;
@@ -629,6 +692,7 @@ export function createMapRenderer(mapElement, onError) {
 		projectPosition,
 		rotateBy,
 		setAuxiliaryMarkerOwner,
+		setBlockedEdgesVisible,
 		setMainPathVisible,
 		setPinCategoryVisible,
 	};

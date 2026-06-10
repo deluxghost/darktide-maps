@@ -66,6 +66,7 @@ export function parseGlb(arrayBuffer) {
 				? typedArrayForAccessor(json, binary, primitive.attributes.COLOR_0)
 				: null,
 			indices: typedArrayForAccessor(json, binary, primitive.indices),
+			mode: primitive.mode,
 		};
 	}
 
@@ -79,8 +80,11 @@ export function parseGlb(arrayBuffer) {
 	}
 
 	if (Object.keys(parts).length > 0) {
-		return {parts};
+		return {parts, extras: json.extras ?? {}};
 	}
 
-	return parsePrimitive(primitives[0]);
+	return {
+		...parsePrimitive(primitives[0]),
+		extras: json.extras ?? {},
+	};
 }

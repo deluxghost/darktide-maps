@@ -1,7 +1,6 @@
 import { parseGlb } from "./glb.js";
 import { applyTranslations, localizeValue, t } from "./i18n.js";
-import { createLandmarkMesh } from "./landmarks.js";
-import { createBoundaryPaths } from "./boundaries.js";
+import { createGeometryBoundaryPaths, createLandmarkMesh, createPathBoundaryPaths } from "./landmarks.js";
 import { APP_CONFIG } from "./config.js";
 import { createMesh } from "./navmesh.js";
 import { createMapRenderer } from "./renderer.js";
@@ -11,7 +10,8 @@ import { mapTitle, writeMapOptions } from "./manifest.js";
 import { createRotationControl } from "./joystick.js";
 import { formatLocalTimestampFromUnix } from "./time.js";
 import { createNotifications } from "./notifications.js";
-import { createElement as createLucideElement, createIcons, Menu, Rotate3d, X } from "lucide";
+import { readStoredObject, writeStoredProperty } from "./storage.js";
+import { createElement as createLucideElement, createIcons, Bug, Menu, Rotate3d, X } from "lucide";
 
 const mapElement = document.querySelector("#map");
 const mapSelect = document.querySelector("#map-select");
@@ -19,6 +19,9 @@ const loadingOverlay = document.querySelector("#loading-overlay");
 const notificationsElement = document.querySelector("#notifications");
 const panel = document.querySelector(".panel");
 const panelToggle = document.querySelector("#panel-toggle");
+const debugToggle = document.querySelector("#debug-toggle");
+const debugPanel = document.querySelector("#debug-panel");
+const debugBlockedPolygons = document.querySelector("#debug-blocked-polygons");
 const helpElement = document.querySelector("#help");
 const filterList = document.querySelector("#filter-list");
 const markerPopup = document.querySelector("#marker-popup");
@@ -35,9 +38,11 @@ const rotationControl = document.querySelector("#rotation-control");
 const rotationControlHandle = document.querySelector("#rotation-control-handle");
 const mobileMedia = window.matchMedia(APP_CONFIG.ui.mobileMediaQuery);
 const touchPrimaryMedia = window.matchMedia("(hover: none) and (pointer: coarse)");
+const DEBUG_STORAGE_KEY = "darktide-maps.debug.v1";
 
 let loadController;
 let touchInputEnabled = shouldStartInTouchMode();
+let debugBlockedPolygonsVisible = readDebugBlockedPolygonsVisible();
 const notifications = createNotifications({
 	container: notificationsElement,
 	createIcon: () => createLucideElement(X, {"aria-hidden": "true"}),
@@ -71,6 +76,22 @@ function showInfo(message) {
 
 function showWarning(message) {
 	notifications.warning(message);
+}
+
+function readDebugSettings() {
+	if (!import.meta.env.DEV) {
+		return {};
+	}
+
+	return readStoredObject(DEBUG_STORAGE_KEY);
+}
+
+function readDebugBlockedPolygonsVisible() {
+	return readDebugSettings().blockedPolygonsVisible === true;
+}
+
+function writeDebugBlockedPolygonsVisible(visible) {
+	writeStoredProperty(DEBUG_STORAGE_KEY, "blockedPolygonsVisible", visible);
 }
 
 async function copyMarkerId(markerId) {
@@ -185,19 +206,30 @@ async function loadGlb(file, signal) {
 	return parseGlb(await response.arrayBuffer());
 }
 
-async function loadMainPathMeshes(mainPath, signal) {
-	if (!mainPath) {
+async function loadGeometryPartMeshes(asset, signal) {
+	if (!asset?.file) {
 		return null;
 	}
 
-	const glb = await loadGlb(mainPath.file, signal);
-	const meshes = {};
+	const glb = await loadGlb(asset.file, signal);
+	const parts = {};
 
 	for (const [part, partGlb] of Object.entries(glb.parts)) {
-		meshes[part] = createLandmarkMesh(partGlb);
+		parts[part] = {
+			mesh: createLandmarkMesh(partGlb),
+			boundaryPaths: createGeometryBoundaryPaths(partGlb),
+		};
 	}
 
-	return meshes;
+	return parts;
+}
+
+async function loadBoundaryPaths(asset, signal) {
+	if (!asset?.file) {
+		throw new Error("Map data is missing preprocessed navmesh boundaries.");
+	}
+
+	return createPathBoundaryPaths(await loadGlb(asset.file, signal));
 }
 
 async function loadMapData(mapEntry, signal) {
@@ -235,15 +267,21 @@ async function loadMap(mapEntry) {
 	try {
 		const map = await loadMapData(mapEntry, loadController.signal);
 		const glb = await loadGlb(map.file, loadController.signal);
-		const mainPathMeshes = await loadMainPathMeshes(map.landmarks?.mainPath, loadController.signal);
+		const boundaryPaths = await loadBoundaryPaths(map.boundaries, loadController.signal);
+		const mainPathMeshes = await loadGeometryPartMeshes(map.landmarks?.mainPath, loadController.signal);
+		const blockedEdgeMeshes = import.meta.env.DEV
+			? await loadGeometryPartMeshes(map.diagnostics?.blockedEdges, loadController.signal)
+			: null;
 
 		filters.setCurrentMap(map);
 		mapRenderer.render(
 			map,
 			createMesh(glb),
-			createBoundaryPaths(glb),
+			boundaryPaths,
 			mainPathMeshes,
 			{
+				blockedEdgeMeshes,
+				blockedEdgesVisible: import.meta.env.DEV && debugBlockedPolygonsVisible,
 				mainPathVisible: filters.mainPathVisible,
 				fitPositions: glb.positions,
 				markerPins: (map.markers?.pins ?? []).map((pin) => ({
@@ -291,12 +329,13 @@ async function initialize() {
 }
 
 export function startApp() {
-	createIcons({ icons: { Menu, Rotate3d, X } });
+	createIcons({ icons: { Bug, Menu, Rotate3d, X } });
 	applyTranslations();
 	document.title = t("appTitle");
 	document.documentElement.classList.toggle("dev-tools", import.meta.env.DEV);
 	setPanelCollapsed(mobileMedia.matches);
 	writeInputMode();
+	debugBlockedPolygons.checked = debugBlockedPolygonsVisible;
 	filters.initialize();
 	createRotationControl({
 		root: rotationControl,
@@ -309,6 +348,17 @@ export function startApp() {
 	});
 	panelToggle.addEventListener("click", () => {
 		setPanelCollapsed(!panel.classList.contains("collapsed"));
+	});
+	debugToggle.addEventListener("click", () => {
+		const expanded = debugPanel.hidden;
+
+		debugPanel.hidden = !expanded;
+		debugToggle.setAttribute("aria-expanded", String(expanded));
+	});
+	debugBlockedPolygons.addEventListener("change", () => {
+		debugBlockedPolygonsVisible = debugBlockedPolygons.checked;
+		writeDebugBlockedPolygonsVisible(debugBlockedPolygonsVisible);
+		mapRenderer.setBlockedEdgesVisible(debugBlockedPolygonsVisible);
 	});
 	markerPopupClose.addEventListener("click", markerOverlays.hidePopup);
 

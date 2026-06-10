@@ -101,5 +101,43 @@
 				-81.65843623876599
 			]
 		]
+	},
+	"boundaries": {
+		"file": "./data/maps/hub_ship/navmesh_boundaries.glb",
+		"stats": {
+			"paths": 64,
+			"points": 2208
+		}
+	},
+	"diagnostics": {
+		"blockedEdges": {
+			"file": "./data/maps/hub_ship/blocked_edges.glb",
+			"stats": {
+				"inputEdges": 806,
+				"doorFilteredEdges": 0,
+				"dynamicVolumeFilteredEdges": 0,
+				"markerCollisionFilteredEdges": 0,
+				"inputComponents": 129,
+				"includedComponents": 0,
+				"splitComponents": 10,
+				"renderedComponents": 21,
+				"renderedFragments": 23,
+				"keptRenderedFragments": 15,
+				"filteredEdges": 593,
+				"renderedEdges": 213,
+				"sourcePolygons": 10,
+				"manualExcludePoints": 0,
+				"manualExcludedPolygons": 0,
+				"renderedTriangles": 663,
+				"renderedPolygons": 443
+			},
+			"navmeshCarve": {
+				"inputTriangles": 4763,
+				"outputTriangles": 4851,
+				"carvedTriangles": 434,
+				"blockerFootprints": 443,
+				"skippedDegenerateTriangles": 0
+			}
+		}
 	}
 }

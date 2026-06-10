@@ -21,6 +21,32 @@ export const PREPROCESS_CONFIG = {
 	view: {
 		fitGridSize: 96,
 	},
+	boundaries: {
+		coordinatePrecision: 4,
+		minimumCollapsedArea: 0.05,
+	},
+	blockedEdges: {
+		verticalOffset: 0.16,
+		polygons: {
+			closeRadiusCells: 2,
+			mergeDistanceCells: 4,
+			mergeVerticalDistance: 1.5,
+			simplifyToleranceCells: 0.75,
+			minimumArea: 0.5,
+			minimumSecondaryAreaRatio: 0.2,
+		},
+		navmeshCarve: {
+			verticalDistance: 1.5,
+		},
+		manualExcludes: {
+			verticalTolerance: 1.5,
+			byMission: {},
+		},
+		markerCollisionFilter: {
+			families: ["chests", "health_stations", "respawn_points"],
+			distance: 2,
+		},
+	},
 	omit: {
 		byMission: {
 			km_enforcer_twins: {

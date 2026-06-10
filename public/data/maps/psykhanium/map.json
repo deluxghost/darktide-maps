@@ -66,6 +66,13 @@
 			]
 		]
 	},
+	"boundaries": {
+		"file": "./data/maps/psykhanium/navmesh_boundaries.glb",
+		"stats": {
+			"paths": 257,
+			"points": 11735
+		}
+	},
 	"markers": {
 		"pins": [
 			{
@@ -501,5 +508,36 @@
 				]
 			}
 		]
+	},
+	"diagnostics": {
+		"blockedEdges": {
+			"file": "./data/maps/psykhanium/blocked_edges.glb",
+			"stats": {
+				"inputEdges": 1858,
+				"doorFilteredEdges": 270,
+				"dynamicVolumeFilteredEdges": 0,
+				"markerCollisionFilteredEdges": 33,
+				"inputComponents": 467,
+				"includedComponents": 0,
+				"splitComponents": 18,
+				"renderedComponents": 44,
+				"renderedFragments": 27,
+				"keptRenderedFragments": 17,
+				"filteredEdges": 1678,
+				"renderedEdges": 180,
+				"sourcePolygons": 26,
+				"manualExcludePoints": 0,
+				"manualExcludedPolygons": 0,
+				"renderedTriangles": 637,
+				"renderedPolygons": 364
+			},
+			"navmeshCarve": {
+				"inputTriangles": 26337,
+				"outputTriangles": 26750,
+				"carvedTriangles": 344,
+				"blockerFootprints": 364,
+				"skippedDegenerateTriangles": 0
+			}
+		}
 	}
 }

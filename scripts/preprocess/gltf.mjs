@@ -7,6 +7,8 @@ const UNSIGNED_SHORT_COMPONENT_TYPE = 5123;
 const UNSIGNED_INT_COMPONENT_TYPE = 5125;
 const ARRAY_BUFFER_TARGET = 34962;
 const ELEMENT_ARRAY_BUFFER_TARGET = 34963;
+const TRIANGLES_MODE = 4;
+const LINES_MODE = 1;
 
 function align4(value) {
 	return (value + 3) & ~3;
@@ -84,7 +86,7 @@ export function createNavmeshGlb(data) {
 	for (let index = 0; index < data.triangles.length; index++) {
 		const triangle = data.triangles[index];
 
-		indices.set([triangle[0] - 1, triangle[1] - 1, triangle[2] - 1], index * 3);
+		indices.set(triangle.slice(0, 3).map((vertexIndex) => vertexIndex - 1), index * 3);
 	}
 
 	const positionBuffer = Buffer.from(positions.buffer);
@@ -105,7 +107,7 @@ export function createNavmeshGlb(data) {
 		primitives: [{
 			attributes: {POSITION: 0},
 			indices: 1,
-			mode: 4,
+			mode: TRIANGLES_MODE,
 		}],
 	});
 	gltf.bufferViews.push(
@@ -214,7 +216,7 @@ export function createGeometryPartsGlb(name, parts, extras) {
 		gltf.meshes[0].primitives.push({
 			attributes: {POSITION: positionAccessor, NORMAL: normalAccessor},
 			indices: indexAccessor,
-			mode: 4,
+			mode: TRIANGLES_MODE,
 			extras: {part},
 		});
 	}
@@ -229,6 +231,82 @@ export function createGeometryPartsGlb(name, parts, extras) {
 	}
 
 	gltf.buffers.push({byteLength: binary.length});
+
+	return createGlbFile(gltf, binary);
+}
+
+export function createPathLinesGlb(name, paths, extras) {
+	const pathLengths = paths.map((path) => path.length);
+	const vertexCount = pathLengths.reduce((sum, length) => sum + length, 0);
+	const indexCount = pathLengths.reduce((sum, length) => sum + Math.max(0, length - 1) * 2, 0);
+
+	if (vertexCount === 0 || indexCount === 0) {
+		throw new Error(`Path line asset ${name} has no renderable paths.`);
+	}
+
+	const positions = new Float32Array(vertexCount * 3);
+	const useUint32 = vertexCount > 65535;
+	const IndexArray = useUint32 ? Uint32Array : Uint16Array;
+	const indices = new IndexArray(indexCount);
+	let vertexOffset = 0;
+	let indexOffset = 0;
+
+	for (const path of paths) {
+		const pathVertexOffset = vertexOffset;
+
+		for (const point of path) {
+			positions.set(point, vertexOffset * 3);
+			vertexOffset++;
+		}
+
+		for (let index = 0; index < path.length - 1; index++) {
+			indices[indexOffset++] = pathVertexOffset + index;
+			indices[indexOffset++] = pathVertexOffset + index + 1;
+		}
+	}
+
+	const positionBuffer = Buffer.from(positions.buffer);
+	const indexBuffer = Buffer.from(indices.buffer);
+	const indexByteOffset = align4(positionBuffer.length);
+	const binaryLength = align4(indexByteOffset + indexBuffer.length);
+	const binary = Buffer.alloc(binaryLength);
+	const bounds = boundsForPositions(positions);
+	const gltf = baseGltf(name, binary, {
+		...extras,
+		pathLengths,
+	});
+
+	positionBuffer.copy(binary);
+	indexBuffer.copy(binary, indexByteOffset);
+
+	gltf.meshes.push({
+		name,
+		primitives: [{
+			attributes: {POSITION: 0},
+			indices: 1,
+			mode: LINES_MODE,
+		}],
+	});
+	gltf.bufferViews.push(
+		{buffer: 0, byteOffset: 0, byteLength: positionBuffer.length, target: ARRAY_BUFFER_TARGET},
+		{buffer: 0, byteOffset: indexByteOffset, byteLength: indexBuffer.length, target: ELEMENT_ARRAY_BUFFER_TARGET},
+	);
+	gltf.accessors.push(
+		{
+			bufferView: 0,
+			componentType: FLOAT_COMPONENT_TYPE,
+			count: vertexCount,
+			type: "VEC3",
+			min: bounds.min,
+			max: bounds.max,
+		},
+		{
+			bufferView: 1,
+			componentType: useUint32 ? UNSIGNED_INT_COMPONENT_TYPE : UNSIGNED_SHORT_COMPONENT_TYPE,
+			count: indices.length,
+			type: "SCALAR",
+		},
+	);
 
 	return createGlbFile(gltf, binary);
 }

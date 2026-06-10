@@ -10,6 +10,9 @@ const directories = {
 	mainPath: inputDirectory && path.join(inputDirectory, "main_path"),
 	markers: inputDirectory && path.join(inputDirectory, "markers"),
 	metadata: inputDirectory && path.join(inputDirectory, "metadata"),
+	blockedEdges: inputDirectory && path.join(inputDirectory, "blocked_edges"),
+	doors: inputDirectory && path.join(inputDirectory, "doors"),
+	dynamicVolumes: inputDirectory && path.join(inputDirectory, "dynamic_volumes"),
 };
 const mapMetadataPath = path.resolve("metadata", "map.json");
 const markerMetadataPath = path.resolve("metadata", "markers.json");

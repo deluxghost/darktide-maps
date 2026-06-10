@@ -27,7 +27,20 @@
 				<h1 data-i18n="appTitle">Darktide Maps</h1>
 				<span class="app-badge" data-i18n="appBadge">Beta</span>
 			</header>
-			<p class="author" data-i18n="author">by deluxghost</p>
+			<div class="developer-row">
+				<p class="author" data-i18n="author">by deluxghost</p>
+				<div class="debug-root">
+					<button id="debug-toggle" class="debug-toggle" type="button" aria-label="Debug" title="Debug" aria-expanded="false" aria-controls="debug-panel">
+						<i data-lucide="bug"></i>
+					</button>
+					<div id="debug-panel" class="debug-panel" hidden>
+						<label class="debug-option">
+							<input id="debug-blocked-polygons" type="checkbox">
+							<span>Show blocked polygons</span>
+						</label>
+					</div>
+				</div>
+			</div>
 			<p id="help" class="help"></p>
 			<div id="panel-content" class="panel-content">
 				<section class="map-selector">

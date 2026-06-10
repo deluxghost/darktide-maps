@@ -70,6 +70,13 @@
 			]
 		]
 	},
+	"boundaries": {
+		"file": "./data/maps/lm_cooling/navmesh_boundaries.glb",
+		"stats": {
+			"paths": 313,
+			"points": 19440
+		}
+	},
 	"landmarks": {
 		"mainPath": {
 			"file": "./data/maps/lm_cooling/main_path.glb",
@@ -3622,5 +3629,36 @@
 				]
 			}
 		]
+	},
+	"diagnostics": {
+		"blockedEdges": {
+			"file": "./data/maps/lm_cooling/blocked_edges.glb",
+			"stats": {
+				"inputEdges": 3763,
+				"doorFilteredEdges": 1074,
+				"dynamicVolumeFilteredEdges": 49,
+				"markerCollisionFilteredEdges": 259,
+				"inputComponents": 605,
+				"includedComponents": 0,
+				"splitComponents": 36,
+				"renderedComponents": 79,
+				"renderedFragments": 46,
+				"keptRenderedFragments": 31,
+				"filteredEdges": 3282,
+				"renderedEdges": 481,
+				"sourcePolygons": 32,
+				"manualExcludePoints": 0,
+				"manualExcludedPolygons": 0,
+				"renderedTriangles": 1432,
+				"renderedPolygons": 908
+			},
+			"navmeshCarve": {
+				"inputTriangles": 38607,
+				"outputTriangles": 39131,
+				"carvedTriangles": 886,
+				"blockerFootprints": 908,
+				"skippedDegenerateTriangles": 0
+			}
+		}
 	}
 }

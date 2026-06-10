@@ -17,7 +17,9 @@
     "@luma.gl/engine": "9.1.9",
     "@luma.gl/shadertools": "9.1.9",
     "@luma.gl/webgl": "9.1.9",
-    "lucide": "1.17.0"
+    "earcut": "^3.0.2",
+    "lucide": "1.17.0",
+    "polygon-clipping": "^0.15.7"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.39.2",
