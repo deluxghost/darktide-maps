@@ -11,6 +11,14 @@ import { createRotationControl } from "./joystick.js";
 import { formatLocalTimestampFromUnix } from "./time.js";
 import { createNotifications } from "./notifications.js";
 import { readStoredObject, writeStoredProperty } from "./storage.js";
+import {
+	mapLocationUrl,
+	markerLocationUrl,
+	pushUrl,
+	readLocationRequest,
+	replaceUrl,
+	tryParsePositionParameter,
+} from "./location.js";
 import { createElement as createLucideElement, createIcons, Bug, Menu, Rotate3d, X } from "lucide";
 
 const mapElement = document.querySelector("#map");
@@ -39,10 +47,12 @@ const rotationControlHandle = document.querySelector("#rotation-control-handle")
 const mobileMedia = window.matchMedia(APP_CONFIG.ui.mobileMediaQuery);
 const touchPrimaryMedia = window.matchMedia("(hover: none) and (pointer: coarse)");
 const DEBUG_STORAGE_KEY = "darktide-maps.debug.v1";
+const URL_POSITION_MARKER_ID = "url-position";
 
 let loadController;
 let touchInputEnabled = shouldStartInTouchMode();
 let debugBlockedPolygonsVisible = readDebugBlockedPolygonsVisible();
+const mapDataCache = new Map();
 const notifications = createNotifications({
 	container: notificationsElement,
 	createIcon: () => createLucideElement(X, {"aria-hidden": "true"}),
@@ -94,9 +104,17 @@ function writeDebugBlockedPolygonsVisible(visible) {
 	writeStoredProperty(DEBUG_STORAGE_KEY, "blockedPolygonsVisible", visible);
 }
 
-async function copyMarkerId(markerId) {
-	await navigator.clipboard.writeText(markerId);
-	showInfo(`Copied ID: ${markerId}`);
+async function copyMarkerUrl(marker) {
+	const mapId = marker?.mapId ?? mapSelect.value;
+
+	if (!mapId || !marker?.id) {
+		throw new Error(t("errorMarkerUrlUnavailable"));
+	}
+
+	const url = markerLocationUrl(mapId, marker.id).toString();
+
+	await navigator.clipboard.writeText(url);
+	showInfo(t("markerUrlCopied"));
 }
 
 function formatCoordinate(position) {
@@ -186,8 +204,8 @@ const markerOverlays = createMarkerOverlays({
 	mapRenderer,
 	categoryTitle,
 	markerName,
-	onCopyMarkerId: import.meta.env.DEV ? copyMarkerId : null,
-	onCopyMarkerIdError: showError,
+	onCopyMarkerUrl: copyMarkerUrl,
+	onCopyMarkerUrlError: showError,
 });
 const filters = createFilterController({
 	filterList,
@@ -233,25 +251,133 @@ async function loadBoundaryPaths(asset, signal) {
 }
 
 async function loadMapData(mapEntry, signal) {
+	if (mapDataCache.has(mapEntry.id)) {
+		return mapDataCache.get(mapEntry.id);
+	}
+
 	const response = await fetch(mapEntry.file, { signal });
 
 	if (!response.ok) {
 		throw new Error(`HTTP ${response.status} while loading ${mapEntry.file}`);
 	}
 
-	const map = await response.json();
+	const mapData = await response.json();
 
-	if (map.id !== mapEntry.id) {
-		throw new Error(`Map data id mismatch: ${mapEntry.file}. Expected ${mapEntry.id}, got ${map.id}.`);
+	if (mapData.id !== mapEntry.id) {
+		throw new Error(`Map data id mismatch: ${mapEntry.file}. Expected ${mapEntry.id}, got ${mapData.id}.`);
 	}
 
-	return {
+	const map = {
 		...mapEntry,
-		...map,
+		...mapData,
 	};
+
+	mapDataCache.set(mapEntry.id, map);
+
+	return map;
 }
 
-async function loadMap(mapEntry) {
+function mapEntryById(manifest, mapId) {
+	return manifest.maps.find((map) => map.id === mapId) ?? null;
+}
+
+function markerById(map, markerId) {
+	return (map.markers?.pins ?? []).find((marker) => marker.id === markerId) ?? null;
+}
+
+async function markerLocation(manifest, markerId, preferredMapId) {
+	const preferredMap = preferredMapId ? mapEntryById(manifest, preferredMapId) : null;
+	const maps = [
+		...(preferredMap ? [preferredMap] : []),
+		...manifest.maps.filter((map) => map.id !== preferredMapId),
+	];
+
+	for (const mapEntry of maps) {
+		const map = await loadMapData(mapEntry);
+		const marker = markerById(map, markerId);
+
+		if (marker) {
+			return {mapEntry, marker};
+		}
+	}
+
+	return null;
+}
+
+async function resolveLocationRequest(manifest, request) {
+	let invalidLocationUrl = false;
+
+	function result(mapEntry, locator = null, canonicalUrl = null) {
+		if (invalidLocationUrl) {
+			showWarning(t("errorInvalidLocationUrl"));
+		}
+
+		return {mapEntry, locator, canonicalUrl};
+	}
+
+	if (request.positionText && request.mapId) {
+		const mapEntry = mapEntryById(manifest, request.mapId);
+		const position = tryParsePositionParameter(request.positionText);
+
+		if (mapEntry && position) {
+			return result(mapEntry, {
+				type: "position",
+				position,
+			});
+		}
+
+		invalidLocationUrl = true;
+	} else if (request.positionText) {
+		invalidLocationUrl = true;
+	}
+
+	if (request.markerId) {
+		const location = await markerLocation(manifest, request.markerId, request.mapId);
+
+		if (location) {
+			return result(location.mapEntry, {
+				type: "marker",
+				markerId: location.marker.id,
+			}, markerLocationUrl(location.mapEntry.id, location.marker.id));
+		}
+
+		invalidLocationUrl = true;
+	}
+
+	if (request.mapId) {
+		const mapEntry = mapEntryById(manifest, request.mapId);
+
+		if (mapEntry) {
+			return result(mapEntry);
+		}
+
+		invalidLocationUrl = true;
+	}
+
+	return result(manifest.maps[0]);
+}
+
+function markerPinsForMap(map, locator) {
+	const pins = (map.markers?.pins ?? []).map((pin) => ({
+		...pin,
+		mapId: map.id,
+		markerType: "pin",
+	}));
+
+	if (locator?.type === "position") {
+		pins.push({
+			id: URL_POSITION_MARKER_ID,
+			category: URL_POSITION_MARKER_ID,
+			mapId: map.id,
+			markerType: "position_marker",
+			position: locator.position,
+		});
+	}
+
+	return pins;
+}
+
+async function loadMap(mapEntry, locator = null) {
 	if (loadController) {
 		loadController.abort();
 	}
@@ -272,6 +398,10 @@ async function loadMap(mapEntry) {
 		const blockedEdgeMeshes = import.meta.env.DEV
 			? await loadGeometryPartMeshes(map.diagnostics?.blockedEdges, loadController.signal)
 			: null;
+		const markerPins = markerPinsForMap(map, locator);
+		const selectedMarker = locator?.type === "marker"
+			? markerPins.find((marker) => marker.id === locator.markerId && marker.markerType === "pin")
+			: null;
 
 		filters.setCurrentMap(map);
 		mapRenderer.render(
@@ -284,10 +414,7 @@ async function loadMap(mapEntry) {
 				blockedEdgesVisible: import.meta.env.DEV && debugBlockedPolygonsVisible,
 				mainPathVisible: filters.mainPathVisible,
 				fitPositions: glb.positions,
-				markerPins: (map.markers?.pins ?? []).map((pin) => ({
-					...pin,
-					markerType: "pin",
-				})),
+				markerPins,
 				visiblePinCategories: filters.visiblePinCategorySet(map),
 				onMarkerClick: markerOverlays.showPopup,
 				onMarkerHover: markerOverlays.showTooltip,
@@ -297,12 +424,31 @@ async function loadMap(mapEntry) {
 		);
 		filters.writeFilters(map);
 		clearLoading();
+		if (locator?.type === "position") {
+			await mapRenderer.centerOnPosition(locator.position, map.id);
+		}
+		if (selectedMarker) {
+			if (await mapRenderer.centerOnPosition(selectedMarker.position, map.id)) {
+				markerOverlays.showPopup(selectedMarker);
+			}
+		}
 	} catch (error) {
 		if (error.name !== "AbortError") {
 			clearLoading();
 			showError(error);
 		}
 	}
+}
+
+async function loadLocationFromUrl(manifest) {
+	const request = readLocationRequest();
+	const location = await resolveLocationRequest(manifest, request);
+
+	mapSelect.value = location.mapEntry.id;
+	if (location.canonicalUrl) {
+		replaceUrl(location.canonicalUrl);
+	}
+	await loadMap(location.mapEntry, location.locator);
 }
 
 async function initialize() {
@@ -322,10 +468,16 @@ async function initialize() {
 	writeDataUpdatedAt(manifest.dataUpdatedAtUnix);
 
 	mapSelect.addEventListener("change", () => {
-		loadMap(manifest.maps.find((map) => map.id === mapSelect.value));
+		const mapEntry = mapEntryById(manifest, mapSelect.value);
+
+		pushUrl(mapLocationUrl(mapEntry.id));
+		loadMap(mapEntry);
+	});
+	window.addEventListener("popstate", () => {
+		loadLocationFromUrl(manifest).catch(showError);
 	});
 
-	await loadMap(manifest.maps.find((map) => map.id === mapSelect.value));
+	await loadLocationFromUrl(manifest);
 }
 
 export function startApp() {

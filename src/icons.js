@@ -51,6 +51,26 @@ function pinIconSvg(width, height, fillColor, outlineColor, options = {}) {
 </svg>`;
 }
 
+function crossIconSvg(size, color, outlineColor, outlineWidth) {
+	const center = size / 2;
+	const radius = size * 0.3;
+	const fillWidth = Math.max(2, size * 0.13);
+	const outlineStrokeWidth = fillWidth + outlineWidth * 2;
+	const lines = [
+		[center - radius, center - radius, center + radius, center + radius],
+		[center + radius, center - radius, center - radius, center + radius],
+	];
+	const path = lines
+		.map(([x1, y1, x2, y2]) => `M ${x1.toFixed(3)} ${y1.toFixed(3)} L ${x2.toFixed(3)} ${y2.toFixed(3)}`)
+		.join(" ");
+
+	return `
+<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+	<path d="${path}" fill="none" stroke="${outlineColor}" stroke-width="${outlineStrokeWidth}" stroke-linecap="square"/>
+	<path d="${path}" fill="none" stroke="${color}" stroke-width="${fillWidth}" stroke-linecap="square"/>
+</svg>`;
+}
+
 export function pinIconForCategory(category, options = {}) {
 	const pinsConfig = APP_CONFIG.runtime.visual.pins;
 	const categoryConfig = pinsConfig.categories[category] ?? {};
@@ -76,6 +96,26 @@ export function pinIconForCategory(category, options = {}) {
 			height: textureHeight,
 			anchorX: textureWidth / 2,
 			anchorY: textureHeight,
+		});
+	}
+
+	return iconCache.get(cacheKey);
+}
+
+export function positionMarkerIcon() {
+	const config = APP_CONFIG.runtime.visual.positionMarker;
+	const textureScale = config.iconTextureScale ?? 1;
+	const textureSize = config.iconSize * textureScale;
+	const outlineWidth = config.outlineWidth * textureScale;
+	const cacheKey = `position:${textureSize}:${config.color.join(",")}:${config.outlineColor.join(",")}:${outlineWidth}`;
+
+	if (!iconCache.has(cacheKey)) {
+		iconCache.set(cacheKey, {
+			url: svgDataUrl(crossIconSvg(textureSize, colorToCss(config.color), colorToCss(config.outlineColor), outlineWidth)),
+			width: textureSize,
+			height: textureSize,
+			anchorX: textureSize / 2,
+			anchorY: textureSize / 2,
 		});
 	}
 

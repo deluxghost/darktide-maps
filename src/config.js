@@ -122,6 +122,13 @@ export const APP_CONFIG = {
 				outlineColor: [255, 0, 0, 235],
 				outlineWidth: 0.45,
 			},
+			positionMarker: {
+				color: [255, 38, 38, 255],
+				outlineColor: [52, 0, 0, 255],
+				iconSize: 15,
+				outlineWidth: 2,
+				iconTextureScale: 3,
+			},
 			auxiliaryLinks: {
 				arcDistanceRatio: 0.38,
 				arcMaxTiltDegrees: 35,

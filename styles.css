@@ -410,6 +410,8 @@ option {
 	flex: 1 1 auto;
 	min-width: 0;
 	overflow-wrap: anywhere;
+	-webkit-user-select: text;
+	user-select: text;
 }
 
 .notification-info {
@@ -486,9 +488,6 @@ option {
 .marker-popup strong {
 	font-size: 16px;
 	line-height: 1.2;
-}
-
-.dev-tools .marker-popup strong {
 	cursor: pointer;
 }
 

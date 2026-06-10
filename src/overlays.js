@@ -18,8 +18,8 @@ export function createMarkerOverlays({
 	mapRenderer,
 	categoryTitle,
 	markerName,
-	onCopyMarkerId,
-	onCopyMarkerIdError,
+	onCopyMarkerUrl,
+	onCopyMarkerUrlError,
 }) {
 	let activeMarker = null;
 	let activeTooltipMarker = null;
@@ -640,15 +640,15 @@ export function createMarkerOverlays({
 		updateAuxiliaryMarkers();
 	}
 
-	function copyActiveMarkerId() {
-		if (!onCopyMarkerId || !activeMarker) {
+	function copyActiveMarkerUrl() {
+		if (!onCopyMarkerUrl || !activeMarker) {
 			return;
 		}
 
-		onCopyMarkerId(activeMarker.id).catch(onCopyMarkerIdError);
+		onCopyMarkerUrl(activeMarker).catch(onCopyMarkerUrlError);
 	}
 
-	markerPopupTitle.addEventListener("click", copyActiveMarkerId);
+	markerPopupTitle.addEventListener("click", copyActiveMarkerUrl);
 
 	function hideForCategory(category) {
 		if (activeMarker?.category === category) {

@@ -2,7 +2,7 @@ import { COORDINATE_SYSTEM, Deck, OrbitView, OrbitViewport } from "@deck.gl/core
 import { IconLayer, PathLayer } from "@deck.gl/layers";
 import { SimpleMeshLayer } from "@deck.gl/mesh-layers";
 import { APP_CONFIG } from "./config.js";
-import { pinIconForCategory } from "./icons.js";
+import { pinIconForCategory, positionMarkerIcon } from "./icons.js";
 
 const RUNTIME = APP_CONFIG.runtime;
 const VISUAL = RUNTIME.visual;
@@ -28,7 +28,11 @@ function viewDepth(pin, viewport) {
 }
 
 function sortedPins(pins, visibleCategories, viewport) {
-	const visiblePins = pins.filter((pin) => visibleCategories.has(pin.category) || pin.markerType === "auxiliary_pin");
+	const visiblePins = pins.filter((pin) => (
+		visibleCategories.has(pin.category)
+		|| pin.markerType === "auxiliary_pin"
+		|| pin.markerType === "position_marker"
+	));
 
 	if (!viewport) {
 		return visiblePins;
@@ -337,6 +341,26 @@ export function createMapRenderer(mapElement, onError) {
 	let deckInstance;
 	let currentState;
 	let viewChangeFrame = 0;
+	let renderToken = 0;
+
+	function nextFrame() {
+		return new Promise((resolve) => requestAnimationFrame(resolve));
+	}
+
+	function currentViewportSize() {
+		return {
+			width: mapElement.clientWidth || window.innerWidth,
+			height: mapElement.clientHeight || window.innerHeight,
+		};
+	}
+
+	function viewStateReady(viewState) {
+		return Array.isArray(viewState?.target)
+			&& viewState.target.every(Number.isFinite)
+			&& Number.isFinite(viewState.zoom)
+			&& Number.isFinite(viewState.rotationOrbit)
+			&& Number.isFinite(viewState.rotationX);
+	}
 
 	function navmeshSurfaceLayerIds() {
 		return currentState ? [`navmesh-surface-${currentState.map.id}`] : [];
@@ -630,15 +654,19 @@ export function createMapRenderer(mapElement, onError) {
 			data: visiblePins,
 			coordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
 			getPosition: (pin) => pin.position,
-			getIcon: (pin) => pinIconForCategory(pin.category, {
-				centerCircle: pin.markerType !== "auxiliary_pin",
-				iconWidth: pin.markerType === "auxiliary_pin" ? VISUAL.pins.iconWidth * VISUAL.auxiliaryLinks.auxiliaryPinScale : undefined,
-				iconHeight: pin.markerType === "auxiliary_pin" ? VISUAL.pins.iconHeight * VISUAL.auxiliaryLinks.auxiliaryPinScale : undefined,
-				strokeWidth: pin.markerType === "auxiliary_pin" ? VISUAL.auxiliaryLinks.auxiliaryPinStrokeWidth : undefined,
-			}),
+			getIcon: (pin) => pin.markerType === "position_marker"
+				? positionMarkerIcon()
+				: pinIconForCategory(pin.category, {
+					centerCircle: pin.markerType !== "auxiliary_pin",
+					iconWidth: pin.markerType === "auxiliary_pin" ? VISUAL.pins.iconWidth * VISUAL.auxiliaryLinks.auxiliaryPinScale : undefined,
+					iconHeight: pin.markerType === "auxiliary_pin" ? VISUAL.pins.iconHeight * VISUAL.auxiliaryLinks.auxiliaryPinScale : undefined,
+					strokeWidth: pin.markerType === "auxiliary_pin" ? VISUAL.auxiliaryLinks.auxiliaryPinStrokeWidth : undefined,
+				}),
 			getSize: (pin) => pin.markerType === "auxiliary_pin"
 				? VISUAL.pins.iconHeight * VISUAL.auxiliaryLinks.auxiliaryPinScale
-				: VISUAL.pins.iconHeight,
+				: pin.markerType === "position_marker"
+					? VISUAL.positionMarker.iconSize
+					: VISUAL.pins.iconHeight,
 			sizeUnits: "pixels",
 			billboard: true,
 			pickable: true,
@@ -686,9 +714,11 @@ export function createMapRenderer(mapElement, onError) {
 			width: mapElement.clientWidth || window.innerWidth,
 			height: mapElement.clientHeight || window.innerHeight,
 		});
+		const token = ++renderToken;
 
 		currentState = {
 			map,
+			token,
 			mesh,
 			boundaryPaths,
 			mainPathMeshes,
@@ -763,6 +793,10 @@ export function createMapRenderer(mapElement, onError) {
 					return true;
 				}
 
+				if (info.object?.markerType === "position_marker") {
+					return true;
+				}
+
 				if (info.object?.markerType === "pin") {
 					currentState.onMarkerClick(info.object, info.x, info.y);
 
@@ -802,6 +836,43 @@ export function createMapRenderer(mapElement, onError) {
 			x: bounds.left + x,
 			y: bounds.top + y,
 		};
+	}
+
+	async function centerOnPosition(position, mapId) {
+		if (!position?.every(Number.isFinite) || !mapId || !currentState) {
+			throw new Error("Cannot center on an invalid map position.");
+		}
+
+		const token = currentState.token;
+
+		while (true) {
+			await nextFrame();
+
+			if (!currentState || currentState.map.id !== mapId || currentState.token !== token) {
+				return false;
+			}
+
+			const viewport = currentViewportSize();
+
+			if (!deckInstance || viewport.width <= 0 || viewport.height <= 0 || !viewStateReady(currentState.viewState)) {
+				continue;
+			}
+
+			const orbitViewport = createOrbitViewportForViewState(viewport, currentState.viewState);
+			const viewState = {
+				...currentState.viewState,
+				target: orbitViewport.panByPosition(position, viewportCenter(viewport)).target,
+			};
+
+			if (!viewStateReady(viewState)) {
+				continue;
+			}
+
+			setViewState(viewState);
+			requestViewChange();
+
+			return true;
+		}
 	}
 
 	function setMainPathVisible(visible) {
@@ -871,6 +942,7 @@ export function createMapRenderer(mapElement, onError) {
 
 	return {
 		render,
+		centerOnPosition,
 		clearRotationAnchor,
 		projectPosition,
 		rotateBy,
