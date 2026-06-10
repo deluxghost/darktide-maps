@@ -901,6 +901,66 @@
 				]
 			},
 			{
+				"id": "grimoire_spawn_1320f4a61638",
+				"category": "grimoire_spawn",
+				"name": {
+					"key": "markerGrimoireSpawn"
+				},
+				"position": [
+					-244.64204406738,
+					-157.5,
+					-15.006999969482
+				]
+			},
+			{
+				"id": "grimoire_spawn_18276b877ec4",
+				"category": "grimoire_spawn",
+				"name": {
+					"key": "markerGrimoireSpawn"
+				},
+				"position": [
+					-215,
+					-176.5,
+					-19.531000137329
+				]
+			},
+			{
+				"id": "grimoire_spawn_5443b6532e0c",
+				"category": "grimoire_spawn",
+				"name": {
+					"key": "markerGrimoireSpawn"
+				},
+				"position": [
+					-146.37612915039,
+					16.25,
+					-19.961999893188
+				]
+			},
+			{
+				"id": "grimoire_spawn_e75005d1ee22",
+				"category": "grimoire_spawn",
+				"name": {
+					"key": "markerGrimoireSpawn"
+				},
+				"position": [
+					-65.796676635742,
+					-148.01846313477,
+					-24.456195831299
+				]
+			},
+			{
+				"id": "grimoire_spawn_e9c68e195f78",
+				"category": "grimoire_spawn",
+				"name": {
+					"key": "markerGrimoireSpawn"
+				},
+				"position": [
+					-148.25,
+					-72.25,
+					-13.456999778748
+				]
+			},
+			{
 				"id": "havoc_boss_spawn_00ff7bfba4a4",
 				"category": "havoc_boss_spawn",
 				"name": {
@@ -1381,10 +1441,10 @@
 				]
 			},
 			{
-				"id": "side_mission_spawn_09d8a133fa47",
-				"category": "side_mission_spawn",
+				"id": "scripture_spawn_09d8a133fa47",
+				"category": "scripture_spawn",
 				"name": {
-					"key": "markerSideMissionSpawn"
+					"key": "markerScriptureSpawn"
 				},
 				"position": [
 					115.12928009033,
@@ -1393,34 +1453,10 @@
 				]
 			},
 			{
-				"id": "side_mission_spawn_1320f4a61638",
-				"category": "side_mission_spawn",
+				"id": "scripture_spawn_1d465a84e064",
+				"category": "scripture_spawn",
 				"name": {
-					"key": "markerSideMissionSpawn"
-				},
-				"position": [
-					-244.64204406738,
-					-157.5,
-					-15.006999969482
-				]
-			},
-			{
-				"id": "side_mission_spawn_18276b877ec4",
-				"category": "side_mission_spawn",
-				"name": {
-					"key": "markerSideMissionSpawn"
-				},
-				"position": [
-					-215,
-					-176.5,
-					-19.531000137329
-				]
-			},
-			{
-				"id": "side_mission_spawn_1d465a84e064",
-				"category": "side_mission_spawn",
-				"name": {
-					"key": "markerSideMissionSpawn"
+					"key": "markerScriptureSpawn"
 				},
 				"position": [
 					-112.90322875977,
@@ -1429,10 +1465,10 @@
 				]
 			},
 			{
-				"id": "side_mission_spawn_226e1fd86505",
-				"category": "side_mission_spawn",
+				"id": "scripture_spawn_226e1fd86505",
+				"category": "scripture_spawn",
 				"name": {
-					"key": "markerSideMissionSpawn"
+					"key": "markerScriptureSpawn"
 				},
 				"position": [
 					-70.92845916748,
@@ -1441,10 +1477,10 @@
 				]
 			},
 			{
-				"id": "side_mission_spawn_30d1f156dd81",
-				"category": "side_mission_spawn",
+				"id": "scripture_spawn_30d1f156dd81",
+				"category": "scripture_spawn",
 				"name": {
-					"key": "markerSideMissionSpawn"
+					"key": "markerScriptureSpawn"
 				},
 				"position": [
 					43.25,
@@ -1453,10 +1489,10 @@
 				]
 			},
 			{
-				"id": "side_mission_spawn_404611c4db6e",
-				"category": "side_mission_spawn",
+				"id": "scripture_spawn_404611c4db6e",
+				"category": "scripture_spawn",
 				"name": {
-					"key": "markerSideMissionSpawn"
+					"key": "markerScriptureSpawn"
 				},
 				"position": [
 					-106.25,
@@ -1465,10 +1501,10 @@
 				]
 			},
 			{
-				"id": "side_mission_spawn_4cf1e0a33f94",
-				"category": "side_mission_spawn",
+				"id": "scripture_spawn_4cf1e0a33f94",
+				"category": "scripture_spawn",
 				"name": {
-					"key": "markerSideMissionSpawn"
+					"key": "markerScriptureSpawn"
 				},
 				"position": [
 					-55.187915802002,
@@ -1477,22 +1513,10 @@
 				]
 			},
 			{
-				"id": "side_mission_spawn_5443b6532e0c",
-				"category": "side_mission_spawn",
+				"id": "scripture_spawn_569c7f975054",
+				"category": "scripture_spawn",
 				"name": {
-					"key": "markerSideMissionSpawn"
-				},
-				"position": [
-					-146.37612915039,
-					16.25,
-					-19.961999893188
-				]
-			},
-			{
-				"id": "side_mission_spawn_569c7f975054",
-				"category": "side_mission_spawn",
-				"name": {
-					"key": "markerSideMissionSpawn"
+					"key": "markerScriptureSpawn"
 				},
 				"position": [
 					7.25,
@@ -1501,10 +1525,10 @@
 				]
 			},
 			{
-				"id": "side_mission_spawn_707056967d69",
-				"category": "side_mission_spawn",
+				"id": "scripture_spawn_707056967d69",
+				"category": "scripture_spawn",
 				"name": {
-					"key": "markerSideMissionSpawn"
+					"key": "markerScriptureSpawn"
 				},
 				"position": [
 					16,
@@ -1513,10 +1537,10 @@
 				]
 			},
 			{
-				"id": "side_mission_spawn_7c91632f9454",
-				"category": "side_mission_spawn",
+				"id": "scripture_spawn_7c91632f9454",
+				"category": "scripture_spawn",
 				"name": {
-					"key": "markerSideMissionSpawn"
+					"key": "markerScriptureSpawn"
 				},
 				"position": [
 					-203,
@@ -1525,10 +1549,10 @@
 				]
 			},
 			{
-				"id": "side_mission_spawn_84e149912a6f",
-				"category": "side_mission_spawn",
+				"id": "scripture_spawn_84e149912a6f",
+				"category": "scripture_spawn",
 				"name": {
-					"key": "markerSideMissionSpawn"
+					"key": "markerScriptureSpawn"
 				},
 				"position": [
 					87.298278808594,
@@ -1537,10 +1561,10 @@
 				]
 			},
 			{
-				"id": "side_mission_spawn_8900b02d22ac",
-				"category": "side_mission_spawn",
+				"id": "scripture_spawn_8900b02d22ac",
+				"category": "scripture_spawn",
 				"name": {
-					"key": "markerSideMissionSpawn"
+					"key": "markerScriptureSpawn"
 				},
 				"position": [
 					-195.45727539062,
@@ -1549,10 +1573,10 @@
 				]
 			},
 			{
-				"id": "side_mission_spawn_8bd0a9bfcbf6",
-				"category": "side_mission_spawn",
+				"id": "scripture_spawn_8bd0a9bfcbf6",
+				"category": "scripture_spawn",
 				"name": {
-					"key": "markerSideMissionSpawn"
+					"key": "markerScriptureSpawn"
 				},
 				"position": [
 					-158.43281555176,
@@ -1561,10 +1585,10 @@
 				]
 			},
 			{
-				"id": "side_mission_spawn_8d855fae3da2",
-				"category": "side_mission_spawn",
+				"id": "scripture_spawn_8d855fae3da2",
+				"category": "scripture_spawn",
 				"name": {
-					"key": "markerSideMissionSpawn"
+					"key": "markerScriptureSpawn"
 				},
 				"position": [
 					-236.75,
@@ -1573,10 +1597,10 @@
 				]
 			},
 			{
-				"id": "side_mission_spawn_cee839745101",
-				"category": "side_mission_spawn",
+				"id": "scripture_spawn_cee839745101",
+				"category": "scripture_spawn",
 				"name": {
-					"key": "markerSideMissionSpawn"
+					"key": "markerScriptureSpawn"
 				},
 				"position": [
 					-22.265769958496,
@@ -1585,10 +1609,10 @@
 				]
 			},
 			{
-				"id": "side_mission_spawn_d2145855d67b",
-				"category": "side_mission_spawn",
+				"id": "scripture_spawn_d2145855d67b",
+				"category": "scripture_spawn",
 				"name": {
-					"key": "markerSideMissionSpawn"
+					"key": "markerScriptureSpawn"
 				},
 				"position": [
 					-130.57696533203,
@@ -1597,10 +1621,10 @@
 				]
 			},
 			{
-				"id": "side_mission_spawn_d352f4d0d0aa",
-				"category": "side_mission_spawn",
+				"id": "scripture_spawn_d352f4d0d0aa",
+				"category": "scripture_spawn",
 				"name": {
-					"key": "markerSideMissionSpawn"
+					"key": "markerScriptureSpawn"
 				},
 				"position": [
 					-185.09466552734,
@@ -1609,10 +1633,10 @@
 				]
 			},
 			{
-				"id": "side_mission_spawn_d651c2a808a8",
-				"category": "side_mission_spawn",
+				"id": "scripture_spawn_d651c2a808a8",
+				"category": "scripture_spawn",
 				"name": {
-					"key": "markerSideMissionSpawn"
+					"key": "markerScriptureSpawn"
 				},
 				"position": [
 					-271.25,
@@ -1621,10 +1645,10 @@
 				]
 			},
 			{
-				"id": "side_mission_spawn_def7dc275fc8",
-				"category": "side_mission_spawn",
+				"id": "scripture_spawn_def7dc275fc8",
+				"category": "scripture_spawn",
 				"name": {
-					"key": "markerSideMissionSpawn"
+					"key": "markerScriptureSpawn"
 				},
 				"position": [
 					-245.25,
@@ -1633,34 +1657,10 @@
 				]
 			},
 			{
-				"id": "side_mission_spawn_e75005d1ee22",
-				"category": "side_mission_spawn",
+				"id": "scripture_spawn_f8530b78876d",
+				"category": "scripture_spawn",
 				"name": {
-					"key": "markerSideMissionSpawn"
-				},
-				"position": [
-					-65.796676635742,
-					-148.01846313477,
-					-24.456195831299
-				]
-			},
-			{
-				"id": "side_mission_spawn_e9c68e195f78",
-				"category": "side_mission_spawn",
-				"name": {
-					"key": "markerSideMissionSpawn"
-				},
-				"position": [
-					-148.25,
-					-72.25,
-					-13.456999778748
-				]
-			},
-			{
-				"id": "side_mission_spawn_f8530b78876d",
-				"category": "side_mission_spawn",
-				"name": {
-					"key": "markerSideMissionSpawn"
+					"key": "markerScriptureSpawn"
 				},
 				"position": [
 					-201.17193603516,
@@ -1669,10 +1669,10 @@
 				]
 			},
 			{
-				"id": "side_mission_spawn_fed2a746c1df",
-				"category": "side_mission_spawn",
+				"id": "scripture_spawn_fed2a746c1df",
+				"category": "scripture_spawn",
 				"name": {
-					"key": "markerSideMissionSpawn"
+					"key": "markerScriptureSpawn"
 				},
 				"position": [
 					-273.11419677734,

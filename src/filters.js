@@ -19,13 +19,18 @@ const FILTER_GROUPS = [
 	},
 	{
 		labelKey: "filterGroupResources",
-		items: ["chest", "supply_spawn", "side_mission_spawn"],
+		items: ["chest", "supply_spawn"],
+	},
+	{
+		labelKey: "filterGroupCollectibles",
+		items: ["scripture_spawn", "grimoire_spawn"],
 	},
 ];
 const DEFAULT_HIDDEN_FILTER_ITEMS = new Set([
 	"chest",
 	"supply_spawn",
-	"side_mission_spawn",
+	"scripture_spawn",
+	"grimoire_spawn",
 ]);
 const ALL_FILTER_ITEM_IDS = FILTER_GROUPS.flatMap((group) => group.items);
 

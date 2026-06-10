@@ -5,6 +5,10 @@ import {arrayFromLuaJson, compactObject, readOptionalFile, sanitizeFileName, sta
 const MARKERS = PREPROCESS_CONFIG.markers;
 const MAIN_PATH = PREPROCESS_CONFIG.mainPath;
 const SUPPLY_DISTRIBUTIONS = new Set(MARKERS.supplyDistributions);
+const SIDE_MISSION_PICKUP_CATEGORIES = new Map([
+	["tome", "scripture_spawn"],
+	["grimoire", "grimoire_spawn"],
+]);
 
 function chestSourceKey(pin) {
 	if (pin.source?.unit_id) {
@@ -22,6 +26,32 @@ function sourceKey(pin) {
 	}
 
 	throw new Error("Marker pin is missing source.");
+}
+
+function sideMissionPickupCategory(pin) {
+	if (pin.source?.distribution_type !== "side_mission" || !Array.isArray(pin.spawnable_pickups)) {
+		return null;
+	}
+
+	const categories = new Set();
+
+	for (const pickup of pin.spawnable_pickups) {
+		const category = SIDE_MISSION_PICKUP_CATEGORIES.get(pickup);
+
+		if (category) {
+			categories.add(category);
+		}
+	}
+
+	if (categories.size !== 1) {
+		return null;
+	}
+
+	return [...categories][0];
+}
+
+function hasSideMissionPickupCategory(category) {
+	return (pin) => sideMissionPickupCategory(pin) === category;
 }
 
 function horizontalDistanceSquared(left, right) {
@@ -261,14 +291,21 @@ function markerFamilies(directories) {
 			sourceKey,
 		},
 		{
-			category: "side_mission_spawn",
-			defaultName: {key: "markerSideMissionSpawn"},
+			category: "scripture_spawn",
+			defaultName: {key: "markerScriptureSpawn"},
 			directory: path.join(directories.root, "pickups"),
-			fileLabel: "Side mission spawn marker",
-			id: markerId("side_mission_spawn"),
-			selectPins(pin) {
-				return pin.source?.distribution_type === "side_mission";
-			},
+			fileLabel: "Scripture marker",
+			id: markerId("scripture_spawn"),
+			selectPins: hasSideMissionPickupCategory("scripture_spawn"),
+			sourceKey,
+		},
+		{
+			category: "grimoire_spawn",
+			defaultName: {key: "markerGrimoireSpawn"},
+			directory: path.join(directories.root, "pickups"),
+			fileLabel: "Grimoire marker",
+			id: markerId("grimoire_spawn"),
+			selectPins: hasSideMissionPickupCategory("grimoire_spawn"),
 			sourceKey,
 		},
 		{

@@ -101,7 +101,7 @@ export const PREPROCESS_CONFIG = {
 	omit: {
 		byMission: {
 			km_enforcer_twins: {
-				markerCategories: ["boss_spawn", "daemonhost", "side_mission_spawn"],
+				markerCategories: ["boss_spawn", "daemonhost", "scripture_spawn", "grimoire_spawn"],
 			},
 			psykhanium: {
 				mainPath: true,

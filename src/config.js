@@ -164,8 +164,12 @@ export const APP_CONFIG = {
 						labelKey: "markerSupplySpawn",
 						color: [189, 163, 132, 245],
 					},
-					side_mission_spawn: {
-						labelKey: "markerSideMissionSpawn",
+					scripture_spawn: {
+						labelKey: "markerScriptureSpawn",
+						color: [147, 188, 132, 245],
+					},
+					grimoire_spawn: {
+						labelKey: "markerGrimoireSpawn",
 						color: [154, 132, 188, 245],
 					},
 					boss_spawn: {
