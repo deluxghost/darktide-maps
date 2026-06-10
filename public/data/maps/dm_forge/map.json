@@ -69,8 +69,8 @@
 	"boundaries": {
 		"file": "./data/maps/dm_forge/navmesh_boundaries.glb",
 		"stats": {
-			"paths": 326,
-			"points": 19876
+			"paths": 268,
+			"points": 19836
 		}
 	},
 	"landmarks": {
@@ -4205,15 +4205,18 @@
 				"sourcePolygons": 9,
 				"manualExcludePoints": 0,
 				"manualExcludedPolygons": 0,
-				"renderedTriangles": 444,
-				"renderedPolygons": 233
+				"renderedTriangles": 628,
+				"renderedPolygons": 375
 			},
 			"navmeshCarve": {
 				"inputTriangles": 41726,
-				"outputTriangles": 42016,
-				"carvedTriangles": 224,
-				"blockerFootprints": 233,
-				"skippedDegenerateTriangles": 0
+				"outputTriangles": 41926,
+				"carvedTriangles": 370,
+				"blockerFootprints": 375,
+				"skippedDegenerateTriangles": 0,
+				"removedFragmentComponents": 4,
+				"removedFragmentTriangles": 5,
+				"removedFragmentArea": 0.5258637454148467
 			}
 		}
 	}

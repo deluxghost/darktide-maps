@@ -97,8 +97,8 @@
 	"boundaries": {
 		"file": "./data/maps/km_enforcer_twins/navmesh_boundaries.glb",
 		"stats": {
-			"paths": 201,
-			"points": 15739
+			"paths": 175,
+			"points": 15298
 		}
 	},
 	"landmarks": {
@@ -1690,18 +1690,21 @@
 				"keptRenderedFragments": 25,
 				"filteredEdges": 2151,
 				"renderedEdges": 298,
-				"sourcePolygons": 22,
-				"manualExcludePoints": 0,
-				"manualExcludedPolygons": 0,
-				"renderedTriangles": 1049,
-				"renderedPolygons": 624
+				"sourcePolygons": 18,
+				"manualExcludePoints": 5,
+				"manualExcludedPolygons": 5,
+				"renderedTriangles": 723,
+				"renderedPolygons": 507
 			},
 			"navmeshCarve": {
 				"inputTriangles": 28768,
-				"outputTriangles": 29199,
-				"carvedTriangles": 600,
-				"blockerFootprints": 624,
-				"skippedDegenerateTriangles": 0
+				"outputTriangles": 28732,
+				"carvedTriangles": 502,
+				"blockerFootprints": 507,
+				"skippedDegenerateTriangles": 0,
+				"removedFragmentComponents": 5,
+				"removedFragmentTriangles": 21,
+				"removedFragmentArea": 1.497396285663871
 			}
 		}
 	}

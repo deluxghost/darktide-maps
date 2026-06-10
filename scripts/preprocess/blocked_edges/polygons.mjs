@@ -2,6 +2,8 @@ import {PREPROCESS_CONFIG} from "../config.mjs";
 import {pointToSegmentDistance2d} from "./geometry.mjs";
 
 const POLYGON_CONFIG = PREPROCESS_CONFIG.blockedEdges.polygons;
+const EDGE_BRIDGE_SAMPLE_STEP_CELLS = 0.5;
+const EDGE_BRIDGE_RADIUS_CELLS = 1;
 const REQUIRED_POLYGON_CONFIG_KEYS = [
 	"closeRadiusCells",
 	"mergeDistanceCells",
@@ -251,6 +253,46 @@ function closeCells(cells) {
 	return erodeCells(dilateCells(cells, radius), radius);
 }
 
+function edgeLength2d(edge) {
+	return Math.hypot(edge.b[0] - edge.a[0], edge.b[1] - edge.a[1]);
+}
+
+function addCellBlock(cells, x, y, radius) {
+	for (let offsetY = -radius; offsetY <= radius; offsetY++) {
+		for (let offsetX = -radius; offsetX <= radius; offsetX++) {
+			cells.add(cellKey(x + offsetX, y + offsetY));
+		}
+	}
+}
+
+function addEdgeBridgeCells(cells, component, edges) {
+	const result = new Set(cells);
+	const sampleStep = component.cell_size * EDGE_BRIDGE_SAMPLE_STEP_CELLS;
+
+	for (const entry of edges) {
+		if (!edgeBoundsCanTouchComponent(entry, component) || !edgeTouchesComponent(entry.edge, component)) {
+			continue;
+		}
+
+		const sampleCount = Math.max(1, Math.ceil(edgeLength2d(entry.edge) / sampleStep));
+
+		for (let index = 0; index <= sampleCount; index++) {
+			const point = edgeSample(entry.edge, index / sampleCount);
+
+			if (Math.abs(point[2] - component.z) > component.cell_size) {
+				continue;
+			}
+
+			const x = Math.floor((point[0] - component.origin[0]) / component.cell_size);
+			const y = Math.floor((point[1] - component.origin[1]) / component.cell_size);
+
+			addCellBlock(result, x, y, EDGE_BRIDGE_RADIUS_CELLS);
+		}
+	}
+
+	return result;
+}
+
 function boundsGap(left, right) {
 	const x = Math.max(0, Math.max(left.bounds.minX - right.bounds.maxX, right.bounds.minX - left.bounds.maxX));
 	const y = Math.max(0, Math.max(left.bounds.minY - right.bounds.maxY, right.bounds.minY - left.bounds.maxY));
@@ -333,6 +375,7 @@ function groupCells(group) {
 		origin,
 		z: weightedZ / cellCount,
 		cells,
+		bounds: group.bounds,
 	};
 }
 
@@ -535,10 +578,11 @@ export function createSamplePolygons(samples, edges) {
 	let polygonCount = 0;
 	const components = selectedComponents(samples, edges);
 	const groups = createComponentGroups(components);
+	const edgeBoundsList = edges.map(edgeBounds);
 
 	for (const group of groups) {
 		const component = groupCells(group);
-		const cells = closeCells(component.cells);
+		const cells = closeCells(addEdgeBridgeCells(component.cells, component, edgeBoundsList));
 		const loops = keepPrimaryLoops(sortLoopsByArea(
 			traceLoops(boundaryEdges(cells)).map((loop) => toWorldLoop(component, loop)),
 		));

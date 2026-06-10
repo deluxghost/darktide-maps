@@ -114,6 +114,7 @@ export const APP_CONFIG = {
 			},
 			mainPath: {
 				tubeColor: [255, 125, 0, 255],
+				connectorsColor: [255, 125, 0, 255],
 				arrowsColor: [255, 61, 41, 255],
 				startColor: [86, 255, 131, 255],
 			},

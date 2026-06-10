@@ -77,8 +77,8 @@
 	"boundaries": {
 		"file": "./data/maps/cm_habs/navmesh_boundaries.glb",
 		"stats": {
-			"paths": 431,
-			"points": 24221
+			"paths": 330,
+			"points": 24034
 		}
 	},
 	"landmarks": {
@@ -3887,18 +3887,21 @@
 				"keptRenderedFragments": 34,
 				"filteredEdges": 4019,
 				"renderedEdges": 623,
-				"sourcePolygons": 32,
+				"sourcePolygons": 29,
 				"manualExcludePoints": 0,
 				"manualExcludedPolygons": 0,
-				"renderedTriangles": 1861,
-				"renderedPolygons": 1139
+				"renderedTriangles": 2304,
+				"renderedPolygons": 1539
 			},
 			"navmeshCarve": {
 				"inputTriangles": 45230,
-				"outputTriangles": 45816,
-				"carvedTriangles": 1087,
-				"blockerFootprints": 1139,
-				"skippedDegenerateTriangles": 0
+				"outputTriangles": 45531,
+				"carvedTriangles": 1509,
+				"blockerFootprints": 1539,
+				"skippedDegenerateTriangles": 0,
+				"removedFragmentComponents": 10,
+				"removedFragmentTriangles": 32,
+				"removedFragmentArea": 0.7148857263161735
 			}
 		}
 	}

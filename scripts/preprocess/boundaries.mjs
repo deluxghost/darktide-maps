@@ -4,9 +4,14 @@ const BOUNDARY_CONFIG = PREPROCESS_CONFIG.boundaries;
 const COORDINATE_PRECISION = BOUNDARY_CONFIG.coordinatePrecision;
 const LINE_GROUP_PRECISION = Math.max(0, COORDINATE_PRECISION - 2);
 const MINIMUM_COLLAPSED_AREA = BOUNDARY_CONFIG.minimumCollapsedArea;
+const MAXIMUM_DANGLING_BRANCH_LENGTH = BOUNDARY_CONFIG.maximumDanglingBranchLength;
 const REPAIRED_VERTEX_PRECISION = Math.max(0, COORDINATE_PRECISION - 1);
 const REFERENCE_EDGE_TOLERANCE = 2 * 10 ** -LINE_GROUP_PRECISION;
 const EPSILON = 1e-6;
+
+if (!Number.isFinite(MAXIMUM_DANGLING_BRANCH_LENGTH)) {
+	throw new Error("Missing boundary config: maximumDanglingBranchLength");
+}
 
 function addEdge(edgeCounts, a, b) {
 	if (a === b) {
@@ -124,26 +129,20 @@ function createLineGroup(start, end) {
 
 	const normal = [-direction[1], direction[0]];
 	const lineOffset = normal[0] * start[0] + normal[1] * start[1];
-	const startT = direction[0] * start[0] + direction[1] * start[1];
-	const endT = direction[0] * end[0] + direction[1] * end[1];
-	const zSlope = (end[2] - start[2]) / (endT - startT);
-	const zOffset = start[2] - zSlope * startT;
 
 	return {
 		direction,
 		normal,
 		lineOffset,
-		zSlope,
-		zOffset,
 		segments: [],
 	};
 }
 
-function pointOnLine(group, t) {
+function pointOnGroupLine(group, t) {
 	const x = group.normal[0] * group.lineOffset + group.direction[0] * t;
 	const y = group.normal[1] * group.lineOffset + group.direction[1] * t;
 
-	return [x, y, group.zSlope * t + group.zOffset];
+	return [x, y];
 }
 
 function addLineSegment(groups, start, end) {
@@ -160,6 +159,8 @@ function addLineSegment(groups, start, end) {
 	group.segments.push({
 		minT: Math.min(startT, endT),
 		maxT: Math.max(startT, endT),
+		zSlope: (end[2] - start[2]) / (endT - startT),
+		zOffset: start[2] - ((end[2] - start[2]) / (endT - startT)) * startT,
 	});
 	groups.set(key, group);
 }
@@ -178,13 +179,19 @@ function uniqueSorted(values) {
 	return result;
 }
 
-function coveringSegmentCount(segments, start, end) {
+function coveringSegments(segments, start, end) {
 	const middle = (start + end) / 2;
 
 	return segments.filter((segment) => (
 		middle >= segment.minT - EPSILON
 		&& middle <= segment.maxT + EPSILON
-	)).length;
+	));
+}
+
+function pointOnSegmentLine(group, segment, t) {
+	const [x, y] = pointOnGroupLine(group, t);
+
+	return [x, y, segment.zSlope * t + segment.zOffset];
 }
 
 function addRepairedEdge(edges, vertices, vertexIds, start, end) {
@@ -228,7 +235,7 @@ function uniqueBoundaryEdges(edges) {
 	}
 
 	return [...counts.values()]
-		.filter((entry) => entry.count === 1)
+		.filter((entry) => entry.count % 2 === 1)
 		.map((entry) => entry.edge);
 }
 
@@ -252,12 +259,19 @@ function repairedBoundaryEdges(candidateEdges, representatives, positions) {
 		for (let index = 0; index < cuts.length - 1; index++) {
 			const start = cuts[index];
 			const end = cuts[index + 1];
+			const covering = coveringSegments(group.segments, start, end);
 
-			if (end - start <= EPSILON || coveringSegmentCount(group.segments, start, end) !== 1) {
+			if (end - start <= EPSILON || covering.length % 2 === 0) {
 				continue;
 			}
 
-			addRepairedEdge(edges, vertices, vertexIds, pointOnLine(group, start), pointOnLine(group, end));
+			addRepairedEdge(
+				edges,
+				vertices,
+				vertexIds,
+				pointOnSegmentLine(group, covering[0], start),
+				pointOnSegmentLine(group, covering[0], end),
+			);
 		}
 	}
 
@@ -358,6 +372,99 @@ function addAdjacentEdge(adjacency, vertexId, edgeId) {
 	}
 }
 
+function edgeLength(edge, vertices) {
+	const start = vertices[edge.start];
+	const end = vertices[edge.end];
+
+	return Math.hypot(
+		start[0] - end[0],
+		start[1] - end[1],
+		start[2] - end[2],
+	);
+}
+
+function createAdjacency(edges, removed = new Set()) {
+	const adjacency = new Map();
+
+	for (let edgeId = 0; edgeId < edges.length; edgeId++) {
+		if (removed.has(edgeId)) {
+			continue;
+		}
+
+		const edge = edges[edgeId];
+
+		addAdjacentEdge(adjacency, edge.start, edgeId);
+		addAdjacentEdge(adjacency, edge.end, edgeId);
+	}
+
+	return adjacency;
+}
+
+function walkDanglingBranch(edges, vertices, adjacency, startVertexId, startEdgeId) {
+	const edgeIds = [];
+	let currentVertexId = startVertexId;
+	let currentEdgeId = startEdgeId;
+	let length = 0;
+
+	while (currentEdgeId !== undefined && !edgeIds.includes(currentEdgeId)) {
+		const edge = edges[currentEdgeId];
+		const nextVertexId = edge.start === currentVertexId ? edge.end : edge.start;
+
+		edgeIds.push(currentEdgeId);
+		length += edgeLength(edge, vertices);
+
+		const nextEdges = adjacency.get(nextVertexId) ?? [];
+
+		if (nextEdges.length !== 2) {
+			break;
+		}
+
+		currentEdgeId = nextEdges.find((edgeId) => edgeId !== currentEdgeId);
+		currentVertexId = nextVertexId;
+	}
+
+	return {
+		edgeIds,
+		length,
+	};
+}
+
+function removeDanglingEdges(edges, vertices) {
+	if (MAXIMUM_DANGLING_BRANCH_LENGTH <= 0) {
+		return edges;
+	}
+
+	const removed = new Set();
+	let changed = true;
+
+	while (changed) {
+		changed = false;
+
+		const adjacency = createAdjacency(edges, removed);
+
+		for (const [vertexId, edgeIds] of adjacency) {
+			if (edgeIds.length !== 1 || removed.has(edgeIds[0])) {
+				continue;
+			}
+
+			const branch = walkDanglingBranch(edges, vertices, adjacency, vertexId, edgeIds[0]);
+
+			if (branch.length > MAXIMUM_DANGLING_BRANCH_LENGTH) {
+				continue;
+			}
+
+			for (const edgeId of branch.edgeIds) {
+				removed.add(edgeId);
+			}
+
+			changed = true;
+			break;
+		}
+	}
+
+	return edges.filter((_, edgeId) => !removed.has(edgeId));
+}
+
 function walkPath(edges, adjacency, visited, startVertexId, startEdgeId) {
 	const vertexIds = [startVertexId];
 	let vertexId = startVertexId;
@@ -384,16 +491,9 @@ function walkPath(edges, adjacency, visited, startVertexId, startEdgeId) {
 }
 
 function createPaths(edges) {
-	const adjacency = new Map();
+	const adjacency = createAdjacency(edges);
 	const visited = new Set();
 	const paths = [];
-
-	for (let edgeId = 0; edgeId < edges.length; edgeId++) {
-		const edge = edges[edgeId];
-
-		addAdjacentEdge(adjacency, edge.start, edgeId);
-		addAdjacentEdge(adjacency, edge.end, edgeId);
-	}
 
 	for (const [vertexId, edgeIds] of adjacency) {
 		if (edgeIds.length === 2) {
@@ -503,12 +603,13 @@ export function createBoundaryPaths(navmesh, referenceNavmesh = null) {
 	}
 
 	const {edges, vertices} = repairedBoundaryEdges(
-		Array.from(edgeCounts.values()).filter((edge) => edge.count === 1),
+		Array.from(edgeCounts.values()).filter((edge) => edge.count % 2 === 1),
 		representatives,
 		positions,
 	);
+	const cleanEdges = removeDanglingEdges(edges, vertices);
 
-	const paths = createPaths(edges)
+	const paths = createPaths(cleanEdges)
 		.map((vertexPath) => vertexPath.map((vertexId) => vertices[vertexId]))
 		.filter((path) => !isCollapsedPath(path));
 

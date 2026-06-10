@@ -105,8 +105,8 @@
 	"boundaries": {
 		"file": "./data/maps/fm_resurgence/navmesh_boundaries.glb",
 		"stats": {
-			"paths": 538,
-			"points": 27793
+			"paths": 444,
+			"points": 27585
 		}
 	},
 	"landmarks": {
@@ -4364,18 +4364,21 @@
 				"keptRenderedFragments": 47,
 				"filteredEdges": 3836,
 				"renderedEdges": 1258,
-				"sourcePolygons": 48,
+				"sourcePolygons": 45,
 				"manualExcludePoints": 0,
 				"manualExcludedPolygons": 0,
-				"renderedTriangles": 2785,
-				"renderedPolygons": 1918
+				"renderedTriangles": 3295,
+				"renderedPolygons": 2346
 			},
 			"navmeshCarve": {
 				"inputTriangles": 60339,
-				"outputTriangles": 60664,
-				"carvedTriangles": 1855,
-				"blockerFootprints": 1918,
-				"skippedDegenerateTriangles": 0
+				"outputTriangles": 60344,
+				"carvedTriangles": 2292,
+				"blockerFootprints": 2346,
+				"skippedDegenerateTriangles": 0,
+				"removedFragmentComponents": 18,
+				"removedFragmentTriangles": 71,
+				"removedFragmentArea": 3.2096257405274025
 			}
 		}
 	}

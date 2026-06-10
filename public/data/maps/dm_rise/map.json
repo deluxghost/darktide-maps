@@ -93,8 +93,8 @@
 	"boundaries": {
 		"file": "./data/maps/dm_rise/navmesh_boundaries.glb",
 		"stats": {
-			"paths": 595,
-			"points": 34289
+			"paths": 407,
+			"points": 33802
 		}
 	},
 	"landmarks": {
@@ -4091,18 +4091,21 @@
 				"keptRenderedFragments": 54,
 				"filteredEdges": 6034,
 				"renderedEdges": 2522,
-				"sourcePolygons": 56,
-				"manualExcludePoints": 0,
-				"manualExcludedPolygons": 0,
-				"renderedTriangles": 4796,
-				"renderedPolygons": 3199
+				"sourcePolygons": 48,
+				"manualExcludePoints": 2,
+				"manualExcludedPolygons": 2,
+				"renderedTriangles": 5051,
+				"renderedPolygons": 3481
 			},
 			"navmeshCarve": {
 				"inputTriangles": 65604,
-				"outputTriangles": 66278,
-				"carvedTriangles": 3088,
-				"blockerFootprints": 3199,
-				"skippedDegenerateTriangles": 0
+				"outputTriangles": 65777,
+				"carvedTriangles": 3426,
+				"blockerFootprints": 3481,
+				"skippedDegenerateTriangles": 0,
+				"removedFragmentComponents": 25,
+				"removedFragmentTriangles": 84,
+				"removedFragmentArea": 4.055560273227477
 			}
 		}
 	}

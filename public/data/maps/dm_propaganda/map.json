@@ -89,8 +89,8 @@
 	"boundaries": {
 		"file": "./data/maps/dm_propaganda/navmesh_boundaries.glb",
 		"stats": {
-			"paths": 332,
-			"points": 21103
+			"paths": 307,
+			"points": 21015
 		}
 	},
 	"landmarks": {
@@ -4011,18 +4011,21 @@
 				"keptRenderedFragments": 16,
 				"filteredEdges": 3135,
 				"renderedEdges": 250,
-				"sourcePolygons": 16,
+				"sourcePolygons": 14,
 				"manualExcludePoints": 0,
 				"manualExcludedPolygons": 0,
-				"renderedTriangles": 817,
-				"renderedPolygons": 465
+				"renderedTriangles": 941,
+				"renderedPolygons": 599
 			},
 			"navmeshCarve": {
 				"inputTriangles": 43316,
-				"outputTriangles": 43686,
-				"carvedTriangles": 442,
-				"blockerFootprints": 465,
-				"skippedDegenerateTriangles": 0
+				"outputTriangles": 43524,
+				"carvedTriangles": 583,
+				"blockerFootprints": 599,
+				"skippedDegenerateTriangles": 0,
+				"removedFragmentComponents": 5,
+				"removedFragmentTriangles": 21,
+				"removedFragmentArea": 0.5369555013150058
 			}
 		}
 	}

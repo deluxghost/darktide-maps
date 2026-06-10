@@ -129,8 +129,8 @@
 	"boundaries": {
 		"file": "./data/maps/tg_shooting_range/navmesh_boundaries.glb",
 		"stats": {
-			"paths": 22,
-			"points": 825
+			"paths": 19,
+			"points": 831
 		}
 	},
 	"diagnostics": {
@@ -152,15 +152,18 @@
 				"sourcePolygons": 1,
 				"manualExcludePoints": 0,
 				"manualExcludedPolygons": 0,
-				"renderedTriangles": 98,
-				"renderedPolygons": 62
+				"renderedTriangles": 124,
+				"renderedPolygons": 81
 			},
 			"navmeshCarve": {
 				"inputTriangles": 5238,
-				"outputTriangles": 5257,
-				"carvedTriangles": 62,
-				"blockerFootprints": 62,
-				"skippedDegenerateTriangles": 0
+				"outputTriangles": 5251,
+				"carvedTriangles": 81,
+				"blockerFootprints": 81,
+				"skippedDegenerateTriangles": 0,
+				"removedFragmentComponents": 0,
+				"removedFragmentTriangles": 0,
+				"removedFragmentArea": 0
 			}
 		}
 	}

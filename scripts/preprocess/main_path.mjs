@@ -180,6 +180,47 @@ function addTubePath(mesh, nodes, radius) {
 	addTubeCap(mesh, nodes[nodes.length - 1], rings[rings.length - 1], normalize(tangentAt(nodes, nodes.length - 1)), false);
 }
 
+function pointBetween(start, end, amount) {
+	return [
+		start[0] + (end[0] - start[0]) * amount,
+		start[1] + (end[1] - start[1]) * amount,
+		start[2] + (end[2] - start[2]) * amount,
+	];
+}
+
+function addDashedTube(mesh, start, end) {
+	const length = distance(start, end);
+	const gapLength = MAIN_PATH.segmentConnectorGapLength;
+	const dashLength = MAIN_PATH.segmentConnectorDashLength;
+	const endAt = length - gapLength;
+
+	if (length <= gapLength * 2 || dashLength <= 0 || gapLength < 0) {
+		return;
+	}
+
+	for (let from = gapLength; from < endAt; from += dashLength + gapLength) {
+		const to = Math.min(from + dashLength, endAt);
+
+		if (to <= from) {
+			continue;
+		}
+
+		addTubePath(mesh, [
+			pointBetween(start, end, from / length),
+			pointBetween(start, end, to / length),
+		], MAIN_PATH.tubeRadius);
+	}
+}
+
+function addSegmentConnectors(mesh, segments) {
+	for (let index = 1; index < segments.length; index++) {
+		const previous = segments[index - 1];
+		const current = segments[index];
+
+		addDashedTube(mesh, previous[previous.length - 1], current[0]);
+	}
+}
+
 function addSphere(mesh, center, radius) {
 	const latitudes = MAIN_PATH.sphereLatitudes;
 	const longitudes = MAIN_PATH.sphereLongitudes;
@@ -230,6 +271,7 @@ function addSegmentEndArrow(mesh, nodes) {
 export function createMainPathMeshes(data) {
 	const meshes = {
 		tube: createMesh(),
+		connectors: createMesh(),
 		arrows: createMesh(),
 		start: createMesh(),
 	};
@@ -241,6 +283,7 @@ export function createMainPathMeshes(data) {
 		addTubePath(meshes.tube, nodes, MAIN_PATH.tubeRadius);
 		addSegmentEndArrow(meshes.arrows, nodes);
 	}
+	addSegmentConnectors(meshes.connectors, visibleSegments);
 
 	if (visibleSegments.length > 0) {
 		const firstSegment = visibleSegments[0];

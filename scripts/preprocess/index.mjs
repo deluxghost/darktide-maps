@@ -45,8 +45,17 @@ const context = {
 };
 const maps = [];
 
+function logMapResult(map) {
+	const reduction = ((1 - map.assetBytes / map.sourceBytes) * 100).toFixed(1);
+
+	console.log(`${map.data.id}: ${map.sourceBytes} -> ${map.assetBytes} bytes (${reduction}% smaller)`);
+}
+
 for (const inputFileName of inputFiles) {
-	maps.push(await buildMissionAssets(inputFileName, context));
+	const map = await buildMissionAssets(inputFileName, context);
+
+	maps.push(map);
+	logMapResult(map);
 }
 
 await removeStaleAssets(outputDirectory, maps);
@@ -59,9 +68,3 @@ await writeFile(
 		maps: maps.map((map) => map.manifest),
 	}), null, "\t")}\n`,
 );
-
-for (const map of maps) {
-	const reduction = ((1 - map.assetBytes / map.sourceBytes) * 100).toFixed(1);
-
-	console.log(`${map.data.id}: ${map.sourceBytes} -> ${map.assetBytes} bytes (${reduction}% smaller)`);
-}

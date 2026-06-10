@@ -65,8 +65,8 @@
 	"boundaries": {
 		"file": "./data/maps/km_heresy/navmesh_boundaries.glb",
 		"stats": {
-			"paths": 320,
-			"points": 20800
+			"paths": 277,
+			"points": 20547
 		}
 	},
 	"landmarks": {
@@ -4115,17 +4115,20 @@
 				"filteredEdges": 2257,
 				"renderedEdges": 418,
 				"sourcePolygons": 12,
-				"manualExcludePoints": 0,
-				"manualExcludedPolygons": 0,
-				"renderedTriangles": 929,
-				"renderedPolygons": 574
+				"manualExcludePoints": 1,
+				"manualExcludedPolygons": 1,
+				"renderedTriangles": 931,
+				"renderedPolygons": 656
 			},
 			"navmeshCarve": {
 				"inputTriangles": 44567,
-				"outputTriangles": 44816,
-				"carvedTriangles": 550,
-				"blockerFootprints": 574,
-				"skippedDegenerateTriangles": 0
+				"outputTriangles": 44531,
+				"carvedTriangles": 642,
+				"blockerFootprints": 656,
+				"skippedDegenerateTriangles": 0,
+				"removedFragmentComponents": 6,
+				"removedFragmentTriangles": 14,
+				"removedFragmentArea": 0.363691691676434
 			}
 		}
 	}

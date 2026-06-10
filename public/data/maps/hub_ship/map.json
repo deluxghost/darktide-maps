@@ -105,8 +105,8 @@
 	"boundaries": {
 		"file": "./data/maps/hub_ship/navmesh_boundaries.glb",
 		"stats": {
-			"paths": 64,
-			"points": 2208
+			"paths": 23,
+			"points": 2050
 		}
 	},
 	"diagnostics": {
@@ -126,17 +126,20 @@
 				"filteredEdges": 593,
 				"renderedEdges": 213,
 				"sourcePolygons": 10,
-				"manualExcludePoints": 0,
-				"manualExcludedPolygons": 0,
-				"renderedTriangles": 663,
-				"renderedPolygons": 443
+				"manualExcludePoints": 2,
+				"manualExcludedPolygons": 2,
+				"renderedTriangles": 707,
+				"renderedPolygons": 491
 			},
 			"navmeshCarve": {
 				"inputTriangles": 4763,
-				"outputTriangles": 4851,
-				"carvedTriangles": 434,
-				"blockerFootprints": 443,
-				"skippedDegenerateTriangles": 0
+				"outputTriangles": 4712,
+				"carvedTriangles": 489,
+				"blockerFootprints": 491,
+				"skippedDegenerateTriangles": 0,
+				"removedFragmentComponents": 19,
+				"removedFragmentTriangles": 48,
+				"removedFragmentArea": 1.9517225727902503
 			}
 		}
 	}

@@ -69,8 +69,8 @@
 	"boundaries": {
 		"file": "./data/maps/fm_cargo/navmesh_boundaries.glb",
 		"stats": {
-			"paths": 332,
-			"points": 21001
+			"paths": 248,
+			"points": 20888
 		}
 	},
 	"landmarks": {
@@ -4250,18 +4250,21 @@
 				"keptRenderedFragments": 24,
 				"filteredEdges": 2536,
 				"renderedEdges": 365,
-				"sourcePolygons": 27,
-				"manualExcludePoints": 0,
-				"manualExcludedPolygons": 0,
-				"renderedTriangles": 1094,
-				"renderedPolygons": 659
+				"sourcePolygons": 24,
+				"manualExcludePoints": 1,
+				"manualExcludedPolygons": 1,
+				"renderedTriangles": 1401,
+				"renderedPolygons": 888
 			},
 			"navmeshCarve": {
 				"inputTriangles": 41821,
-				"outputTriangles": 42352,
-				"carvedTriangles": 638,
-				"blockerFootprints": 659,
-				"skippedDegenerateTriangles": 1
+				"outputTriangles": 42188,
+				"carvedTriangles": 862,
+				"blockerFootprints": 888,
+				"skippedDegenerateTriangles": 0,
+				"removedFragmentComponents": 16,
+				"removedFragmentTriangles": 44,
+				"removedFragmentArea": 3.3723972302611593
 			}
 		}
 	}

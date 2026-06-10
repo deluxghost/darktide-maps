@@ -73,8 +73,8 @@
 	"boundaries": {
 		"file": "./data/maps/op_no_mans_land/navmesh_boundaries.glb",
 		"stats": {
-			"paths": 368,
-			"points": 17180
+			"paths": 305,
+			"points": 16972
 		}
 	},
 	"landmarks": {
@@ -1574,18 +1574,21 @@
 				"keptRenderedFragments": 41,
 				"filteredEdges": 2667,
 				"renderedEdges": 666,
-				"sourcePolygons": 53,
-				"manualExcludePoints": 0,
-				"manualExcludedPolygons": 0,
-				"renderedTriangles": 2034,
-				"renderedPolygons": 1175
+				"sourcePolygons": 40,
+				"manualExcludePoints": 2,
+				"manualExcludedPolygons": 2,
+				"renderedTriangles": 2418,
+				"renderedPolygons": 1476
 			},
 			"navmeshCarve": {
 				"inputTriangles": 37109,
-				"outputTriangles": 38164,
-				"carvedTriangles": 1112,
-				"blockerFootprints": 1175,
-				"skippedDegenerateTriangles": 0
+				"outputTriangles": 37848,
+				"carvedTriangles": 1437,
+				"blockerFootprints": 1476,
+				"skippedDegenerateTriangles": 0,
+				"removedFragmentComponents": 32,
+				"removedFragmentTriangles": 73,
+				"removedFragmentArea": 3.2298873219757622
 			}
 		}
 	}

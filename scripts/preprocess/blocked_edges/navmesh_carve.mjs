@@ -1,6 +1,7 @@
 import earcut from "earcut";
 import polygonClipping from "polygon-clipping";
 import {PREPROCESS_CONFIG} from "../config.mjs";
+import {createTriangleComponents} from "./navmesh_components.mjs";
 
 const CARVE_CONFIG = PREPROCESS_CONFIG.blockedEdges.navmeshCarve;
 const SURFACE_VERTICAL_OFFSET = PREPROCESS_CONFIG.blockedEdges.verticalOffset;
@@ -9,6 +10,10 @@ const EPSILON = 1e-8;
 
 if (!Number.isFinite(CARVE_CONFIG?.verticalDistance)) {
 	throw new Error("Missing blocked edge navmesh carve config: verticalDistance");
+}
+
+if (!Number.isFinite(CARVE_CONFIG?.minimumFragmentArea)) {
+	throw new Error("Missing blocked edge navmesh carve config: minimumFragmentArea");
 }
 
 function bounds2d(points) {
@@ -365,7 +370,7 @@ function addVertex(vertices, vertexIndexes, point) {
 	return vertices.length;
 }
 
-function addClippedPolygon(rings, zAt, output) {
+function addClippedPolygon(rings, zAt, output, source) {
 	const {vertices: flatVertices, holes, vertexSources} = flattenPolygonForEarcut(rings);
 
 	if (flatVertices.length < 6) {
@@ -394,7 +399,7 @@ function addClippedPolygon(rings, zAt, output) {
 			points.push([x, y, z]);
 		}
 
-		addTriangle(points, output);
+		addTriangle(points, output, source);
 	}
 }
 
@@ -498,7 +503,7 @@ function addSurfacePolygon(mesh, rings, zAt, normal) {
 	return true;
 }
 
-function addTriangle(points, output) {
+function addTriangle(points, output, source) {
 	if (triangleArea2dFromPoints(points) <= EPSILON) {
 		output.skippedDegenerateTriangles++;
 
@@ -506,6 +511,7 @@ function addTriangle(points, output) {
 	}
 
 	output.triangles.push(points.map((point) => addVertex(output.vertices, output.vertexIndexes, point)));
+	output.sources.push(source);
 }
 
 function trianglePositions(navmesh, triangle) {
@@ -566,7 +572,7 @@ function footprintsByTriangle(footprints) {
 
 function carveTriangle(triangleIndex, points, footprints, output) {
 	if (!footprints?.length) {
-		addTriangle(points, output);
+		addTriangle(points, output, "original");
 
 		return false;
 	}
@@ -574,7 +580,7 @@ function carveTriangle(triangleIndex, points, footprints, output) {
 	const zAt = trianglePlaneZ(points);
 
 	if (!zAt) {
-		addTriangle(points, output);
+		addTriangle(points, output, "original");
 
 		return false;
 	}
@@ -586,7 +592,7 @@ function carveTriangle(triangleIndex, points, footprints, output) {
 	}
 
 	for (const piece of pieces) {
-		addClippedPolygon([piece], zAt, output);
+		addClippedPolygon([piece], zAt, output, "carved");
 	}
 
 	return true;
@@ -599,6 +605,97 @@ function assertOutputSize(inputTriangleCount, outputTriangleCount) {
 			+ `The limit is ${MAX_OUTPUT_TRIANGLE_RATIO}x.`,
 		);
 	}
+}
+
+function compactOutput(output, keptTriangleIndexes) {
+	const vertices = [];
+	const vertexIndexes = new Map();
+	const triangles = [];
+	const sources = [];
+
+	for (const triangleIndex of keptTriangleIndexes) {
+		const triangle = output.triangles[triangleIndex];
+
+		triangles.push(triangle.map((oldIndex) => {
+			const point = output.vertices[oldIndex - 1];
+			const key = point.map((value) => value.toFixed(6)).join(",");
+			const existing = vertexIndexes.get(key);
+
+			if (existing) {
+				return existing;
+			}
+
+			vertices.push(point);
+			vertexIndexes.set(key, vertices.length);
+
+			return vertices.length;
+		}));
+		sources.push(output.sources[triangleIndex]);
+	}
+
+	return {
+		...output,
+		vertices,
+		vertexIndexes,
+		triangles,
+		sources,
+	};
+}
+
+function removeSmallFragments(output) {
+	const minimumArea = CARVE_CONFIG.minimumFragmentArea;
+
+	if (minimumArea <= 0 || output.triangles.length === 0) {
+		return {
+			output,
+			stats: {
+				removedFragmentComponents: 0,
+				removedFragmentTriangles: 0,
+				removedFragmentArea: 0,
+			},
+		};
+	}
+
+	const removedTriangleIndexes = new Set();
+	let removedComponents = 0;
+	let removedArea = 0;
+
+	for (const component of createTriangleComponents(output)) {
+		if (component.hasOriginalSurface || component.area >= minimumArea) {
+			continue;
+		}
+
+		removedComponents++;
+		removedArea += component.area;
+
+		for (const triangleIndex of component.triangles) {
+			removedTriangleIndexes.add(triangleIndex);
+		}
+	}
+
+	if (removedTriangleIndexes.size === 0) {
+		return {
+			output,
+			stats: {
+				removedFragmentComponents: 0,
+				removedFragmentTriangles: 0,
+				removedFragmentArea: 0,
+			},
+		};
+	}
+
+	const keptTriangleIndexes = output.triangles
+		.map((_, index) => index)
+		.filter((index) => !removedTriangleIndexes.has(index));
+
+	return {
+		output: compactOutput(output, keptTriangleIndexes),
+		stats: {
+			removedFragmentComponents: removedComponents,
+			removedFragmentTriangles: removedTriangleIndexes.size,
+			removedFragmentArea: removedArea,
+		},
+	};
 }
 
 export function createBlockedFootprints(navmesh, polygons) {
@@ -678,6 +775,7 @@ export function carveNavmesh(navmesh, footprints) {
 		vertices: [],
 		vertexIndexes: new Map(),
 		triangles: [],
+		sources: [],
 		skippedDegenerateTriangles: 0,
 	};
 	let carvedTriangles = 0;
@@ -698,25 +796,29 @@ export function carveNavmesh(navmesh, footprints) {
 		}
 	}
 
-	assertOutputSize(navmesh.triangles.length, output.triangles.length);
+	const filtered = removeSmallFragments(output);
+	const finalOutput = filtered.output;
+
+	assertOutputSize(navmesh.triangles.length, finalOutput.triangles.length);
 
 	return {
 		navmesh: {
 			...navmesh,
-			vertices: output.vertices,
-			triangles: output.triangles,
+			vertices: finalOutput.vertices,
+			triangles: finalOutput.triangles,
 			stats: {
 				...navmesh.stats,
-				triangles: output.triangles.length,
+				triangles: finalOutput.triangles.length,
 			},
 			bounds: navmesh.bounds,
 		},
 		stats: {
 			inputTriangles: navmesh.triangles.length,
-			outputTriangles: output.triangles.length,
+			outputTriangles: finalOutput.triangles.length,
 			carvedTriangles,
 			blockerFootprints: footprints.length,
 			skippedDegenerateTriangles: output.skippedDegenerateTriangles,
+			...filtered.stats,
 		},
 	};
 }

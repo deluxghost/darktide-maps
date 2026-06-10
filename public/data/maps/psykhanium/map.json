@@ -69,8 +69,8 @@
 	"boundaries": {
 		"file": "./data/maps/psykhanium/navmesh_boundaries.glb",
 		"stats": {
-			"paths": 257,
-			"points": 11735
+			"paths": 159,
+			"points": 11578
 		}
 	},
 	"markers": {
@@ -525,18 +525,21 @@
 				"keptRenderedFragments": 17,
 				"filteredEdges": 1678,
 				"renderedEdges": 180,
-				"sourcePolygons": 26,
-				"manualExcludePoints": 0,
-				"manualExcludedPolygons": 0,
-				"renderedTriangles": 637,
-				"renderedPolygons": 364
+				"sourcePolygons": 19,
+				"manualExcludePoints": 1,
+				"manualExcludedPolygons": 1,
+				"renderedTriangles": 790,
+				"renderedPolygons": 476
 			},
 			"navmeshCarve": {
 				"inputTriangles": 26337,
-				"outputTriangles": 26750,
-				"carvedTriangles": 344,
-				"blockerFootprints": 364,
-				"skippedDegenerateTriangles": 0
+				"outputTriangles": 26675,
+				"carvedTriangles": 466,
+				"blockerFootprints": 476,
+				"skippedDegenerateTriangles": 0,
+				"removedFragmentComponents": 7,
+				"removedFragmentTriangles": 13,
+				"removedFragmentArea": 0.7303983642798135
 			}
 		}
 	}
