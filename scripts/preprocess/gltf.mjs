@@ -84,9 +84,7 @@ export function createNavmeshGlb(data) {
 	const indices = new IndexArray(data.triangles.length * 3);
 
 	for (let index = 0; index < data.triangles.length; index++) {
-		const triangle = data.triangles[index];
-
-		indices.set(triangle.slice(0, 3).map((vertexIndex) => vertexIndex - 1), index * 3);
+		indices.set(data.triangles[index].slice(0, 3).map((vertexIndex) => vertexIndex - 1), index * 3);
 	}
 
 	const positionBuffer = Buffer.from(positions.buffer);
@@ -98,7 +96,6 @@ export function createNavmeshGlb(data) {
 		schemaVersion: data.schema_version,
 		tiles: data.stats.tiles,
 	});
-
 	positionBuffer.copy(binary);
 	indexBuffer.copy(binary, indexOffset);
 
@@ -110,28 +107,39 @@ export function createNavmeshGlb(data) {
 			mode: TRIANGLES_MODE,
 		}],
 	});
-	gltf.bufferViews.push(
-		{buffer: 0, byteOffset: 0, byteLength: positionBuffer.length, target: ARRAY_BUFFER_TARGET},
-		{buffer: 0, byteOffset: indexOffset, byteLength: indexBuffer.length, target: ELEMENT_ARRAY_BUFFER_TARGET},
-	);
-	gltf.accessors.push(
-		{
-			bufferView: 0,
-			componentType: FLOAT_COMPONENT_TYPE,
-			count: data.vertices.length,
-			type: "VEC3",
-			min: data.bounds.min,
-			max: data.bounds.max,
-		},
-		{
-			bufferView: 1,
-			componentType: useUint32 ? UNSIGNED_INT_COMPONENT_TYPE : UNSIGNED_SHORT_COMPONENT_TYPE,
-			count: indices.length,
-			type: "SCALAR",
-		},
-	);
+	gltf.bufferViews.push({
+		buffer: 0,
+		byteOffset: 0,
+		byteLength: positionBuffer.length,
+		target: ARRAY_BUFFER_TARGET,
+	});
+	gltf.accessors.push({
+		bufferView: 0,
+		componentType: FLOAT_COMPONENT_TYPE,
+		count: data.vertices.length,
+		type: "VEC3",
+		min: data.bounds.min,
+		max: data.bounds.max,
+	});
 
-	return createGlbFile(gltf, binary);
+	gltf.bufferViews.push({
+		buffer: 0,
+		byteOffset: indexOffset,
+		byteLength: indexBuffer.length,
+		target: ELEMENT_ARRAY_BUFFER_TARGET,
+	});
+	gltf.accessors.push({
+		bufferView: 1,
+		componentType: useUint32 ? UNSIGNED_INT_COMPONENT_TYPE : UNSIGNED_SHORT_COMPONENT_TYPE,
+		count: indices.length,
+		type: "SCALAR",
+	});
+
+	const chunks = [binary];
+	appendFloorAttribute(gltf, chunks, gltf.meshes[0].primitives[0], data.floorIds, data.vertices.length);
+	const labeledBinary = writeChunks(chunks);
+	gltf.buffers[0].byteLength = labeledBinary.length;
+	return createGlbFile(gltf, labeledBinary);
 }
 
 function appendAligned(chunks, buffer) {
@@ -140,6 +148,31 @@ function appendAligned(chunks, buffer) {
 	chunks.push(buffer);
 
 	return offset;
+}
+
+function writeChunks(chunks) {
+	const binaryLength = chunks.reduce((sum, chunk) => align4(sum + chunk.length), 0);
+	const binary = Buffer.alloc(binaryLength);
+	let offset = 0;
+
+	for (const chunk of chunks) {
+		chunk.copy(binary, offset);
+		offset = align4(offset + chunk.length);
+	}
+
+	return binary;
+}
+
+function appendFloorAttribute(gltf, chunks, primitive, floors, count) {
+	if (floors?.length !== count || floors.some((floor) => !Number.isFinite(floor))) {
+		throw new Error("Geometry is missing valid floor coordinates.");
+	}
+	const values = Float32Array.from(floors);
+	const buffer = Buffer.from(values.buffer);
+	const offset = appendAligned(chunks, buffer);
+	primitive.attributes._FLOOR = gltf.accessors.length;
+	gltf.accessors.push({bufferView: gltf.bufferViews.length, componentType: FLOAT_COMPONENT_TYPE, count, type: "SCALAR"});
+	gltf.bufferViews.push({buffer: 0, byteOffset: offset, byteLength: buffer.length, target: ARRAY_BUFFER_TARGET});
 }
 
 export function createGeometryPartsGlb(name, parts, extras) {
@@ -219,16 +252,10 @@ export function createGeometryPartsGlb(name, parts, extras) {
 			mode: TRIANGLES_MODE,
 			extras: {part},
 		});
+		appendFloorAttribute(gltf, chunks, gltf.meshes[0].primitives.at(-1), mesh.floorIds, positions.length / 3);
 	}
 
-	const binaryLength = chunks.reduce((sum, chunk) => align4(sum + chunk.length), 0);
-	const binary = Buffer.alloc(binaryLength);
-	let offset = 0;
-
-	for (const chunk of chunks) {
-		chunk.copy(binary, offset);
-		offset = align4(offset + chunk.length);
-	}
+	const binary = writeChunks(chunks);
 
 	gltf.buffers.push({byteLength: binary.length});
 

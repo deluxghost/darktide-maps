@@ -14,156 +14,169 @@
 		]
 	},
 	"view": {
-		"projectedArea": 6335.257424326433,
+		"projectedArea": 5911.913292116039,
 		"projectedHull": [
 			[
-				-37.69817829132067,
-				397.71552189190896
+				-36.46028664248769,
+				407.59840779004253
 			],
 			[
-				-31.349011421203507,
-				-5.092396338781317
+				-30.30485339104283,
+				-9.183967841632217
 			],
 			[
-				-29.761719703674217,
-				-10.004688024521439
+				-27.996565921751007,
+				-14.087289907887214
 			],
 			[
-				-28.174427986144924,
-				-14.916979710261565
+				-24.91884929602858,
+				-18.99061197414221
 			],
 			[
-				-24.99984455108634,
-				-19.82927139600169
+				-21.071703513875544,
+				-23.893934040397212
 			],
 			[
-				-19.444323539733823,
-				-24.741563081741816
+				-13.377411949569474,
+				-28.797256106652206
 			],
 			[
-				-11.507864952087367,
-				-29.653854767481942
+				13.552608525501775,
+				-28.797256106652206
 			],
 			[
-				11.50786495208736,
-				-29.653854767481942
+				21.246900089807852,
+				-23.893934040397212
 			],
 			[
-				20.237969398498464,
-				-24.741563081741816
+				25.09404587196088,
+				-18.99061197414221
 			],
 			[
-				24.99984455108634,
-				-19.82927139600169
+				28.17176249768331,
+				-14.087289907887214
 			],
 			[
-				28.17442798614492,
-				-14.916979710261565
+				30.480049966975137,
+				-9.183967841632217
 			],
 			[
-				31.349011421203514,
-				-5.092396338781317
+				36.635483218419985,
+				407.59840779004253
 			],
 			[
-				37.69817829132067,
-				397.71552189190896
+				35.09662490555878,
+				412.5017298562975
 			],
 			[
-				37.69817829132067,
-				402.6278135776491
+				28.17176249768331,
+				422.3083739888075
 			],
 			[
-				36.904532432556024,
-				407.5401052633892
+				19.708041776946637,
+				427.2116960550626
 			],
 			[
-				35.31724071502673,
-				412.4523969491293
+				-19.53284520101433,
+				427.2116960550626
 			],
 			[
-				32.14265727996815,
-				417.3646886348694
+				-28.765995078181614,
+				422.3083739888075
 			],
 			[
-				28.17442798614492,
-				422.27698032060954
-			],
-			[
-				22.618906974792402,
-				427.1892720063497
-			],
-			[
-				6.745989799499483,
-				432.1015636920898
-			],
-			[
-				-6.74598979949949,
-				432.1015636920898
-			],
-			[
-				-22.618906974792402,
-				427.1892720063497
-			],
-			[
-				-28.96807384490957,
-				422.27698032060954
-			],
-			[
-				-32.142657279968155,
-				417.3646886348694
-			],
-			[
-				-35.317240715026735,
-				412.4523969491293
-			],
-			[
-				-36.90453243255603,
-				407.5401052633892
-			],
-			[
-				-37.69817829132067,
-				402.6278135776491
+				-34.15199917319586,
+				412.5017298562975
 			]
 		]
+	},
+	"floorSlices": {
+		"algorithm": "ordered-cut-v3",
+		"layers": [
+			{
+				"id": "floor-0",
+				"minZ": 0.499877,
+				"maxZ": 0.999877
+			}
+		],
+		"stats": {
+			"triangles": 5560,
+			"pieces": 5559,
+			"nodes": 8,
+			"connectedEdges": 7801,
+			"rejectedAdjacency": 13,
+			"originalArea": 5880.041573339424,
+			"analysisAreaError": 0,
+			"adjacencyMs": 95.54450000000361,
+			"graphMs": 111.79210000000603,
+			"floors": 1,
+			"outputTriangles": 5559,
+			"outputVertices": 3592,
+			"areaError": 0,
+			"maxTriangleAreaError": 4.547473508864641e-13,
+			"floatAreaError": 0,
+			"maxFloatTriangleAreaError": 4.547473508864641e-13,
+			"clearance": 2,
+			"pairCandidates": 0,
+			"polygonIntersections": 0,
+			"relations": 0,
+			"overlapMs": 12.736900000003516,
+			"regions": 8,
+			"rejectedMerges": 0,
+			"logicalFloors": 1,
+			"minimumDisplayArea": 64,
+			"displayAreas": [
+				5880.04157333943
+			],
+			"mergedFloorBoundaries": 0,
+			"mergedOcclusionArea": 0,
+			"mergedFloorGroups": [],
+			"attachmentComponents": 5,
+			"attachmentNodes": 5,
+			"unattachedComponents": 0,
+			"attachmentMs": 6.823100000008708,
+			"algorithm": "ordered-cut-v3",
+			"totalMs": 167.26239999999234
+		}
 	},
 	"boundaries": {
 		"file": "./data/maps/tg_shooting_range/navmesh_boundaries.glb",
 		"stats": {
-			"paths": 19,
-			"points": 831
+			"paths": 51,
+			"points": 1431
 		}
 	},
 	"diagnostics": {
 		"blockedEdges": {
 			"file": "./data/maps/tg_shooting_range/blocked_edges.glb",
 			"stats": {
-				"inputEdges": 292,
+				"inputEdges": 941,
 				"doorFilteredEdges": 0,
 				"dynamicVolumeFilteredEdges": 0,
 				"markerCollisionFilteredEdges": 0,
-				"inputComponents": 15,
+				"inputComponents": 41,
 				"includedComponents": 0,
-				"splitComponents": 3,
-				"renderedComponents": 5,
-				"renderedFragments": 5,
-				"keptRenderedFragments": 1,
-				"filteredEdges": 225,
-				"renderedEdges": 67,
-				"sourcePolygons": 1,
+				"splitComponents": 11,
+				"renderedComponents": 24,
+				"renderedFragments": 73,
+				"keptRenderedFragments": 29,
+				"filteredEdges": 591,
+				"renderedEdges": 350,
+				"sourcePolygons": 13,
 				"manualExcludePoints": 0,
 				"manualExcludedPolygons": 0,
-				"renderedTriangles": 124,
-				"renderedPolygons": 81
+				"renderedTriangles": 1807,
+				"renderedPolygons": 1037
 			},
 			"navmeshCarve": {
 				"inputTriangles": 5238,
-				"outputTriangles": 5251,
-				"carvedTriangles": 81,
-				"blockerFootprints": 81,
+				"outputTriangles": 5560,
+				"carvedTriangles": 1008,
+				"blockerFootprints": 1037,
 				"skippedDegenerateTriangles": 0,
-				"removedFragmentComponents": 0,
-				"removedFragmentTriangles": 0,
-				"removedFragmentArea": 0
+				"removedFragmentComponents": 58,
+				"removedFragmentTriangles": 127,
+				"removedFragmentArea": 4.260851269556248
 			}
 		}
 	}

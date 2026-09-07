@@ -8,14 +8,16 @@ function createMesh() {
 		positions: [],
 		normals: [],
 		indices: [],
+		floorIds: [],
 	};
 }
 
-function pushVertex(target, normalTarget, position, normal) {
-	target.push(position[0], position[1], position[2]);
-	normalTarget.push(normal[0], normal[1], normal[2]);
+function pushVertex(mesh, position, normal, floor) {
+	mesh.positions.push(position[0], position[1], position[2]);
+	mesh.normals.push(normal[0], normal[1], normal[2]);
+	mesh.floorIds.push(floor);
 
-	return target.length / 3 - 1;
+	return mesh.positions.length / 3 - 1;
 }
 
 function subtract(a, b) {
@@ -65,23 +67,23 @@ function offsetPoint(point) {
 	return [point[0], point[1], point[2] + MAIN_PATH.verticalOffset];
 }
 
-function addCone(mesh, baseCenter, tip, radius) {
+function addCone(mesh, baseCenter, tip, radius, floor) {
 	const direction = subtract(tip, baseCenter);
 	const {forward, right, normal} = basisForDirection(direction);
 	const sides = MAIN_PATH.arrowSides;
 	const base = [];
-	const tipIndex = pushVertex(mesh.positions, mesh.normals, tip, forward);
-	const baseCenterIndex = pushVertex(mesh.positions, mesh.normals, baseCenter, scale(forward, -1));
+	const tipIndex = pushVertex(mesh, tip, forward, floor);
+	const baseCenterIndex = pushVertex(mesh, baseCenter, scale(forward, -1), floor);
 
 	for (let side = 0; side < sides; side++) {
 		const angle = side / sides * Math.PI * 2;
 		const radial = normalize(add(scale(right, Math.cos(angle)), scale(normal, Math.sin(angle))));
 
 		base.push(pushVertex(
-			mesh.positions,
-			mesh.normals,
+			mesh,
 			add(baseCenter, scale(radial, radius)),
 			normalize(add(radial, scale(forward, 0.45))),
+			floor,
 		));
 	}
 
@@ -123,8 +125,8 @@ function tangentAt(nodes, index) {
 	);
 }
 
-function addTubeCap(mesh, center, ring, normal, reverse) {
-	const centerIndex = pushVertex(mesh.positions, mesh.normals, center, normal);
+function addTubeCap(mesh, center, ring, normal, reverse, floor) {
+	const centerIndex = pushVertex(mesh, center, normal, floor);
 
 	for (let side = 0; side < ring.length; side++) {
 		const next = (side + 1) % ring.length;
@@ -137,7 +139,7 @@ function addTubeCap(mesh, center, ring, normal, reverse) {
 	}
 }
 
-function addTubePath(mesh, nodes, radius) {
+function addTubePath(mesh, nodes, radius, floorAt) {
 	if (nodes.length < 2) {
 		return;
 	}
@@ -148,16 +150,17 @@ function addTubePath(mesh, nodes, radius) {
 	for (let index = 0; index < nodes.length; index++) {
 		const {right, normal} = basisForDirection(tangentAt(nodes, index));
 		const ring = [];
+		const floor = floorAt(nodes[index]);
 
 		for (let side = 0; side < sides; side++) {
 			const angle = side / sides * Math.PI * 2;
 			const radial = normalize(add(scale(right, Math.cos(angle)), scale(normal, Math.sin(angle))));
 
 			ring.push(pushVertex(
-				mesh.positions,
-				mesh.normals,
+				mesh,
 				add(nodes[index], scale(radial, radius)),
 				radial,
+				floor,
 			));
 		}
 
@@ -176,8 +179,8 @@ function addTubePath(mesh, nodes, radius) {
 		}
 	}
 
-	addTubeCap(mesh, nodes[0], rings[0], scale(normalize(tangentAt(nodes, 0)), -1), true);
-	addTubeCap(mesh, nodes[nodes.length - 1], rings[rings.length - 1], normalize(tangentAt(nodes, nodes.length - 1)), false);
+	addTubeCap(mesh, nodes[0], rings[0], scale(normalize(tangentAt(nodes, 0)), -1), true, floorAt(nodes[0]));
+	addTubeCap(mesh, nodes[nodes.length - 1], rings[rings.length - 1], normalize(tangentAt(nodes, nodes.length - 1)), false, floorAt(nodes.at(-1)));
 }
 
 function pointBetween(start, end, amount) {
@@ -188,11 +191,14 @@ function pointBetween(start, end, amount) {
 	];
 }
 
-function addDashedTube(mesh, start, end) {
+function addDashedTube(mesh, start, end, floorAt) {
 	const length = distance(start, end);
 	const gapLength = MAIN_PATH.segmentConnectorGapLength;
 	const dashLength = MAIN_PATH.segmentConnectorDashLength;
 	const endAt = length - gapLength;
+	const startFloor = floorAt(start), endFloor = floorAt(end);
+	// A connector spans missing path data; interpolate its endpoint ownership monotonically.
+	const connectorFloor = (point) => startFloor + (endFloor - startFloor) * distance(start, point) / length;
 
 	if (length <= gapLength * 2 || dashLength <= 0 || gapLength < 0) {
 		return;
@@ -208,20 +214,20 @@ function addDashedTube(mesh, start, end) {
 		addTubePath(mesh, [
 			pointBetween(start, end, from / length),
 			pointBetween(start, end, to / length),
-		], MAIN_PATH.tubeRadius);
+		], MAIN_PATH.tubeRadius, connectorFloor);
 	}
 }
 
-function addSegmentConnectors(mesh, segments) {
+function addSegmentConnectors(mesh, segments, floorAt) {
 	for (let index = 1; index < segments.length; index++) {
 		const previous = segments[index - 1];
 		const current = segments[index];
 
-		addDashedTube(mesh, previous[previous.length - 1], current[0]);
+		addDashedTube(mesh, previous[previous.length - 1], current[0], floorAt);
 	}
 }
 
-function addSphere(mesh, center, radius) {
+function addSphere(mesh, center, radius, floor) {
 	const latitudes = MAIN_PATH.sphereLatitudes;
 	const longitudes = MAIN_PATH.sphereLongitudes;
 	const rows = [];
@@ -238,7 +244,7 @@ function addSphere(mesh, center, radius) {
 				Math.cos(phi),
 			];
 
-			row.push(pushVertex(mesh.positions, mesh.normals, add(center, scale(normal, radius)), normal));
+			row.push(pushVertex(mesh, add(center, scale(normal, radius)), normal, floor));
 		}
 
 		rows.push(row);
@@ -254,7 +260,7 @@ function addSphere(mesh, center, radius) {
 	}
 }
 
-function addSegmentEndArrow(mesh, nodes) {
+function addSegmentEndArrow(mesh, nodes, floor) {
 	if (nodes.length < 2) {
 		return;
 	}
@@ -265,10 +271,10 @@ function addSegmentEndArrow(mesh, nodes) {
 	const coneBase = add(base, scale(direction, -MAIN_PATH.arrowTailOverlap));
 	const tip = add(base, scale(direction, MAIN_PATH.arrowTipOffset));
 
-	addCone(mesh, coneBase, tip, MAIN_PATH.arrowRadius);
+	addCone(mesh, coneBase, tip, MAIN_PATH.arrowRadius, floor);
 }
 
-export function createMainPathMeshes(data) {
+export function createMainPathMeshes(data, floors) {
 	const meshes = {
 		tube: createMesh(),
 		connectors: createMesh(),
@@ -278,17 +284,20 @@ export function createMainPathMeshes(data) {
 	const visibleSegments = arrayFromLuaJson(data.segments ?? [], "main path segments")
 		.map((segment) => cleanNodes(arrayFromLuaJson(segment.nodes ?? [], "main path segment nodes")))
 		.filter((nodes) => nodes.length >= 2);
+	const floorAt = (point) => floors.floorAt([point[0], point[1], point[2] - MAIN_PATH.verticalOffset]) + 0.5;
 
 	for (const nodes of visibleSegments) {
-		addTubePath(meshes.tube, nodes, MAIN_PATH.tubeRadius);
-		addSegmentEndArrow(meshes.arrows, nodes);
+		for (const section of floors.splitPath(nodes, MAIN_PATH.verticalOffset)) {
+			addTubePath(meshes.tube, section.path, MAIN_PATH.tubeRadius, () => section.floorIndex + 0.5);
+		}
+		addSegmentEndArrow(meshes.arrows, nodes, floorAt(nodes.at(-1)));
 	}
-	addSegmentConnectors(meshes.connectors, visibleSegments);
+	addSegmentConnectors(meshes.connectors, visibleSegments, floorAt);
 
 	if (visibleSegments.length > 0) {
 		const firstSegment = visibleSegments[0];
 
-		addSphere(meshes.start, firstSegment[0], MAIN_PATH.startSphereRadius);
+		addSphere(meshes.start, firstSegment[0], MAIN_PATH.startSphereRadius, floorAt(firstSegment[0]));
 	}
 
 	return meshes;

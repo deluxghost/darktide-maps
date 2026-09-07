@@ -1,4 +1,5 @@
 import { Geometry } from "@luma.gl/engine";
+import {floorCoordinatesAttribute} from "./floorclip.js";
 
 function positionKey(positions, index) {
 	const offset = index * 3;
@@ -45,6 +46,7 @@ export function createGeometryBoundaryPaths(glb) {
 				edges.set(key, {
 					count: 1,
 					path: [positionAt(glb.positions, a), positionAt(glb.positions, b)],
+					floorIndex: Math.floor(glb.floorIds[a]),
 				});
 			}
 		}
@@ -52,14 +54,18 @@ export function createGeometryBoundaryPaths(glb) {
 
 	return [...edges.values()]
 		.filter((edge) => edge.count === 1)
-		.map((edge) => ({path: edge.path}));
+		.map((edge) => ({path: edge.path, floorIndex: edge.floorIndex}));
 }
 
 export function createPathBoundaryPaths(glb) {
 	const pathLengths = glb.extras?.pathLengths;
+	const floorIndices = glb.extras?.floorIndices;
 
 	if (!Array.isArray(pathLengths)) {
 		throw new Error("Boundary GLB is missing path lengths.");
+	}
+	if (floorIndices?.length !== pathLengths.length || !floorIndices.every(Number.isInteger)) {
+		throw new Error("Boundary GLB is missing floor indices.");
 	}
 
 	const paths = [];
@@ -82,7 +88,7 @@ export function createPathBoundaryPaths(glb) {
 			]);
 		}
 
-		paths.push({path});
+		paths.push({path, floorIndex: floorIndices[paths.length]});
 		vertexOffset += pathLength;
 	}
 
@@ -98,11 +104,16 @@ export function createLandmarkMesh(glb) {
 		throw new Error("Landmark GLB is missing normals.");
 	}
 
+	if (glb.indices.length === 0) {
+		return null;
+	}
+
 	return new Geometry({
 		topology: "triangle-list",
 		attributes: {
 			positions: { size: 3, value: glb.positions },
 			normals: { size: 3, value: glb.normals },
+			texCoords: floorCoordinatesAttribute(glb.floorIds),
 		},
 		indices: glb.indices,
 	});

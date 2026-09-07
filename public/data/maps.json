@@ -1,6 +1,6 @@
 {
 	"schemaVersion": 1,
-	"dataUpdatedAtUnix": 1781114601,
+	"dataUpdatedAtUnix": 1788787305,
 	"zones": {
 		"dust": {
 			"en": "The Hourglass",
@@ -55,7 +55,7 @@
 				"pl": "Archivum Sycorax",
 				"pt-br": "Archivum Sycorax"
 			},
-			"resourceBytes": 1308305
+			"resourceBytes": 1535927
 		},
 		{
 			"id": "cm_habs",
@@ -76,7 +76,7 @@
 				"pl": "Hab Dreyko",
 				"pt-br": "Hab Dreyko"
 			},
-			"resourceBytes": 1425996
+			"resourceBytes": 1831076
 		},
 		{
 			"id": "cm_raid",
@@ -97,7 +97,7 @@
 				"pl": "Nora 6-19",
 				"pt-br": "Toca 6-19"
 			},
-			"resourceBytes": 1484928
+			"resourceBytes": 1776522
 		},
 		{
 			"id": "core_research",
@@ -118,7 +118,7 @@
 				"pl": "Clandestium Gloriana",
 				"pt-br": "Clandestium Gloriana"
 			},
-			"resourceBytes": 921518
+			"resourceBytes": 1159913
 		},
 		{
 			"id": "dm_forge",
@@ -139,7 +139,7 @@
 				"pl": "Kompleks huty HL-17-36",
 				"pt-br": "Fundição HL-17-36"
 			},
-			"resourceBytes": 1140263
+			"resourceBytes": 1518037
 		},
 		{
 			"id": "dm_propaganda",
@@ -160,7 +160,7 @@
 				"pl": "Stacja przekazywania TRS-150",
 				"pt-br": "Estação Retransmissora TRS-150"
 			},
-			"resourceBytes": 1224888
+			"resourceBytes": 1509518
 		},
 		{
 			"id": "dm_rise",
@@ -181,7 +181,7 @@
 				"pl": "Unośnik 31",
 				"pt-br": "Ascensor 31"
 			},
-			"resourceBytes": 2106508
+			"resourceBytes": 2625193
 		},
 		{
 			"id": "dm_stockpile",
@@ -202,7 +202,7 @@
 				"pl": "Klaster silosów 18-66/a",
 				"pt-br": "Conjunto de Armazéns 18-66/a"
 			},
-			"resourceBytes": 1212447
+			"resourceBytes": 1509040
 		},
 		{
 			"id": "fm_armoury",
@@ -223,7 +223,7 @@
 				"pl": "Handlowa HL-70-04",
 				"pt-br": "Mercantil HL-70-04"
 			},
-			"resourceBytes": 1625604
+			"resourceBytes": 2016698
 		},
 		{
 			"id": "fm_cargo",
@@ -244,7 +244,7 @@
 				"pl": "Plac dostawczy HL-17-36",
 				"pt-br": "Pátio de Cargas HL-17-36"
 			},
-			"resourceBytes": 1240929
+			"resourceBytes": 1533646
 		},
 		{
 			"id": "fm_resurgence",
@@ -265,7 +265,7 @@
 				"pl": "Enclavum Baross",
 				"pt-br": "Enclavum Baross"
 			},
-			"resourceBytes": 1737647
+			"resourceBytes": 2145523
 		},
 		{
 			"id": "hm_cartel",
@@ -286,7 +286,7 @@
 				"pl": "Posterunek Zapomnienie",
 				"pt-br": "Estação de Vigília Oblivium"
 			},
-			"resourceBytes": 1403552
+			"resourceBytes": 1797452
 		},
 		{
 			"id": "hm_complex",
@@ -307,7 +307,7 @@
 				"pl": "Kom-pleks 154/2f",
 				"pt-br": "Complexo de Comunicação 154/2f"
 			},
-			"resourceBytes": 1501641
+			"resourceBytes": 1763789
 		},
 		{
 			"id": "hm_strain",
@@ -328,7 +328,7 @@
 				"pl": "Rafineria Delta-17",
 				"pt-br": "Refinaria Delta-17"
 			},
-			"resourceBytes": 1331594
+			"resourceBytes": 1737629
 		},
 		{
 			"id": "hub_ship",
@@ -348,7 +348,7 @@
 				"pl": "Mourningstar",
 				"pt-br": "Mourningstar"
 			},
-			"resourceBytes": 163607
+			"resourceBytes": 163348
 		},
 		{
 			"id": "km_enforcer",
@@ -369,7 +369,7 @@
 				"pl": "Cela więzienna TM8-707",
 				"pt-br": "Magistrati Oubliette TM8-707"
 			},
-			"resourceBytes": 1405561
+			"resourceBytes": 1740486
 		},
 		{
 			"id": "km_enforcer_twins",
@@ -390,7 +390,7 @@
 				"pl": "Ofensywa Orthus",
 				"pt-br": "A Ofensiva Orthus"
 			},
-			"resourceBytes": 852729
+			"resourceBytes": 1167006
 		},
 		{
 			"id": "km_heresy",
@@ -411,7 +411,7 @@
 				"pl": "Komunia Ciemności",
 				"pt-br": "Comunhão sombria"
 			},
-			"resourceBytes": 1208706
+			"resourceBytes": 1446917
 		},
 		{
 			"id": "km_station",
@@ -432,7 +432,7 @@
 				"pl": "Stacja Otchłań HL-16-11",
 				"pt-br": "Estação do Abismo HL-16-11"
 			},
-			"resourceBytes": 1273031
+			"resourceBytes": 1672242
 		},
 		{
 			"id": "lm_cooling",
@@ -453,7 +453,7 @@
 				"pl": "Sieć zasilania HL-17-36",
 				"pt-br": "Matriz de Força HL-17-36"
 			},
-			"resourceBytes": 1212037
+			"resourceBytes": 1481992
 		},
 		{
 			"id": "lm_rails",
@@ -474,7 +474,7 @@
 				"pl": "Logistratum Otchłań",
 				"pt-br": "Logistratum do Abismo"
 			},
-			"resourceBytes": 1277252
+			"resourceBytes": 1584333
 		},
 		{
 			"id": "lm_scavenge",
@@ -495,7 +495,7 @@
 				"pl": "Krypta akcyzy Iglica-13",
 				"pt-br": "Cofre de Contenção de Spireside-13"
 			},
-			"resourceBytes": 1510400
+			"resourceBytes": 1927438
 		},
 		{
 			"id": "op_no_mans_land",
@@ -516,7 +516,7 @@
 				"pl": "Ziemia niczyja",
 				"pt-br": "Terra de Ninguém"
 			},
-			"resourceBytes": 1137700
+			"resourceBytes": 1367732
 		},
 		{
 			"id": "op_train",
@@ -537,7 +537,7 @@
 				"pl": "Pędząca stal",
 				"pt-br": "Aço rolante"
 			},
-			"resourceBytes": 270367
+			"resourceBytes": 309033
 		},
 		{
 			"id": "prologue",
@@ -557,7 +557,7 @@
 				"pl": "Bastion Tancred",
 				"pt-br": "O Bastião de Tancred"
 			},
-			"resourceBytes": 301398
+			"resourceBytes": 369304
 		},
 		{
 			"id": "psykhanium",
@@ -577,7 +577,7 @@
 				"pl": "Próby Mortis",
 				"pt-br": "Provações Mortis"
 			},
-			"resourceBytes": 655155
+			"resourceBytes": 788226
 		},
 		{
 			"id": "tg_shooting_range",
@@ -597,7 +597,7 @@
 				"pl": "Psikhanium",
 				"pt-br": "Psykhanium"
 			},
-			"resourceBytes": 97057
+			"resourceBytes": 283621
 		}
 	]
 }

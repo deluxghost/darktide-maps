@@ -1,12 +1,17 @@
 import {mkdir, readFile, rm, writeFile} from "node:fs/promises";
 import path from "node:path";
-import {createGeometryPartsGlb, createNavmeshGlb, createPathLinesGlb} from "./gltf.mjs";
+import {
+	createGeometryPartsGlb,
+	createNavmeshGlb,
+	createPathLinesGlb,
+} from "./gltf.mjs";
 import {createMainPathMeshes, createMainPathSampler, createMainPathSummary} from "./main_path.mjs";
 import {buildMarkers} from "./markers.mjs";
 import {shouldOmitMainPath} from "./config.mjs";
 import {buildBlockedEdgesOverlay} from "./blocked_edges.mjs";
 import {carveNavmesh} from "./blocked_edges/navmesh_carve.mjs";
 import {createBoundaryPaths} from "./boundaries.mjs";
+import {assignMarkerFloors, createFloorSlices} from "./floors.mjs";
 import {createViewMetadata} from "./view.mjs";
 import {
 	compactObject,
@@ -59,7 +64,7 @@ async function buildMainPathAsset(missionId, context) {
 		throw new Error(`Main path mission mismatch: ${inputPath}. Expected ${missionId}, got ${data.mission}.`);
 	}
 
-	const meshes = createMainPathMeshes(data);
+	const meshes = createMainPathMeshes(data, context.floors.sampler);
 
 	if (Object.values(meshes).every((mesh) => mesh.indices.length === 0)) {
 		console.warn(`${missionId}: main path contains no renderable segments, skipping.`);
@@ -86,9 +91,7 @@ async function buildMainPathAsset(missionId, context) {
 	};
 }
 
-async function buildBlockedEdgesAsset(missionId, context) {
-	const overlay = await buildBlockedEdgesOverlay(missionId, context.directories, context.navmesh);
-
+async function buildBlockedEdgesAsset(missionId, context, overlay) {
 	if (!overlay?.mesh) {
 		return overlay
 			? {
@@ -102,7 +105,7 @@ async function buildBlockedEdgesAsset(missionId, context) {
 	const fileName = "blocked_edges.glb";
 	const outputPath = path.join(context.missionDirectory, fileName);
 	const glb = createGeometryPartsGlb(`${missionId}_blocked_edges`, {
-		edges: overlay.mesh,
+		edges: context.floors.sampler.labelMesh(overlay.mesh),
 	}, {
 		schemaVersion: overlay.data.schema_version,
 		kind: "blockedEdges",
@@ -117,12 +120,13 @@ async function buildBlockedEdgesAsset(missionId, context) {
 			file: `./data/maps/${sanitizeFileName(missionId)}/${fileName}`,
 			stats: overlay.stats,
 		},
-		footprints: overlay.footprints,
 	};
 }
 
 async function buildNavmeshBoundaryAsset(missionId, navmesh, context) {
-	const paths = createBoundaryPaths(navmesh, context.referenceNavmesh);
+	const sliced = createBoundaryPaths(navmesh, context.referenceNavmesh)
+		.flatMap((boundary) => context.floors.sampler.splitPath(boundary));
+	const paths = sliced.map((boundary) => boundary.path);
 	const stats = {
 		paths: paths.length,
 		points: paths.reduce((sum, path) => sum + path.length, 0),
@@ -133,6 +137,7 @@ async function buildNavmeshBoundaryAsset(missionId, navmesh, context) {
 		schemaVersion: navmesh.schema_version,
 		kind: "navmeshBoundaries",
 		stats,
+		floorIndices: sliced.map((boundary) => boundary.floorIndex),
 	});
 
 	await writeFile(outputPath, glb);
@@ -169,9 +174,14 @@ export async function buildMissionAssets(inputFileName, context) {
 
 	const fileName = "navmesh.glb";
 	const outputPath = path.join(missionDirectory, fileName);
+	const overlay = await buildBlockedEdgesOverlay(data.mission, context.directories, data);
+	const carved = carveNavmesh(data, overlay?.footprints ?? []);
+	const renderNavmesh = carved.navmesh;
+	const floors = createFloorSlices(renderNavmesh);
 	const mainPath = await buildMainPathAsset(data.mission, {
 		...context,
 		missionDirectory,
+		floors,
 	});
 	const mainPathSampler = mainPath ? createMainPathSampler(mainPath.data) : null;
 	const markers = await buildMarkers(data.mission, context.markerMetadata, {
@@ -182,14 +192,15 @@ export async function buildMissionAssets(inputFileName, context) {
 	const blockedEdges = await buildBlockedEdgesAsset(data.mission, {
 		...context,
 		missionDirectory,
-		navmesh: data,
-	});
-	const carved = carveNavmesh(data, blockedEdges?.footprints ?? []);
-	const glb = createNavmeshGlb(carved.navmesh);
-	const boundaries = await buildNavmeshBoundaryAsset(data.mission, carved.navmesh, {
+		floors,
+	}, overlay);
+	const layeredMarkers = assignMarkerFloors(markers, floors);
+	const glb = createNavmeshGlb(floors.navmesh);
+	const boundaries = await buildNavmeshBoundaryAsset(data.mission, renderNavmesh, {
 		...context,
 		missionDirectory,
 		referenceNavmesh: data,
+		floors,
 	});
 
 	await writeFile(outputPath, glb);
@@ -202,11 +213,12 @@ export async function buildMissionAssets(inputFileName, context) {
 	const mapData = {
 		id: data.mission,
 		file: `./data/maps/${sanitizeFileName(data.mission)}/${fileName}`,
-		bounds: data.bounds,
-		view: createViewMetadata(data),
+		bounds: renderNavmesh.bounds,
+		view: createViewMetadata(renderNavmesh),
+		floorSlices: floors.manifest,
 		boundaries,
 		landmarks: mainPath ? {mainPath: mainPath.asset} : {},
-		markers: markers ?? undefined,
+		markers: layeredMarkers ?? undefined,
 		diagnostics: blockedEdges ? {blockedEdges: {
 			...blockedEdges.asset,
 			navmeshCarve: carved.stats,

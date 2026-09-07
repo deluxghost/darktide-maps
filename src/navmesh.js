@@ -1,4 +1,5 @@
 import { Geometry } from "@luma.gl/engine";
+import {floorCoordinatesAttribute} from "./floorclip.js";
 import { APP_CONFIG } from "./config.js";
 
 const HEIGHT_COLORS = APP_CONFIG.runtime.visual.navmesh.heightColors;
@@ -73,14 +74,20 @@ function heightPercentile(height, heights) {
 }
 
 export function createMesh(glb) {
+	const indices = glb.indices;
+
+	if (indices.length === 0) {
+		return null;
+	}
+
 	const normals = new Float32Array(glb.positions.length);
 	const colors = new Float32Array(glb.positions.length);
 	const heights = sortedHeights(glb.positions);
 
-	for (let index = 0; index < glb.indices.length; index += 3) {
-		const a = glb.indices[index] * 3;
-		const b = glb.indices[index + 1] * 3;
-		const c = glb.indices[index + 2] * 3;
+	for (let index = 0; index < indices.length; index += 3) {
+		const a = indices[index] * 3;
+		const b = indices[index + 1] * 3;
+		const c = indices[index + 2] * 3;
 
 		addTriangleNormal(normals, glb.positions, a, b, c);
 	}
@@ -101,7 +108,8 @@ export function createMesh(glb) {
 			positions: { size: 3, value: glb.positions },
 			normals: { size: 3, value: normals },
 			colors: { size: 3, value: colors },
+			texCoords: floorCoordinatesAttribute(glb.floorIds),
 		},
-		indices: glb.indices,
+		indices,
 	});
 }

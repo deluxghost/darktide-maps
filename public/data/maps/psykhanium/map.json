@@ -14,11 +14,19 @@
 		]
 	},
 	"view": {
-		"projectedArea": 21500.424099841643,
+		"projectedArea": 21266.723837886842,
 		"projectedHull": [
 			[
 				-80.73169390360502,
+				-220.95069122314203
+			],
+			[
+				-75.75507926940904,
 				-252.25714874267328
+			],
+			[
+				-65.8018500010171,
+				-267.9103775024389
 			],
 			[
 				-16.03570365905742,
@@ -59,18 +67,79 @@
 			[
 				3.870754877726455,
 				405.17845916748297
-			],
-			[
-				-80.73169390360502,
-				-220.95069122314203
 			]
 		]
+	},
+	"floorSlices": {
+		"algorithm": "ordered-cut-v3",
+		"layers": [
+			{
+				"id": "floor-0",
+				"minZ": -4.000123,
+				"maxZ": 17.999876999999998
+			},
+			{
+				"id": "floor-1",
+				"minZ": -3.0001230000000003,
+				"maxZ": 20.499876999999998
+			}
+		],
+		"stats": {
+			"triangles": 26727,
+			"pieces": 33218,
+			"nodes": 724,
+			"connectedEdges": 34438,
+			"rejectedAdjacency": 11,
+			"originalArea": 23104.31451775586,
+			"analysisAreaError": 1.1641532182693481e-10,
+			"adjacencyMs": 528.2357999999949,
+			"graphMs": 620.6420999999973,
+			"floors": 2,
+			"outputTriangles": 26813,
+			"outputVertices": 19791,
+			"areaError": 7.275957614183426e-12,
+			"maxTriangleAreaError": 2.6336710590157963e-12,
+			"floatAreaError": 0.000018674167222343385,
+			"maxFloatTriangleAreaError": 0.000026676542673964576,
+			"clearance": 2,
+			"pairCandidates": 6853,
+			"polygonIntersections": 4287,
+			"relations": 116,
+			"overlapMs": 105.41310000000522,
+			"regions": 25,
+			"algorithm": "ordered-cut-v3",
+			"minimumFloors": 2,
+			"solverVertices": 726,
+			"solverEdges": 3004,
+			"solverMs": 1.8072000239044428,
+			"optimizationMs": 1480.7596000000049,
+			"baselineEnergy": 56.065295241511194,
+			"cutEnergy": 59.16047625265049,
+			"baselineFloors": 2,
+			"baselineRegions": 25,
+			"structuralSolverMs": 2.4827999877743423,
+			"attachmentSolverMs": 1.8072000239044428,
+			"logicalFloors": 2,
+			"minimumDisplayArea": 115.5215725887793,
+			"displayAreas": [
+				19979.634644835292,
+				3124.679872920582
+			],
+			"mergedFloorBoundaries": 0,
+			"mergedOcclusionArea": 0,
+			"mergedFloorGroups": [],
+			"attachmentComponents": 16,
+			"attachmentNodes": 41,
+			"unattachedComponents": 0,
+			"attachmentMs": 32.177800000004936,
+			"totalMs": 2358.8025999999954
+		}
 	},
 	"boundaries": {
 		"file": "./data/maps/psykhanium/navmesh_boundaries.glb",
 		"stats": {
-			"paths": 159,
-			"points": 11578
+			"paths": 190,
+			"points": 11733
 		}
 	},
 	"markers": {
@@ -85,7 +154,8 @@
 					317.94940185547,
 					-253.45735168457,
 					12.090171813965
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "health_station_3d075ccd9ba5",
@@ -97,7 +167,8 @@
 					-24.514604568481,
 					-257.07659912109,
 					11.999999046326
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "health_station_5dd427b9fac8",
@@ -109,7 +180,8 @@
 					59.065059661865,
 					382.0830078125,
 					-3.9919989109039
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "respawn_point_34729ae38a5c",
@@ -121,7 +193,8 @@
 					-25.665320714314664,
 					-297.06297810872337,
 					13.999882698059002
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "respawn_point_3cb660c20b57",
@@ -133,7 +206,8 @@
 					23.492880503337002,
 					0.5614217718442133,
 					0.5040763417879733
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "respawn_point_e5bc2d4a1b7e",
@@ -145,7 +219,8 @@
 					341.22897338867,
 					-227.56622314453,
 					12.977601528167751
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "respawn_point_f7caab0ddda2",
@@ -157,7 +232,8 @@
 					86.120030212402,
 					388.96112060547,
 					-2.0217187404633
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_1507802e3b9e",
@@ -169,7 +245,8 @@
 					1.4248119592667,
 					24.189702987671,
 					1.5129770040512
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_22226499b139",
@@ -181,7 +258,8 @@
 					9.2642908096313,
 					22.020471572876,
 					0.4828380048275
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_26bc4930d7fb",
@@ -193,7 +271,8 @@
 					2.3868699073792,
 					22.818433761597,
 					0.47430700063705
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_30fa4b1397a5",
@@ -205,7 +284,8 @@
 					0.89804798364639,
 					22.610548019409,
 					0.47430700063705
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_4431179b9478",
@@ -217,7 +297,8 @@
 					9.3630437850952,
 					23.01558303833,
 					1.5129770040512
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_48d7b78d1e8f",
@@ -229,7 +310,8 @@
 					1.8590430021286,
 					23.756435394287,
 					1.5129770040512
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_49b3d180301b",
@@ -241,7 +323,8 @@
 					0.31379699707031,
 					24.202808380127,
 					1.5129770040512
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_58029ceed054",
@@ -253,7 +336,8 @@
 					10.957480430603,
 					22.579488754272,
 					1.5129770040512
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_5f01534427fc",
@@ -265,7 +349,8 @@
 					8.6033620834351,
 					22.1240234375,
 					0.4890930056572
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_6a373a60fce1",
@@ -277,7 +362,8 @@
 					-0.28649300336838,
 					23.006237030029,
 					0.4890930056572
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_762558645ab4",
@@ -289,7 +375,8 @@
 					-49.597259521484,
 					-216.58195495605,
 					9.9980001449585
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_76b18679f2eb",
@@ -301,7 +388,8 @@
 					10.340431213379,
 					22.027997970581,
 					0.4828380048275
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_7ff6684dea10",
@@ -313,7 +401,8 @@
 					10.439184188843,
 					23.023109436035,
 					1.5129770040512
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_8c6eac4be69d",
@@ -325,7 +414,8 @@
 					3.4578719139099,
 					22.81978225708,
 					0.4890930056572
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_902dd091488a",
@@ -337,7 +427,8 @@
 					0.96512097120285,
 					23.902307510376,
 					1.5129770040512
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_9bf995b63db4",
@@ -349,7 +440,8 @@
 					1.3844239711761,
 					22.916774749756,
 					0.47430700063705
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_ac9152c3123c",
@@ -361,7 +453,8 @@
 					3.087639093399,
 					23.849126815796,
 					1.5129770040512
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_b31e00352591",
@@ -373,7 +466,8 @@
 					1.9027199745178,
 					22.473154067993,
 					0.47430700063705
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_b8469dca9c40",
@@ -385,7 +479,8 @@
 					11.44162940979,
 					22.924768447876,
 					1.5129770040512
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_b8fc27cd6e1e",
@@ -397,7 +492,8 @@
 					12.439853668213,
 					21.928426742554,
 					0.4890930056572
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_befc2432ec0b",
@@ -409,7 +505,8 @@
 					11.342876434326,
 					21.929656982422,
 					0.4828380048275
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_cab9b2d15c8e",
@@ -421,7 +518,8 @@
 					2.9173760414124,
 					22.580657958984,
 					0.47430700063705
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_d53d48d1b0dc",
@@ -433,7 +531,8 @@
 					11.929788589478,
 					21.686283111572,
 					0.4828380048275
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_da0e810ad89f",
@@ -445,7 +544,8 @@
 					10.858727455139,
 					21.584377288818,
 					0.4828380048275
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_e44702059cb9",
@@ -457,7 +557,8 @@
 					12.028541564941,
 					22.681394577026,
 					1.5129770040512
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_e72a94a3d9f4",
@@ -469,7 +570,8 @@
 					0.30828300118446,
 					22.909248352051,
 					0.47430700063705
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_ebd9a32f5750",
@@ -481,7 +583,8 @@
 					2.4317870140076,
 					24.001428604126,
 					1.5129770040512
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_f2184e96576a",
@@ -493,7 +596,8 @@
 					9.8540563583374,
 					21.721771240234,
 					0.4828380048275
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_f802f719da78",
@@ -505,7 +609,8 @@
 					9.9528093338013,
 					22.716882705688,
 					1.5129770040512
-				]
+				],
+				"floorIndex": 0
 			}
 		]
 	},
@@ -513,33 +618,33 @@
 		"blockedEdges": {
 			"file": "./data/maps/psykhanium/blocked_edges.glb",
 			"stats": {
-				"inputEdges": 1858,
-				"doorFilteredEdges": 270,
+				"inputEdges": 4598,
+				"doorFilteredEdges": 419,
 				"dynamicVolumeFilteredEdges": 0,
-				"markerCollisionFilteredEdges": 33,
-				"inputComponents": 467,
-				"includedComponents": 0,
-				"splitComponents": 18,
-				"renderedComponents": 44,
-				"renderedFragments": 27,
-				"keptRenderedFragments": 17,
-				"filteredEdges": 1678,
-				"renderedEdges": 180,
-				"sourcePolygons": 19,
+				"markerCollisionFilteredEdges": 50,
+				"inputComponents": 1033,
+				"includedComponents": 1,
+				"splitComponents": 41,
+				"renderedComponents": 181,
+				"renderedFragments": 77,
+				"keptRenderedFragments": 24,
+				"filteredEdges": 4330,
+				"renderedEdges": 268,
+				"sourcePolygons": 23,
 				"manualExcludePoints": 1,
 				"manualExcludedPolygons": 1,
-				"renderedTriangles": 790,
-				"renderedPolygons": 476
+				"renderedTriangles": 1182,
+				"renderedPolygons": 726
 			},
 			"navmeshCarve": {
 				"inputTriangles": 26337,
-				"outputTriangles": 26675,
-				"carvedTriangles": 466,
-				"blockerFootprints": 476,
+				"outputTriangles": 26727,
+				"carvedTriangles": 714,
+				"blockerFootprints": 726,
 				"skippedDegenerateTriangles": 0,
-				"removedFragmentComponents": 7,
-				"removedFragmentTriangles": 13,
-				"removedFragmentArea": 0.7303983642798135
+				"removedFragmentComponents": 10,
+				"removedFragmentTriangles": 16,
+				"removedFragmentArea": 0.8070334750877608
 			}
 		}
 	}

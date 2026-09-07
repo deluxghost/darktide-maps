@@ -2,9 +2,9 @@ import { parseGlb } from "./glb.js";
 import { applyTranslations, localizeValue, t } from "./i18n.js";
 import { createGeometryBoundaryPaths, createLandmarkMesh, createPathBoundaryPaths } from "./landmarks.js";
 import { APP_CONFIG } from "./config.js";
-import { createMesh } from "./navmesh.js";
 import { createMapRenderer } from "./renderer.js";
 import { createFilterController } from "./filters.js";
+import { createFloorController } from "./floors.js";
 import { createMarkerOverlays } from "./overlays.js";
 import { mapTitle, writeMapOptions } from "./manifest.js";
 import { createRotationControl } from "./joystick.js";
@@ -44,6 +44,7 @@ const auxiliaryArrowArcOutline = document.querySelector("#auxiliary-arrow-arc-ou
 const dataUpdatedElement = document.querySelector("#data-updated");
 const rotationControl = document.querySelector("#rotation-control");
 const rotationControlHandle = document.querySelector("#rotation-control-handle");
+const floorControl = document.querySelector("#floor-control");
 const mobileMedia = window.matchMedia(APP_CONFIG.ui.mobileMediaQuery);
 const touchPrimaryMedia = window.matchMedia("(hover: none) and (pointer: coarse)");
 const DEBUG_STORAGE_KEY = "darktide-maps.debug.v1";
@@ -207,6 +208,14 @@ const markerOverlays = createMarkerOverlays({
 	onCopyMarkerUrl: copyMarkerUrl,
 	onCopyMarkerUrlError: showError,
 });
+const floorController = createFloorController({
+	root: floorControl,
+	onChange: (floorSelection) => {
+		markerOverlays.hidePopup();
+		markerOverlays.hideTooltip();
+		mapRenderer.setFloorSelection(floorSelection);
+	},
+});
 const filters = createFilterController({
 	filterList,
 	mapRenderer,
@@ -224,7 +233,7 @@ async function loadGlb(file, signal) {
 	return parseGlb(await response.arrayBuffer());
 }
 
-async function loadGeometryPartMeshes(asset, signal) {
+async function loadGeometryPartMeshes(asset, signal, includeBoundaries) {
 	if (!asset?.file) {
 		return null;
 	}
@@ -235,7 +244,7 @@ async function loadGeometryPartMeshes(asset, signal) {
 	for (const [part, partGlb] of Object.entries(glb.parts)) {
 		parts[part] = {
 			mesh: createLandmarkMesh(partGlb),
-			boundaryPaths: createGeometryBoundaryPaths(partGlb),
+			boundaryPaths: includeBoundaries ? createGeometryBoundaryPaths(partGlb) : undefined,
 		};
 	}
 
@@ -251,11 +260,16 @@ async function loadBoundaryPaths(asset, signal) {
 }
 
 async function loadMapData(mapEntry, signal) {
-	if (mapDataCache.has(mapEntry.id)) {
+	const useCache = !import.meta.env.DEV;
+
+	if (useCache && mapDataCache.has(mapEntry.id)) {
 		return mapDataCache.get(mapEntry.id);
 	}
 
-	const response = await fetch(mapEntry.file, { signal });
+	const response = await fetch(mapEntry.file, {
+		signal,
+		cache: useCache ? "default" : "no-store",
+	});
 
 	if (!response.ok) {
 		throw new Error(`HTTP ${response.status} while loading ${mapEntry.file}`);
@@ -272,7 +286,9 @@ async function loadMapData(mapEntry, signal) {
 		...mapData,
 	};
 
-	mapDataCache.set(mapEntry.id, map);
+	if (useCache) {
+		mapDataCache.set(mapEntry.id, map);
+	}
 
 	return map;
 }
@@ -385,6 +401,7 @@ async function loadMap(mapEntry, locator = null) {
 	loadController = new AbortController();
 	markerOverlays.hidePopup();
 	markerOverlays.hideTooltip();
+	floorController.setMap(null);
 	setLoading(t("loadingMap", {
 		title: mapTitle(mapEntry),
 		size: formatBytes(mapEntry.resourceBytes),
@@ -394,9 +411,9 @@ async function loadMap(mapEntry, locator = null) {
 		const map = await loadMapData(mapEntry, loadController.signal);
 		const glb = await loadGlb(map.file, loadController.signal);
 		const boundaryPaths = await loadBoundaryPaths(map.boundaries, loadController.signal);
-		const mainPathMeshes = await loadGeometryPartMeshes(map.landmarks?.mainPath, loadController.signal);
+		const mainPathMeshes = await loadGeometryPartMeshes(map.landmarks?.mainPath, loadController.signal, false);
 		const blockedEdgeMeshes = import.meta.env.DEV
-			? await loadGeometryPartMeshes(map.diagnostics?.blockedEdges, loadController.signal)
+			? await loadGeometryPartMeshes(map.diagnostics?.blockedEdges, loadController.signal, true)
 			: null;
 		const markerPins = markerPinsForMap(map, locator);
 		const selectedMarker = locator?.type === "marker"
@@ -406,7 +423,7 @@ async function loadMap(mapEntry, locator = null) {
 		filters.setCurrentMap(map);
 		mapRenderer.render(
 			map,
-			createMesh(glb),
+			glb,
 			boundaryPaths,
 			mainPathMeshes,
 			{
@@ -422,6 +439,7 @@ async function loadMap(mapEntry, locator = null) {
 				onViewChange: markerOverlays.update,
 			},
 		);
+		floorController.setMap(map);
 		filters.writeFilters(map);
 		clearLoading();
 		if (locator?.type === "position") {

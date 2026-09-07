@@ -10,7 +10,15 @@ function typedArrayForAccessor(json, binary, accessorIndex) {
 	const accessor = json.accessors[accessorIndex];
 	const bufferView = json.bufferViews[accessor.bufferView];
 	const byteOffset = binary.byteOffset + (bufferView.byteOffset ?? 0) + (accessor.byteOffset ?? 0);
-	const components = accessor.type === "SCALAR" ? 1 : 3;
+	const components = {
+		SCALAR: 1,
+		VEC2: 2,
+		VEC3: 3,
+	}[accessor.type];
+
+	if (!components) {
+		throw new Error(`Unsupported GLB accessor type: ${accessor.type}`);
+	}
 
 	if (accessor.componentType === FLOAT_COMPONENT_TYPE) {
 		return new Float32Array(binary.buffer, byteOffset, accessor.count * components);
@@ -59,14 +67,13 @@ export function parseGlb(arrayBuffer) {
 	function parsePrimitive(primitive) {
 		return {
 			positions: typedArrayForAccessor(json, binary, primitive.attributes.POSITION),
+			floorIds: Number.isInteger(primitive.attributes._FLOOR)
+				? typedArrayForAccessor(json, binary, primitive.attributes._FLOOR)
+				: null,
 			normals: Number.isInteger(primitive.attributes.NORMAL)
 				? typedArrayForAccessor(json, binary, primitive.attributes.NORMAL)
 				: null,
-			colors: Number.isInteger(primitive.attributes.COLOR_0)
-				? typedArrayForAccessor(json, binary, primitive.attributes.COLOR_0)
-				: null,
 			indices: typedArrayForAccessor(json, binary, primitive.indices),
-			mode: primitive.mode,
 		};
 	}
 

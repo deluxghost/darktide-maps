@@ -14,7 +14,7 @@
 		]
 	},
 	"view": {
-		"projectedArea": 39357.394627439484,
+		"projectedArea": 39079.950757961065,
 		"projectedHull": [
 			[
 				-428.9487597147574,
@@ -82,11 +82,94 @@
 			]
 		]
 	},
+	"floorSlices": {
+		"algorithm": "ordered-cut-v3",
+		"layers": [
+			{
+				"id": "floor-0",
+				"minZ": -53.500123,
+				"maxZ": 10.499876999999998
+			},
+			{
+				"id": "floor-1",
+				"minZ": -50.500123,
+				"maxZ": -0.00012300000000209366
+			},
+			{
+				"id": "floor-2",
+				"minZ": -44.500123,
+				"maxZ": 6.999876999999998
+			},
+			{
+				"id": "floor-3",
+				"minZ": -36.500123,
+				"maxZ": 1.499876999999998
+			},
+			{
+				"id": "floor-4",
+				"minZ": -17.000123000000002,
+				"maxZ": 6.999876999999998
+			}
+		],
+		"stats": {
+			"triangles": 48847,
+			"pieces": 56734,
+			"nodes": 975,
+			"connectedEdges": 62639,
+			"rejectedAdjacency": 7,
+			"originalArea": 41760.13947113835,
+			"analysisAreaError": 2.6193447411060333e-10,
+			"adjacencyMs": 1034.2051,
+			"graphMs": 1241.3541,
+			"floors": 5,
+			"outputTriangles": 49060,
+			"outputVertices": 35581,
+			"areaError": 4.3655745685100555e-11,
+			"maxTriangleAreaError": 5.896172439179281e-12,
+			"floatAreaError": 0.0000016613048501312733,
+			"maxFloatTriangleAreaError": 0.000024128644692256174,
+			"clearance": 2,
+			"pairCandidates": 16879,
+			"polygonIntersections": 9731,
+			"relations": 303,
+			"overlapMs": 289.02139999999986,
+			"regions": 65,
+			"algorithm": "ordered-cut-v3",
+			"minimumFloors": 4,
+			"solverVertices": 3902,
+			"solverEdges": 17488,
+			"solverMs": 8.158200012985617,
+			"optimizationMs": 1658.8678,
+			"baselineEnergy": 444.00982744540835,
+			"cutEnergy": 219.79353802069974,
+			"baselineFloors": 5,
+			"baselineRegions": 65,
+			"structuralSolverMs": 16.33319997927174,
+			"attachmentSolverMs": 8.158200012985617,
+			"logicalFloors": 5,
+			"minimumDisplayArea": 208.80069735569174,
+			"displayAreas": [
+				17227.69740252494,
+				7903.3027247620485,
+				3819.568956322348,
+				2723.0448835589928,
+				10086.52550397018
+			],
+			"mergedFloorBoundaries": 0,
+			"mergedOcclusionArea": 0,
+			"mergedFloorGroups": [],
+			"attachmentComponents": 43,
+			"attachmentNodes": 62,
+			"unattachedComponents": 0,
+			"attachmentMs": 84.91190000000006,
+			"totalMs": 3564.3727000000003
+		}
+	},
 	"boundaries": {
 		"file": "./data/maps/cm_archives/navmesh_boundaries.glb",
 		"stats": {
-			"paths": 252,
-			"points": 21670
+			"paths": 297,
+			"points": 21813
 		}
 	},
 	"landmarks": {
@@ -107,7 +190,7 @@
 	"markers": {
 		"pins": [
 			{
-				"id": "boss_spawn_2aefb9502eb6",
+				"id": "boss_spawn_0cc9e97ccab6",
 				"category": "boss_spawn",
 				"name": {
 					"key": "markerBossSpawn"
@@ -119,120 +202,151 @@
 				],
 				"auxiliaryMarkers": [
 					{
+						"id": "boss_spawn_aux_9b133a74edc5",
+						"name": {
+							"key": "bossTriggerPoint"
+						},
+						"position": [
+							-164.4422761351902,
+							6.472156237163743,
+							1.6426388989456213
+						]
+					}
+				],
+				"floorIndex": 4
+			},
+			{
+				"id": "boss_spawn_1ea65e3a7ddc",
+				"category": "boss_spawn",
+				"name": {
+					"key": "markerBossSpawn"
+				},
+				"position": [
+					-19.758373260498,
+					105.00107574463,
+					-7.4998044967651
+				],
+				"auxiliaryMarkers": [
+					{
+						"id": "boss_spawn_aux_72267b917321",
+						"name": {
+							"key": "bossTriggerPoint"
+						},
+						"position": [
+							-10.031324495133079,
+							79.07090340754976,
+							-13.185695981187042
+						]
+					}
+				],
+				"floorIndex": 3
+			},
+			{
+				"id": "boss_spawn_22b823de74a5",
+				"category": "boss_spawn",
+				"name": {
+					"key": "markerBossSpawn"
+				},
+				"position": [
+					-190.84439086914,
+					-48.356101989746,
+					2.4996874332428
+				],
+				"auxiliaryMarkers": [
+					{
+						"id": "boss_spawn_aux_1fc436676737",
+						"name": {
+							"key": "bossTriggerPoint"
+						},
+						"position": [
+							-175.0864888409895,
+							-9.0887891318222,
+							3.599687565325653
+						]
+					}
+				],
+				"floorIndex": 0
+			},
+			{
+				"id": "boss_spawn_2717bd0e41c1",
+				"category": "boss_spawn",
+				"name": {
+					"key": "markerBossSpawn"
+				},
+				"position": [
+					-96.082702636719,
+					67.592391967773,
+					3.5602734088898
+				],
+				"auxiliaryMarkers": [
+					{
+						"id": "boss_spawn_aux_756bff197197",
+						"name": {
+							"key": "bossTriggerPoint"
+						},
+						"position": [
+							-64.67690830103992,
+							99.77152426958011,
+							0.6518843246783907
+						]
+					}
+				],
+				"floorIndex": 4
+			},
+			{
+				"id": "boss_spawn_29927839fd10",
+				"category": "boss_spawn",
+				"name": {
+					"key": "markerBossSpawn"
+				},
+				"position": [
+					-274.47702026367,
+					-88.308776855469,
+					-29.499725341797
+				],
+				"auxiliaryMarkers": [
+					{
+						"id": "boss_spawn_aux_20bd58c74d0a",
+						"name": {
+							"key": "bossTriggerPoint"
+						},
+						"position": [
+							-284.02208817485456,
+							-98.02075126170165,
+							-19.843148103160086
+						]
+					}
+				],
+				"floorIndex": 3
+			},
+			{
+				"id": "boss_spawn_2aefb9502eb6",
+				"category": "boss_spawn",
+				"name": {
+					"key": "markerBossSpawn"
+				},
+				"position": [
+					122.05019378662,
+					27.762912750244,
+					-12.499921798706
+				],
+				"auxiliaryMarkers": [
+					{
 						"id": "boss_spawn_aux_77ce5906d2ca",
 						"name": {
 							"key": "bossTriggerPoint"
 						},
 						"position": [
-							-166.09001226764494,
-							1.976225238635008,
-							1.6587197366827096
+							152.11163795281124,
+							52.45698729015196,
+							-8.254258223546435
 						]
 					}
-				]
-			},
-			{
-				"id": "boss_spawn_345a4e696dc3",
-				"category": "boss_spawn",
-				"name": {
-					"key": "markerBossSpawn"
-				},
-				"position": [
-					-214.49998474121,
-					9.25,
-					2.4996874332428
 				],
-				"auxiliaryMarkers": [
-					{
-						"id": "boss_spawn_aux_64ef33c04759",
-						"name": {
-							"key": "bossTriggerPoint"
-						},
-						"position": [
-							-179.98339898732,
-							-10.188556791515087,
-							3.5996874484768333
-						]
-					}
-				]
+				"floorIndex": 1
 			},
 			{
-				"id": "boss_spawn_37aad4b21cb4",
-				"category": "boss_spawn",
-				"name": {
-					"key": "markerBossSpawn"
-				},
-				"position": [
-					-104.99999237061,
-					110.375,
-					3.5210268497467
-				],
-				"auxiliaryMarkers": [
-					{
-						"id": "boss_spawn_aux_5b5255bd7b56",
-						"name": {
-							"key": "bossTriggerPoint"
-						},
-						"position": [
-							-43.413320025208264,
-							103.38024506036876,
-							-1.3975416880257585
-						]
-					}
-				]
-			},
-			{
-				"id": "boss_spawn_5b993a6b9d9f",
-				"category": "boss_spawn",
-				"name": {
-					"key": "markerBossSpawn"
-				},
-				"position": [
-					-232.19494628906,
-					-21.680618286133,
-					2.5018589496613
-				],
-				"auxiliaryMarkers": [
-					{
-						"id": "boss_spawn_aux_6ebf03465988",
-						"name": {
-							"key": "bossTriggerPoint"
-						},
-						"position": [
-							-196.03958538727727,
-							-23.550500972964482,
-							1.8430906365304602
-						]
-					}
-				]
-			},
-			{
-				"id": "boss_spawn_a9f2da55b9f9",
-				"category": "boss_spawn",
-				"name": {
-					"key": "markerBossSpawn"
-				},
-				"position": [
-					-189.37512207031,
-					38.163951873779,
-					3.088276386261
-				],
-				"auxiliaryMarkers": [
-					{
-						"id": "boss_spawn_aux_7b1867fbf390",
-						"name": {
-							"key": "bossTriggerPoint"
-						},
-						"position": [
-							-142.2998568612607,
-							33.77481466347663,
-							1.606614346809668
-						]
-					}
-				]
-			},
-			{
-				"id": "boss_spawn_ade1e3fc4cbb",
+				"id": "boss_spawn_2c52fd661c27",
 				"category": "boss_spawn",
 				"name": {
 					"key": "markerBossSpawn"
@@ -244,7 +358,7 @@
 				],
 				"auxiliaryMarkers": [
 					{
-						"id": "boss_spawn_aux_71c0ed85795e",
+						"id": "boss_spawn_aux_af01934bd58e",
 						"name": {
 							"key": "bossTriggerPoint"
 						},
@@ -254,35 +368,193 @@
 							5.744800718249255
 						]
 					}
-				]
+				],
+				"floorIndex": 4
 			},
 			{
-				"id": "boss_spawn_b1d4a1d2dfbd",
+				"id": "boss_spawn_345a4e696dc3",
 				"category": "boss_spawn",
 				"name": {
 					"key": "markerBossSpawn"
 				},
 				"position": [
-					166,
-					18.000015258789,
-					-1.499960899353
+					85.034683227539,
+					33.889007568359,
+					-16.502355575562
 				],
 				"auxiliaryMarkers": [
 					{
-						"id": "boss_spawn_aux_9daf01a953b2",
+						"id": "boss_spawn_aux_64ef33c04759",
 						"name": {
 							"key": "bossTriggerPoint"
 						},
 						"position": [
-							175.1207248890141,
-							66.16238803343899,
-							-6.3998044967651
+							122.3752841987246,
+							35.523015126616635,
+							-7.767786782813369
 						]
 					}
-				]
+				],
+				"floorIndex": 0
 			},
 			{
-				"id": "boss_spawn_c49f6acb5464",
+				"id": "boss_spawn_37aad4b21cb4",
+				"category": "boss_spawn",
+				"name": {
+					"key": "markerBossSpawn"
+				},
+				"position": [
+					151.3910369873,
+					49.020706176758,
+					-9.3382987976074
+				],
+				"auxiliaryMarkers": [
+					{
+						"id": "boss_spawn_aux_5b5255bd7b56",
+						"name": {
+							"key": "bossTriggerPoint"
+						},
+						"position": [
+							187.72465532919094,
+							79.46170860458487,
+							-7.985592701460924
+						]
+					}
+				],
+				"floorIndex": 2
+			},
+			{
+				"id": "boss_spawn_5b993a6b9d9f",
+				"category": "boss_spawn",
+				"name": {
+					"key": "markerBossSpawn"
+				},
+				"position": [
+					81.355697631836,
+					73.856979370117,
+					-16.500312805176
+				],
+				"auxiliaryMarkers": [
+					{
+						"id": "boss_spawn_aux_6ebf03465988",
+						"name": {
+							"key": "bossTriggerPoint"
+						},
+						"position": [
+							92.68140145239737,
+							30.155212574180204,
+							-11.564691631954556
+						]
+					}
+				],
+				"floorIndex": 0
+			},
+			{
+				"id": "boss_spawn_5e3daed793da",
+				"category": "boss_spawn",
+				"name": {
+					"key": "markerBossSpawn"
+				},
+				"position": [
+					-232.19494628906,
+					-21.680618286133,
+					2.5018589496613
+				],
+				"auxiliaryMarkers": [
+					{
+						"id": "boss_spawn_aux_c1e76acc3b40",
+						"name": {
+							"key": "bossTriggerPoint"
+						},
+						"position": [
+							-196.39538047014074,
+							-23.65733775911479,
+							1.704367827950739
+						]
+					}
+				],
+				"floorIndex": 4
+			},
+			{
+				"id": "boss_spawn_708f65300b98",
+				"category": "boss_spawn",
+				"name": {
+					"key": "markerBossSpawn"
+				},
+				"position": [
+					-94.969955444336,
+					111.3097076416,
+					3.5332419872284
+				],
+				"auxiliaryMarkers": [
+					{
+						"id": "boss_spawn_aux_c26e947ba931",
+						"name": {
+							"key": "bossTriggerPoint"
+						},
+						"position": [
+							-39.72747621894154,
+							99.95418689851486,
+							-1.3996876716614
+						]
+					}
+				],
+				"floorIndex": 4
+			},
+			{
+				"id": "boss_spawn_75432619fff7",
+				"category": "boss_spawn",
+				"name": {
+					"key": "markerBossSpawn"
+				},
+				"position": [
+					-144.43682861328,
+					39.817024230957,
+					0.50023436546326
+				],
+				"auxiliaryMarkers": [
+					{
+						"id": "boss_spawn_aux_84276a22d1ca",
+						"name": {
+							"key": "bossTriggerPoint"
+						},
+						"position": [
+							-131.4195176737493,
+							70.36344342459456,
+							2.5513265625982537
+						]
+					}
+				],
+				"floorIndex": 4
+			},
+			{
+				"id": "boss_spawn_76bf4d4e8ce9",
+				"category": "boss_spawn",
+				"name": {
+					"key": "markerBossSpawn"
+				},
+				"position": [
+					-214.49998474121,
+					9.25,
+					2.4996874332428
+				],
+				"auxiliaryMarkers": [
+					{
+						"id": "boss_spawn_aux_b05f734f25dd",
+						"name": {
+							"key": "bossTriggerPoint"
+						},
+						"position": [
+							-134.34255717455602,
+							39.00473182739214,
+							1.6326499956310652
+						]
+					}
+				],
+				"floorIndex": 4
+			},
+			{
+				"id": "boss_spawn_8427d9f9bd14",
 				"category": "boss_spawn",
 				"name": {
 					"key": "markerBossSpawn"
@@ -294,7 +566,7 @@
 				],
 				"auxiliaryMarkers": [
 					{
-						"id": "boss_spawn_aux_3b26b37e15b7",
+						"id": "boss_spawn_aux_069c37492a66",
 						"name": {
 							"key": "bossTriggerPoint"
 						},
@@ -304,7 +576,242 @@
 							4.152493958325538
 						]
 					}
-				]
+				],
+				"floorIndex": 4
+			},
+			{
+				"id": "boss_spawn_875f826614de",
+				"category": "boss_spawn",
+				"name": {
+					"key": "markerBossSpawn"
+				},
+				"position": [
+					-34.674919128418,
+					85.564743041992,
+					-4.4533443450928
+				],
+				"auxiliaryMarkers": [
+					{
+						"id": "boss_spawn_aux_1766f94fb23b",
+						"name": {
+							"key": "bossTriggerPoint"
+						},
+						"position": [
+							-14.903898454308546,
+							96.81442044571862,
+							-5.4000782012938995
+						]
+					}
+				],
+				"floorIndex": 4
+			},
+			{
+				"id": "boss_spawn_a2c1b2122ec7",
+				"category": "boss_spawn",
+				"name": {
+					"key": "markerBossSpawn"
+				},
+				"position": [
+					-297.12503051758,
+					-106.80473327637,
+					-46.500274658203
+				],
+				"auxiliaryMarkers": [
+					{
+						"id": "boss_spawn_aux_bf85417164f0",
+						"name": {
+							"key": "bossTriggerPoint"
+						},
+						"position": [
+							-298.27665751098533,
+							-82.2252055814509,
+							-36.88013107493846
+						]
+					}
+				],
+				"floorIndex": 1
+			},
+			{
+				"id": "boss_spawn_a9f2da55b9f9",
+				"category": "boss_spawn",
+				"name": {
+					"key": "markerBossSpawn"
+				},
+				"position": [
+					131.75433349609,
+					63.79780960083,
+					-7.4998044967651
+				],
+				"auxiliaryMarkers": [
+					{
+						"id": "boss_spawn_aux_7b1867fbf390",
+						"name": {
+							"key": "bossTriggerPoint"
+						},
+						"position": [
+							169.57184273081464,
+							60.03232549181256,
+							-6.3998044967651
+						]
+					}
+				],
+				"floorIndex": 2
+			},
+			{
+				"id": "boss_spawn_b1d4a1d2dfbd",
+				"category": "boss_spawn",
+				"name": {
+					"key": "markerBossSpawn"
+				},
+				"position": [
+					151.05082702637,
+					83.301803588867,
+					-1.3469599485397
+				],
+				"auxiliaryMarkers": [
+					{
+						"id": "boss_spawn_aux_9daf01a953b2",
+						"name": {
+							"key": "bossTriggerPoint"
+						},
+						"position": [
+							217.63944445396533,
+							85.84854469209589,
+							-8.4
+						]
+					}
+				],
+				"floorIndex": 3
+			},
+			{
+				"id": "boss_spawn_c49f6acb5464",
+				"category": "boss_spawn",
+				"name": {
+					"key": "markerBossSpawn"
+				},
+				"position": [
+					166,
+					18.000015258789,
+					-1.499960899353
+				],
+				"auxiliaryMarkers": [
+					{
+						"id": "boss_spawn_aux_3b26b37e15b7",
+						"name": {
+							"key": "bossTriggerPoint"
+						},
+						"position": [
+							175.1207248890141,
+							66.16238803343899,
+							-6.3998044967651
+						]
+					}
+				],
+				"floorIndex": 2
+			},
+			{
+				"id": "boss_spawn_ce1e4ecd7219",
+				"category": "boss_spawn",
+				"name": {
+					"key": "markerBossSpawn"
+				},
+				"position": [
+					-189.37512207031,
+					38.163951873779,
+					3.088276386261
+				],
+				"auxiliaryMarkers": [
+					{
+						"id": "boss_spawn_aux_bfb002470d43",
+						"name": {
+							"key": "bossTriggerPoint"
+						},
+						"position": [
+							-142.2998568612607,
+							33.77481466347663,
+							1.606614346809668
+						]
+					}
+				],
+				"floorIndex": 4
+			},
+			{
+				"id": "boss_spawn_d37b076b5bbf",
+				"category": "boss_spawn",
+				"name": {
+					"key": "markerBossSpawn"
+				},
+				"position": [
+					-298.70742797852,
+					-92.913246154785,
+					-12.499921798706
+				],
+				"auxiliaryMarkers": [
+					{
+						"id": "boss_spawn_aux_385bc7b96fc3",
+						"name": {
+							"key": "bossTriggerPoint"
+						},
+						"position": [
+							-318.3843825841499,
+							-87.45493651685942,
+							-4.163450894652575
+						]
+					}
+				],
+				"floorIndex": 4
+			},
+			{
+				"id": "boss_spawn_ddb73b340ffe",
+				"category": "boss_spawn",
+				"name": {
+					"key": "markerBossSpawn"
+				},
+				"position": [
+					-155.99122619629,
+					4.729462146759,
+					4.4998826980591
+				],
+				"auxiliaryMarkers": [
+					{
+						"id": "boss_spawn_aux_f60067329c06",
+						"name": {
+							"key": "bossTriggerPoint"
+						},
+						"position": [
+							-138.14401389860421,
+							36.110900470168545,
+							1.6218350891171454
+						]
+					}
+				],
+				"floorIndex": 4
+			},
+			{
+				"id": "boss_spawn_f899c2fe021c",
+				"category": "boss_spawn",
+				"name": {
+					"key": "markerBossSpawn"
+				},
+				"position": [
+					-294.18774414062,
+					-84.666107177734,
+					-38.500232696533
+				],
+				"auxiliaryMarkers": [
+					{
+						"id": "boss_spawn_aux_1d00bfcfe0e8",
+						"name": {
+							"key": "bossTriggerPoint"
+						},
+						"position": [
+							-284.54520010234353,
+							-67.48138616669101,
+							-28.399500719196837
+						]
+					}
+				],
+				"floorIndex": 2
 			},
 			{
 				"id": "chest_0acb67471340",
@@ -316,7 +823,8 @@
 					-16.131856918335,
 					65.694969177246,
 					-15.534872055054
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "chest_132927476f12",
@@ -328,7 +836,8 @@
 					-240.86349487305,
 					-26.59748840332,
 					2.5009999275208
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "chest_1b4b8799b545",
@@ -340,7 +849,8 @@
 					107.37500762939,
 					25.375,
 					-12.514999389648
-				]
+				],
+				"floorIndex": 1
 			},
 			{
 				"id": "chest_216505d5430e",
@@ -352,7 +862,8 @@
 					-17.708585739136,
 					104.49848175049,
 					-7.5199999809265
-				]
+				],
+				"floorIndex": 3
 			},
 			{
 				"id": "chest_391041ec78e5",
@@ -364,7 +875,8 @@
 					148.77149963379,
 					81.103546142578,
 					-9.487208366394
-				]
+				],
+				"floorIndex": 2
 			},
 			{
 				"id": "chest_3c8e5c228663",
@@ -376,7 +888,8 @@
 					-128.45223999023,
 					63.848220825195,
 					1.4999949932098
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "chest_444ba37926a0",
@@ -388,7 +901,8 @@
 					-219.62498474121,
 					-28,
 					2.5
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "chest_4a6b3804e77e",
@@ -400,7 +914,8 @@
 					-12.000000953674,
 					51.874996185303,
 					-15.496999740601
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "chest_65f193516d65",
@@ -412,7 +927,8 @@
 					1.49147605896,
 					72.564697265625,
 					-8.8897848129272
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "chest_6898498aab45",
@@ -424,7 +940,8 @@
 					-289.81030273438,
 					-86.443367004395,
 					-46.516998291016
-				]
+				],
+				"floorIndex": 1
 			},
 			{
 				"id": "chest_6930452abb48",
@@ -436,7 +953,8 @@
 					-172.99998474121,
 					2.9999949932098,
 					0.5
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "chest_6aafe93a7e47",
@@ -448,7 +966,8 @@
 					-78.245880126953,
 					109.06921386719,
 					3.5
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "chest_6c4d701068cf",
@@ -460,7 +979,8 @@
 					144.07585144043,
 					-2.5991048812866,
 					-1.5153759717941
-				]
+				],
+				"floorIndex": 2
 			},
 			{
 				"id": "chest_6e96ec1da279",
@@ -472,7 +992,8 @@
 					-188.50001525879,
 					9.7651777267456,
 					2.5
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "chest_82e3a05f9b79",
@@ -484,7 +1005,8 @@
 					123.91149139404,
 					30.032169342041,
 					-12.514632225037
-				]
+				],
+				"floorIndex": 1
 			},
 			{
 				"id": "chest_8355a68bd8d4",
@@ -496,7 +1018,8 @@
 					-182.2652130127,
 					41.093563079834,
 					0.50082302093506
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "chest_8662b194cd76",
@@ -508,7 +1031,8 @@
 					-136.84606933594,
 					13,
 					2.5
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "chest_8b5989171d6a",
@@ -520,7 +1044,8 @@
 					-222.58227539062,
 					-63.529056549072,
 					2.5
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "chest_8e88dc47f590",
@@ -532,7 +1057,8 @@
 					-307.29974365234,
 					-85.943832397461,
 					-4.015007019043
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "chest_a6b14b1c2c5a",
@@ -544,7 +1070,8 @@
 					-336.91558837891,
 					-133.29000854492,
 					-46.5
-				]
+				],
+				"floorIndex": 1
 			},
 			{
 				"id": "chest_b08de6fdfa9f",
@@ -556,7 +1083,8 @@
 					125.49998474121,
 					86.75,
 					-5.5120000839233
-				]
+				],
+				"floorIndex": 3
 			},
 			{
 				"id": "chest_b755f598f88a",
@@ -568,7 +1096,8 @@
 					-91.159065246582,
 					71.407524108887,
 					3.4823739528656
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "chest_c328fa6a1c6c",
@@ -580,7 +1109,8 @@
 					57.946048736572,
 					29.635549545288,
 					-17.002000808716
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "chest_c89e4e24e7dc",
@@ -592,7 +1122,8 @@
 					-181.00001525879,
 					11.25,
 					0.5
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "chest_cfd9dbd46bbd",
@@ -604,7 +1135,8 @@
 					165.86679077148,
 					51.503868103027,
 					-7.5183968544006
-				]
+				],
+				"floorIndex": 2
 			},
 			{
 				"id": "chest_d0b262423ad2",
@@ -616,7 +1148,8 @@
 					71.875,
 					39.875,
 					-17
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "chest_d7bcb89ffdf5",
@@ -628,7 +1161,8 @@
 					-53.625,
 					71.5,
 					-0.5
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "chest_e7e7f2f78f35",
@@ -640,7 +1174,8 @@
 					-271.91821289062,
 					-94.758750915527,
 					-21.012004852295
-				]
+				],
+				"floorIndex": 3
 			},
 			{
 				"id": "chest_e8bc6c66232e",
@@ -652,7 +1187,8 @@
 					-208.61563110352,
 					-50.5,
 					2.5
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "chest_ec5143d06181",
@@ -664,7 +1200,8 @@
 					161.87498474121,
 					22.125,
 					-1.5160009860992
-				]
+				],
+				"floorIndex": 2
 			},
 			{
 				"id": "chest_ed87e1d0437e",
@@ -676,7 +1213,8 @@
 					100.62500762939,
 					65.999992370605,
 					-16.5
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "chest_faa2da09e28d",
@@ -688,43 +1226,8 @@
 					-330.45367431641,
 					-138.88902282715,
 					-46.516998291016
-				]
-			},
-			{
-				"id": "daemonhost_058a1360cc4e",
-				"category": "daemonhost",
-				"name": {
-					"key": "markerDaemonhostSpawn"
-				},
-				"position": [
-					-217.5,
-					-37.5,
-					2.5598046779633
-				]
-			},
-			{
-				"id": "daemonhost_39ddeacccd3e",
-				"category": "daemonhost",
-				"name": {
-					"key": "markerDaemonhostSpawn"
-				},
-				"position": [
-					-222.25,
-					-9.9999990463257,
-					2.4996874332428
-				]
-			},
-			{
-				"id": "daemonhost_3fb0e9d724fe",
-				"category": "daemonhost",
-				"name": {
-					"key": "markerDaemonhostSpawn"
-				},
-				"position": [
-					-169,
-					15.25,
-					0.56035155057907
-				]
+				],
+				"floorIndex": 1
 			},
 			{
 				"id": "daemonhost_5976bba24368",
@@ -736,19 +1239,60 @@
 					151.00015258789,
 					56.499698638916,
 					-9.3564310073853
-				]
+				],
+				"floorIndex": 2
 			},
 			{
-				"id": "daemonhost_7993101a8178",
+				"id": "daemonhost_5ee44a456dd4",
 				"category": "daemonhost",
 				"name": {
 					"key": "markerDaemonhostSpawn"
 				},
 				"position": [
-					-184.59999084473,
-					-19.119979858398,
-					2.4996874332428
-				]
+					-274.55923461914,
+					-76.559143066406,
+					-29.440351486206
+				],
+				"floorIndex": 3
+			},
+			{
+				"id": "daemonhost_65973fa9ecff",
+				"category": "daemonhost",
+				"name": {
+					"key": "markerDaemonhostSpawn"
+				},
+				"position": [
+					-217.5,
+					-37.5,
+					2.5598046779633
+				],
+				"floorIndex": 4
+			},
+			{
+				"id": "daemonhost_71ca530975e3",
+				"category": "daemonhost",
+				"name": {
+					"key": "markerDaemonhostSpawn"
+				},
+				"position": [
+					-117.49999237061,
+					90.215179443359,
+					3.5127034187317
+				],
+				"floorIndex": 4
+			},
+			{
+				"id": "daemonhost_7b198e2ad16a",
+				"category": "daemonhost",
+				"name": {
+					"key": "markerDaemonhostSpawn"
+				},
+				"position": [
+					-115.71722412109,
+					65.764640808105,
+					3.5001561641693
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "daemonhost_7eda8852f42b",
@@ -760,46 +1304,37 @@
 					113.49999237061,
 					32.5,
 					-12.490702629089
-				]
+				],
+				"floorIndex": 1
 			},
 			{
-				"id": "daemonhost_8cc7e1bccafe",
+				"id": "daemonhost_9053867be42a",
 				"category": "daemonhost",
 				"name": {
 					"key": "markerDaemonhostSpawn"
 				},
 				"position": [
-					-72.5,
-					90.581642150879,
-					-0.50023436546326
-				]
+					-222.25,
+					-9.9999990463257,
+					2.4996874332428
+				],
+				"floorIndex": 4
 			},
 			{
-				"id": "daemonhost_9efeb5003a57",
+				"id": "daemonhost_9ae21b068fb4",
 				"category": "daemonhost",
 				"name": {
 					"key": "markerDaemonhostSpawn"
 				},
 				"position": [
-					-117.49999237061,
-					90.215179443359,
-					3.5127034187317
-				]
+					-180.43167114258,
+					-36.674819946289,
+					2.5701951980591
+				],
+				"floorIndex": 4
 			},
 			{
-				"id": "daemonhost_d2a6439315e4",
-				"category": "daemonhost",
-				"name": {
-					"key": "markerDaemonhostSpawn"
-				},
-				"position": [
-					-281.00003051758,
-					-82.999992370605,
-					-29.44097328186
-				]
-			},
-			{
-				"id": "daemonhost_fdc0cec31a18",
+				"id": "daemonhost_a885e6a84330",
 				"category": "daemonhost",
 				"name": {
 					"key": "markerDaemonhostSpawn"
@@ -808,7 +1343,73 @@
 					-271.51248168945,
 					-82.351249694824,
 					4.5599999427795
-				]
+				],
+				"floorIndex": 4
+			},
+			{
+				"id": "daemonhost_b98e35e2c3b1",
+				"category": "daemonhost",
+				"name": {
+					"key": "markerDaemonhostSpawn"
+				},
+				"position": [
+					-169,
+					15.25,
+					0.56035155057907
+				],
+				"floorIndex": 4
+			},
+			{
+				"id": "daemonhost_be60a2cb328b",
+				"category": "daemonhost",
+				"name": {
+					"key": "markerDaemonhostSpawn"
+				},
+				"position": [
+					-184.59999084473,
+					-19.119979858398,
+					2.4996874332428
+				],
+				"floorIndex": 4
+			},
+			{
+				"id": "daemonhost_c09f41be9a33",
+				"category": "daemonhost",
+				"name": {
+					"key": "markerDaemonhostSpawn"
+				},
+				"position": [
+					-55.695503234863,
+					89.75651550293,
+					-0.44234374165535
+				],
+				"floorIndex": 4
+			},
+			{
+				"id": "daemonhost_d649fe35c6e7",
+				"category": "daemonhost",
+				"name": {
+					"key": "markerDaemonhostSpawn"
+				},
+				"position": [
+					-308.73379516602,
+					-107.33291625977,
+					-12.439804077148
+				],
+				"floorIndex": 4
+			},
+			{
+				"id": "daemonhost_e3ab7d8cd969",
+				"category": "daemonhost",
+				"name": {
+					"key": "markerDaemonhostSpawn"
+				},
+				"position": [
+					-88.294799804688,
+					98.25163269043,
+					-0.44011718034744
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "grimoire_spawn_38471eb4931a",
@@ -820,7 +1421,8 @@
 					-292.09661865234,
 					-83.861724853516,
 					-21.038000106812
-				]
+				],
+				"floorIndex": 3
 			},
 			{
 				"id": "grimoire_spawn_3d2d57afd76c",
@@ -832,7 +1434,8 @@
 					-222.625,
 					-46.125,
 					2.5
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "grimoire_spawn_45d77b62b7a8",
@@ -844,7 +1447,8 @@
 					154.88479614258,
 					8.1760396957397,
 					-1.0379999876022
-				]
+				],
+				"floorIndex": 2
 			},
 			{
 				"id": "grimoire_spawn_48284723cecc",
@@ -856,7 +1460,8 @@
 					-205.875,
 					35.5,
 					4.4829998016357
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "grimoire_spawn_48f75143f16e",
@@ -868,7 +1473,8 @@
 					-190.75001525879,
 					-28.374996185303,
 					2.5
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "grimoire_spawn_5998459c22b8",
@@ -880,7 +1486,8 @@
 					-204.49998474121,
 					45.999996185303,
 					4.4869999885559
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "grimoire_spawn_6f1169c391fb",
@@ -892,7 +1499,8 @@
 					147.74998474121,
 					99.75,
 					-1.5000009536743
-				]
+				],
+				"floorIndex": 3
 			},
 			{
 				"id": "grimoire_spawn_af175c6b3f44",
@@ -904,7 +1512,8 @@
 					-159.6784362793,
 					1.8573809862137,
 					4.4809999465942
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "grimoire_spawn_d563c6f0fcb6",
@@ -916,7 +1525,8 @@
 					118.95512390137,
 					61.375003814697,
 					-5.5159997940063
-				]
+				],
+				"floorIndex": 2
 			},
 			{
 				"id": "grimoire_spawn_dad10b869242",
@@ -928,7 +1538,8 @@
 					-147,
 					45.749996185303,
 					0.49000000953674
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "havoc_boss_spawn_07fc75622cdb",
@@ -956,7 +1567,8 @@
 							-6.399657664867242
 						]
 					}
-				]
+				],
+				"floorIndex": 2
 			},
 			{
 				"id": "havoc_boss_spawn_0fc4350dcae7",
@@ -984,7 +1596,8 @@
 							-31.524883982473888
 						]
 					}
-				]
+				],
+				"floorIndex": 1
 			},
 			{
 				"id": "havoc_boss_spawn_16d374bfd6be",
@@ -1012,7 +1625,8 @@
 							2.246205653753616
 						]
 					}
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "havoc_boss_spawn_1d0c20980dcb",
@@ -1040,7 +1654,8 @@
 							-8.341457599671932
 						]
 					}
-				]
+				],
+				"floorIndex": 1
 			},
 			{
 				"id": "havoc_boss_spawn_34317d008014",
@@ -1068,7 +1683,8 @@
 							-11.241034538853432
 						]
 					}
-				]
+				],
+				"floorIndex": 3
 			},
 			{
 				"id": "havoc_boss_spawn_4479804320aa",
@@ -1096,7 +1712,8 @@
 							3.573765218162137
 						]
 					}
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "havoc_boss_spawn_5a5da3d02ee5",
@@ -1124,7 +1741,8 @@
 							-8.383201381664762
 						]
 					}
-				]
+				],
+				"floorIndex": 3
 			},
 			{
 				"id": "havoc_boss_spawn_61838f4801b4",
@@ -1152,7 +1770,8 @@
 							-13.212842125759172
 						]
 					}
-				]
+				],
+				"floorIndex": 3
 			},
 			{
 				"id": "havoc_boss_spawn_aed7f4a4c6d9",
@@ -1180,7 +1799,8 @@
 							-11.399600715366486
 						]
 					}
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "havoc_boss_spawn_bd9667cfa820",
@@ -1208,7 +1828,8 @@
 							3.6067962362358568
 						]
 					}
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "health_station_022bcf5dd5b3",
@@ -1220,7 +1841,8 @@
 					65.68692779541,
 					31.684469223022,
 					-17.011695861816
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "health_station_403f1846dd9d",
@@ -1232,7 +1854,8 @@
 					-144.24754333496,
 					-5.0003747940063,
 					4.5
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "health_station_a1267816ca90",
@@ -1244,7 +1867,8 @@
 					-19.000001907349,
 					84.953926086426,
 					-14.361322402954
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "health_station_bfbd25dde4fe",
@@ -1256,7 +1880,8 @@
 					-353.21759033203,
 					-161.82301330566,
 					-45.948692321777
-				]
+				],
+				"floorIndex": 1
 			},
 			{
 				"id": "respawn_point_1b9dc70cc556",
@@ -1268,7 +1893,8 @@
 					-425.0546112060575,
 					-191.6014137268075,
 					-52.6634244918825
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "respawn_point_22146e590488",
@@ -1280,7 +1906,8 @@
 					-228.2048301696775,
 					-27.25725698471075,
 					2.5304882526398
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "respawn_point_3d586f648684",
@@ -1292,7 +1919,8 @@
 					-79.849969482422,
 					82.70000305175799,
 					-0.44413992166518995
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "respawn_point_463c28723ba4",
@@ -1304,7 +1932,8 @@
 					-298.2321472168,
 					-113.16957855225,
 					-46.500274658203
-				]
+				],
+				"floorIndex": 1
 			},
 			{
 				"id": "respawn_point_66ab3e8a841b",
@@ -1316,7 +1945,8 @@
 					-35.175041961670004,
 					-46.000164031982,
 					-17.039939498901397
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "respawn_point_92868ae54f0f",
@@ -1328,7 +1958,8 @@
 					-23.8,
 					60.890014648438,
 					-15.533185386657602
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "respawn_point_c80d299f1122",
@@ -1340,7 +1971,8 @@
 					135.5842590332,
 					18.353808164596753,
 					-3.4923812747001497
-				]
+				],
+				"floorIndex": 2
 			},
 			{
 				"id": "respawn_point_cd1b5777674c",
@@ -1352,7 +1984,8 @@
 					71.333587646484,
 					80.074783325195,
 					-16.500312805176
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "respawn_point_eb4c31084a22",
@@ -1364,7 +1997,8 @@
 					-156.3,
 					-5.3899607658386,
 					4.4998826980591
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "respawn_point_f7311c1ab569",
@@ -1376,7 +2010,8 @@
 					-284.602349853514,
 					-113.15317840576199,
 					-20.9742012023928
-				]
+				],
+				"floorIndex": 3
 			},
 			{
 				"id": "scripture_spawn_1bc54c3cc8e0",
@@ -1388,7 +2023,8 @@
 					141.82368469238,
 					6.4641699790955,
 					-1.5
-				]
+				],
+				"floorIndex": 2
 			},
 			{
 				"id": "scripture_spawn_29dc51520895",
@@ -1400,7 +2036,8 @@
 					-162.25,
 					45.625,
 					0.48600000143051
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "scripture_spawn_4aa5eabf615c",
@@ -1412,7 +2049,8 @@
 					-175,
 					45.5,
 					0.5
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "scripture_spawn_4d4eb7de95af",
@@ -1424,7 +2062,8 @@
 					165.12498474121,
 					21.249998092651,
 					-1.5180000066757
-				]
+				],
+				"floorIndex": 2
 			},
 			{
 				"id": "scripture_spawn_6b0de5cf2fd3",
@@ -1436,7 +2075,8 @@
 					-85.625,
 					108.75,
 					3.4890010356903
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "scripture_spawn_8410986b5844",
@@ -1448,7 +2088,8 @@
 					-173.04760742188,
 					-19.534683227539,
 					2.5
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "scripture_spawn_897736b1941d",
@@ -1460,7 +2101,8 @@
 					171.75650024414,
 					15.846206665039,
 					-1.5019969940186
-				]
+				],
+				"floorIndex": 2
 			},
 			{
 				"id": "scripture_spawn_9073e48c016b",
@@ -1472,7 +2114,8 @@
 					-155.33212280273,
 					10.119503974915,
 					4.4850001335144
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "scripture_spawn_995591bf4dec",
@@ -1484,7 +2127,8 @@
 					152,
 					0.99999898672104,
 					-1.4790010452271
-				]
+				],
+				"floorIndex": 2
 			},
 			{
 				"id": "scripture_spawn_c1dab10b3bac",
@@ -1496,7 +2140,8 @@
 					-93.5,
 					64.875007629395,
 					3.4890010356903
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "scripture_spawn_c30539f61960",
@@ -1508,7 +2153,8 @@
 					-213,
 					9.9999847412109,
 					2.5
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "scripture_spawn_d6a0064f52aa",
@@ -1520,7 +2166,8 @@
 					-195.75,
 					8.125,
 					2.5
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "scripture_spawn_e063890b831e",
@@ -1532,7 +2179,8 @@
 					124.00000762939,
 					82.999992370605,
 					-12.513998985291
-				]
+				],
+				"floorIndex": 1
 			},
 			{
 				"id": "scripture_spawn_e8c2e23a4a7e",
@@ -1544,7 +2192,8 @@
 					-305.25003051758,
 					-83.499992370605,
 					-4.0120000839233
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "scripture_spawn_e921860cb377",
@@ -1556,7 +2205,8 @@
 					-277.12985229492,
 					-118.63204956055,
 					-21.016002655029
-				]
+				],
+				"floorIndex": 3
 			},
 			{
 				"id": "scripture_spawn_e99ec652f513",
@@ -1568,7 +2218,8 @@
 					-204.03453063965,
 					10.201722145081,
 					2.5329999923706
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "scripture_spawn_eb2131229b55",
@@ -1580,7 +2231,8 @@
 					-229.49996948242,
 					-7.3750081062317,
 					2.5
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "scripture_spawn_ec40e83ce10a",
@@ -1592,7 +2244,8 @@
 					147.37501525879,
 					81.249984741211,
 					-1.50100004673
-				]
+				],
+				"floorIndex": 3
 			},
 			{
 				"id": "scripture_spawn_f3bafa2aaba1",
@@ -1604,7 +2257,8 @@
 					-185,
 					24.5,
 					4.4850001335144
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "scripture_spawn_f5511227214f",
@@ -1616,7 +2270,8 @@
 					119.75000762939,
 					67.624992370605,
 					-10.754999160767
-				]
+				],
+				"floorIndex": 1
 			},
 			{
 				"id": "supply_spawn_027ab5be9f08",
@@ -1628,7 +2283,8 @@
 					-301,
 					-90.125,
 					-46.527000427246
-				]
+				],
+				"floorIndex": 1
 			},
 			{
 				"id": "supply_spawn_03ac8a7fa6a1",
@@ -1640,7 +2296,8 @@
 					-59.249992370605,
 					85.375007629395,
 					-0.51499998569489
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_070de5a9b81f",
@@ -1652,7 +2309,8 @@
 					91.179824829102,
 					36.763599395752,
 					-16.495000839233
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_0769c00eef87",
@@ -1664,7 +2322,8 @@
 					153.25,
 					81.25,
 					-9.4139995574951
-				]
+				],
+				"floorIndex": 2
 			},
 			{
 				"id": "supply_spawn_09a5ab79a80b",
@@ -1676,7 +2335,8 @@
 					-125.50000762939,
 					93.125007629395,
 					3.4869999885559
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_0a8a0b228f8a",
@@ -1688,7 +2348,8 @@
 					-194.69999694824,
 					-48.070007324219,
 					2.5
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_0b24eeaaaa25",
@@ -1700,7 +2361,8 @@
 					-306.375,
 					-94.125,
 					-12.5
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_0bba5bb05146",
@@ -1712,7 +2374,8 @@
 					-288.875,
 					-112.875,
 					-20.200000762939
-				]
+				],
+				"floorIndex": 3
 			},
 			{
 				"id": "supply_spawn_0da047f55d32",
@@ -1724,7 +2387,8 @@
 					-83.084678649902,
 					77.095283508301,
 					3.5
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_0ed198448867",
@@ -1736,7 +2400,8 @@
 					-228.99996948242,
 					0.125,
 					2.5009999275208
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_0fc86cd6b7f8",
@@ -1748,7 +2413,8 @@
 					-315.5,
 					-109.75001525879,
 					-46.516002655029
-				]
+				],
+				"floorIndex": 1
 			},
 			{
 				"id": "supply_spawn_104a14c2efee",
@@ -1760,7 +2426,8 @@
 					148.60534667969,
 					14.25,
 					-1.0379999876022
-				]
+				],
+				"floorIndex": 2
 			},
 			{
 				"id": "supply_spawn_168a8e391ad5",
@@ -1772,7 +2439,8 @@
 					-161,
 					25.125,
 					0.5
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_176a33a59dc3",
@@ -1784,7 +2452,8 @@
 					-159.25999450684,
 					-14.459991455078,
 					4.4860000610352
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_1abc9b4df7ed",
@@ -1796,7 +2465,8 @@
 					78.582847595215,
 					71.69953918457,
 					-15.001999855042
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_1bf834cd13d6",
@@ -1808,7 +2478,8 @@
 					-126.625,
 					52.499996185303,
 					2.6989998817444
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_1d0bf89d2c5d",
@@ -1820,7 +2491,8 @@
 					-85.624992370605,
 					100.49999237061,
 					-0.43999999761581
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_1dd4f33033a3",
@@ -1832,7 +2504,8 @@
 					-24,
 					-54.875,
 					-15.045000076294
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_1e19eb84bfe5",
@@ -1844,7 +2517,8 @@
 					-73.5,
 					77.375007629395,
 					4.6669998168945
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_1ee62d8d0cef",
@@ -1856,7 +2530,8 @@
 					-154.5,
 					21.75,
 					2.5
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_1fb9aabe13ee",
@@ -1868,7 +2543,8 @@
 					94.75,
 					51.75,
 					-16.548000335693
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_2073f69464e6",
@@ -1880,7 +2556,8 @@
 					-212.17391967773,
 					-30.378273010254,
 					2.5
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_212c2c95e6d9",
@@ -1892,7 +2569,8 @@
 					133,
 					48.75,
 					-7.5
-				]
+				],
+				"floorIndex": 2
 			},
 			{
 				"id": "supply_spawn_22804640b7ea",
@@ -1904,7 +2582,8 @@
 					-177.00003051758,
 					8.875,
 					3.1689999103546
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_2506be7c5e74",
@@ -1916,7 +2595,8 @@
 					56.375,
 					29.75,
 					-15.802000045776
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_2512bf09fb41",
@@ -1928,7 +2608,8 @@
 					-218.40162658691,
 					-59.84517288208,
 					3.4570000171661
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_2c02678bdfc5",
@@ -1940,7 +2621,8 @@
 					-182.875,
 					8.75,
 					2.5009999275208
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_2d00d26dd0ad",
@@ -1952,7 +2634,8 @@
 					-194.24998474121,
 					21.5,
 					2.5
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_311cae574341",
@@ -1964,7 +2647,8 @@
 					-310.375,
 					-90,
 					-38.016998291016
-				]
+				],
+				"floorIndex": 2
 			},
 			{
 				"id": "supply_spawn_31771f3f942f",
@@ -1976,7 +2660,8 @@
 					-111,
 					84.374992370605,
 					1.4819999933243
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_327183633a5b",
@@ -1988,7 +2673,8 @@
 					-113.625,
 					85.124984741211,
 					3.4879999160767
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_340c926dc53c",
@@ -2000,7 +2686,8 @@
 					-39.749992370605,
 					63.499996185303,
 					-4.5180010795593
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_35b1743fbf7a",
@@ -2012,7 +2699,8 @@
 					-351.125,
 					-180.5,
 					-45.928001403809
-				]
+				],
+				"floorIndex": 1
 			},
 			{
 				"id": "supply_spawn_377071ede603",
@@ -2024,7 +2712,8 @@
 					-89.839996337891,
 					86.660034179688,
 					-0.5
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_393efafa8d4c",
@@ -2036,7 +2725,8 @@
 					117.99999237061,
 					47.000015258789,
 					-5.5160012245178
-				]
+				],
+				"floorIndex": 2
 			},
 			{
 				"id": "supply_spawn_39d960f35cdc",
@@ -2048,7 +2738,8 @@
 					148.5,
 					60.5,
 					-8.3339996337891
-				]
+				],
+				"floorIndex": 2
 			},
 			{
 				"id": "supply_spawn_3c70e23ff91c",
@@ -2060,7 +2751,8 @@
 					121.65511322021,
 					67.214691162109,
 					-7.5
-				]
+				],
+				"floorIndex": 2
 			},
 			{
 				"id": "supply_spawn_40faa5b2c857",
@@ -2072,7 +2764,8 @@
 					-33.5,
 					81,
 					-4.5130000114441
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_412bb008bde2",
@@ -2084,7 +2777,8 @@
 					-191,
 					4.75,
 					3.6970000267029
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_41d2dfbab2f4",
@@ -2096,7 +2790,8 @@
 					171.58001708984,
 					56.5,
 					-7.0380001068115
-				]
+				],
+				"floorIndex": 2
 			},
 			{
 				"id": "supply_spawn_4224c876c898",
@@ -2108,7 +2803,8 @@
 					106.55999755859,
 					45.519409179688,
 					-12.519000053406
-				]
+				],
+				"floorIndex": 1
 			},
 			{
 				"id": "supply_spawn_43e73fef3df2",
@@ -2120,7 +2816,8 @@
 					-276.875,
 					-94.375,
 					-21
-				]
+				],
+				"floorIndex": 3
 			},
 			{
 				"id": "supply_spawn_4554384a8e36",
@@ -2132,7 +2829,8 @@
 					69,
 					-41.5,
 					-15.041999816895
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_45dbf56934b3",
@@ -2144,7 +2842,8 @@
 					-34.375007629395,
 					108.625,
 					-2.5150001049042
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_46710aa64a52",
@@ -2156,7 +2855,8 @@
 					-85.625,
 					79.125,
 					-0.51499998569489
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_46d524b2a7d1",
@@ -2168,7 +2868,8 @@
 					-119.625,
 					69.375,
 					3.4839999675751
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_4bbef276aeec",
@@ -2180,7 +2881,8 @@
 					-219.75003051758,
 					8.875,
 					2.5150001049042
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_53ab37cf5169",
@@ -2192,7 +2894,8 @@
 					-171.375,
 					-5.625,
 					2.5
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_5403545640d7",
@@ -2204,7 +2907,8 @@
 					156.24282836914,
 					89.737976074219,
 					-5.5159997940063
-				]
+				],
+				"floorIndex": 3
 			},
 			{
 				"id": "supply_spawn_567f838eb1e5",
@@ -2216,7 +2920,8 @@
 					-23.431175231934,
 					64.836967468262,
 					-14.8109998703
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_56a4c1e61759",
@@ -2228,7 +2933,8 @@
 					-329.125,
 					-138.625,
 					-46.518001556396
-				]
+				],
+				"floorIndex": 1
 			},
 			{
 				"id": "supply_spawn_594d00e8eb63",
@@ -2240,7 +2946,8 @@
 					-296.625,
 					-84.625,
 					-21.038999557495
-				]
+				],
+				"floorIndex": 3
 			},
 			{
 				"id": "supply_spawn_5a0ccc563bbf",
@@ -2252,7 +2959,8 @@
 					-257.375,
 					-49.375,
 					4.5100011825562
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_5ac26bd4d2f9",
@@ -2264,7 +2972,8 @@
 					-207.32705688477,
 					9.8108825683594,
 					2.5
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_61d9c18d0cdd",
@@ -2276,7 +2985,8 @@
 					163.74998474121,
 					39.5,
 					-7.5149998664856
-				]
+				],
+				"floorIndex": 2
 			},
 			{
 				"id": "supply_spawn_6298b0068ae1",
@@ -2288,7 +2998,8 @@
 					71.499992370605,
 					73.5,
 					-16.451000213623
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_63fbcf37afb0",
@@ -2300,7 +3011,8 @@
 					150.03851318359,
 					9.5392608642578,
 					-0.23999999463558
-				]
+				],
+				"floorIndex": 2
 			},
 			{
 				"id": "supply_spawn_65578f515258",
@@ -2312,7 +3024,8 @@
 					96.5,
 					61.25,
 					-17.5
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_659896d721ed",
@@ -2324,7 +3037,8 @@
 					-280.875,
 					-74.625015258789,
 					-28.733995437622
-				]
+				],
+				"floorIndex": 3
 			},
 			{
 				"id": "supply_spawn_65ac539b27c5",
@@ -2336,7 +3050,8 @@
 					-67.193977355957,
 					85.795066833496,
 					-0.5
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_65b0eb120fe7",
@@ -2348,7 +3063,8 @@
 					-60.249996185303,
 					95.499992370605,
 					0.66600000858307
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_65e9d650f936",
@@ -2360,7 +3076,8 @@
 					-61.500003814697,
 					79.25,
 					-0.51499998569489
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_6625393552e5",
@@ -2372,7 +3089,8 @@
 					-291.375,
 					-57.625,
 					0.47299998998642
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_6639a48ced61",
@@ -2384,7 +3102,8 @@
 					-221.00329589844,
 					-56.525096893311,
 					5.2039999961853
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_668041355733",
@@ -2396,7 +3115,8 @@
 					-38,
 					-28.75,
 					-17.048000335693
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_6726d5525ca4",
@@ -2408,7 +3128,8 @@
 					163.74998474121,
 					73.25,
 					-6.2829999923706
-				]
+				],
+				"floorIndex": 2
 			},
 			{
 				"id": "supply_spawn_6743e387527e",
@@ -2420,7 +3141,8 @@
 					-120.375,
 					79.5,
 					3.5
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_68d1d29105a0",
@@ -2432,7 +3154,8 @@
 					131.875,
 					20.25,
 					-2.3120000362396
-				]
+				],
+				"floorIndex": 2
 			},
 			{
 				"id": "supply_spawn_6a7b9e87ac6b",
@@ -2444,7 +3167,8 @@
 					-20.25,
 					65.75,
 					-15.537999153137
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_6b6bfa6744a1",
@@ -2456,7 +3180,8 @@
 					210.5,
 					81.75,
 					-9.5120000839233
-				]
+				],
+				"floorIndex": 2
 			},
 			{
 				"id": "supply_spawn_7029fc7e30f0",
@@ -2468,7 +3193,8 @@
 					-318.62496948242,
 					-81.875,
 					-4.0269989967346
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_71798dcc7c44",
@@ -2480,7 +3206,8 @@
 					-361.375,
 					-154.25,
 					-50.205001831055
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_73daec68e16a",
@@ -2492,7 +3219,8 @@
 					-349.25,
 					-152.25,
 					-45.237998962402
-				]
+				],
+				"floorIndex": 1
 			},
 			{
 				"id": "supply_spawn_760f3cd1eb6b",
@@ -2504,7 +3232,8 @@
 					-227.875,
 					-43.25,
 					4.5
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_7736555e8cdc",
@@ -2516,7 +3245,8 @@
 					55.767681121826,
 					30.401121139526,
 					-15.807999610901
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_7a365cae3dd3",
@@ -2528,7 +3258,8 @@
 					153.39837646484,
 					86.502685546875,
 					-0.31099998950958
-				]
+				],
+				"floorIndex": 3
 			},
 			{
 				"id": "supply_spawn_7cb2b9b1bffa",
@@ -2540,7 +3271,8 @@
 					-318,
 					-106.75003051758,
 					-12.516000747681
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_7ec5ef848ef6",
@@ -2552,7 +3284,8 @@
 					-289.375,
 					-72.375,
 					-29.516000747681
-				]
+				],
+				"floorIndex": 3
 			},
 			{
 				"id": "supply_spawn_81fca62eb0e2",
@@ -2564,7 +3297,8 @@
 					66.25,
 					-63.875,
 					-17.034999847412
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_82e01999878a",
@@ -2576,7 +3310,8 @@
 					-179,
 					-41.625,
 					2.5
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_834a2d960dba",
@@ -2588,7 +3323,8 @@
 					-210.375,
 					21.5,
 					2.5
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_83815b6253cf",
@@ -2600,7 +3336,8 @@
 					-240.37501525879,
 					-30.625,
 					4.5
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_8539c5f819cd",
@@ -2612,7 +3349,8 @@
 					72.429237365723,
 					51.714946746826,
 					-16.5
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_85c427046fc6",
@@ -2624,7 +3362,8 @@
 					165.75,
 					61.625,
 					-7.5149998664856
-				]
+				],
+				"floorIndex": 2
 			},
 			{
 				"id": "supply_spawn_8764c45d65ff",
@@ -2636,7 +3375,8 @@
 					-174.75,
 					6.5,
 					3.1689999103546
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_8c76f297598c",
@@ -2648,7 +3388,8 @@
 					-219.75,
 					-32.75,
 					3.2999999523163
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_8ccd52162660",
@@ -2660,7 +3401,8 @@
 					171.90069580078,
 					72.132217407227,
 					-6.3330011367798
-				]
+				],
+				"floorIndex": 2
 			},
 			{
 				"id": "supply_spawn_8e1fc569e726",
@@ -2672,7 +3414,8 @@
 					-264.37493896484,
 					-102.87499237061,
 					-21.010000228882
-				]
+				],
+				"floorIndex": 3
 			},
 			{
 				"id": "supply_spawn_91b6fcfadca9",
@@ -2684,7 +3427,8 @@
 					-301.75,
 					-98.250022888184,
 					-12.499999046326
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_932965823858",
@@ -2696,7 +3440,8 @@
 					-231.75,
 					-4.75,
 					2.5
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_9566b0339527",
@@ -2708,7 +3453,8 @@
 					78.75,
 					54,
 					-17.499998092651
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_9750b234d2f7",
@@ -2720,7 +3466,8 @@
 					-98.125,
 					63.375,
 					3.4830000400543
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_9934f536d524",
@@ -2732,7 +3479,8 @@
 					-306.25,
 					-118.87498474121,
 					-12.517999649048
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_9952d0bafd5d",
@@ -2744,7 +3492,8 @@
 					-17.5,
 					87.25,
 					-7.5149998664856
-				]
+				],
+				"floorIndex": 3
 			},
 			{
 				"id": "supply_spawn_9a452e5a4c5b",
@@ -2756,7 +3505,8 @@
 					-78.250007629395,
 					85.749992370605,
 					-0.51300001144409
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_9a921f640685",
@@ -2768,7 +3518,8 @@
 					-286,
 					-93.125,
 					-46.536003112793
-				]
+				],
+				"floorIndex": 1
 			},
 			{
 				"id": "supply_spawn_9ab36db515f5",
@@ -2780,7 +3531,8 @@
 					106.75,
 					67.749984741211,
 					-12.534999847412
-				]
+				],
+				"floorIndex": 1
 			},
 			{
 				"id": "supply_spawn_9caa0d5b46da",
@@ -2792,7 +3544,8 @@
 					-189.75,
 					-32.646816253662,
 					2.5
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_a0eb3ae54ff3",
@@ -2804,7 +3557,8 @@
 					170.74998474121,
 					86.750015258789,
 					-5.5149998664856
-				]
+				],
+				"floorIndex": 3
 			},
 			{
 				"id": "supply_spawn_a5113adf59bc",
@@ -2816,7 +3570,8 @@
 					-135.375,
 					55.500003814697,
 					1.4800000190735
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_a51299b8861c",
@@ -2828,7 +3583,8 @@
 					-252.25,
 					-58.25,
 					4.4809999465942
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_a7699d7077e3",
@@ -2840,7 +3596,8 @@
 					92.5,
 					34.5,
 					-12.484999656677
-				]
+				],
+				"floorIndex": 1
 			},
 			{
 				"id": "supply_spawn_a812812574b6",
@@ -2852,7 +3609,8 @@
 					-303.75006103516,
 					-77.499992370605,
 					-4.0180010795593
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_aade16319d82",
@@ -2864,7 +3622,8 @@
 					114.25001525879,
 					61.5,
 					-12.501002311707
-				]
+				],
+				"floorIndex": 1
 			},
 			{
 				"id": "supply_spawn_b14895c08840",
@@ -2876,7 +3635,8 @@
 					-67.54712677002,
 					102.91219329834,
 					1.4839999675751
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_b359fbba2613",
@@ -2888,7 +3648,8 @@
 					130,
 					82.75,
 					-5.5130000114441
-				]
+				],
+				"floorIndex": 3
 			},
 			{
 				"id": "supply_spawn_b5c3680d0410",
@@ -2900,7 +3661,8 @@
 					-135.25,
 					85.75,
 					3.4839999675751
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_b75c6567d6f2",
@@ -2912,7 +3674,8 @@
 					-93.530235290527,
 					68.561981201172,
 					3.5
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_b861e66f092e",
@@ -2924,7 +3687,8 @@
 					188.25,
 					74.75,
 					-9.5150003433228
-				]
+				],
+				"floorIndex": 2
 			},
 			{
 				"id": "supply_spawn_bb5996531961",
@@ -2936,7 +3700,8 @@
 					-66,
 					77.625,
 					1.4880000352859
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_be0cf6437bc1",
@@ -2948,7 +3713,8 @@
 					-119.12500762939,
 					71.5,
 					3.4809999465942
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_be97927635fa",
@@ -2960,7 +3726,8 @@
 					-212.25271606445,
 					-21.284767150879,
 					3.7017140388489
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_c099b3681ee8",
@@ -2972,7 +3739,8 @@
 					120.39240264893,
 					77.81844329834,
 					-12.514999389648
-				]
+				],
+				"floorIndex": 1
 			},
 			{
 				"id": "supply_spawn_c1c7e4ee877f",
@@ -2984,7 +3752,8 @@
 					136.0606842041,
 					39.012786865234,
 					-7.5139999389648
-				]
+				],
+				"floorIndex": 2
 			},
 			{
 				"id": "supply_spawn_c1c7ffd15112",
@@ -2996,7 +3765,8 @@
 					-370.5,
 					-161.75003051758,
 					-44.965999603271
-				]
+				],
+				"floorIndex": 1
 			},
 			{
 				"id": "supply_spawn_c334ab65eecb",
@@ -3008,7 +3778,8 @@
 					-215.50608825684,
 					-44.439331054688,
 					2.5
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_c54990f84781",
@@ -3020,7 +3791,8 @@
 					-293.75,
 					-111.24997711182,
 					-12.510998725891
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_c64f5ee5b052",
@@ -3032,7 +3804,8 @@
 					-282.625,
 					-95.375030517578,
 					-21.045001983643
-				]
+				],
+				"floorIndex": 3
 			},
 			{
 				"id": "supply_spawn_c71455a190fe",
@@ -3044,7 +3817,8 @@
 					-11.250003814697,
 					56.249996185303,
 					-15.525000572205
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_c8cd35f89d27",
@@ -3056,7 +3830,8 @@
 					112.5,
 					47.125,
 					-4.5170001983643
-				]
+				],
+				"floorIndex": 2
 			},
 			{
 				"id": "supply_spawn_c98c28d64325",
@@ -3068,7 +3843,8 @@
 					-172.625,
 					28.749998092651,
 					1.6629999876022
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_cd583d08809f",
@@ -3080,7 +3856,8 @@
 					-274.73971557617,
 					-90.580200195312,
 					-29.515998840332
-				]
+				],
+				"floorIndex": 3
 			},
 			{
 				"id": "supply_spawn_ce552878245b",
@@ -3092,7 +3869,8 @@
 					-331.875,
 					-138.625,
 					-46.512001037598
-				]
+				],
+				"floorIndex": 1
 			},
 			{
 				"id": "supply_spawn_cf89ef5ce0ec",
@@ -3104,7 +3882,8 @@
 					124,
 					25.499992370605,
 					-12.491000175476
-				]
+				],
+				"floorIndex": 1
 			},
 			{
 				"id": "supply_spawn_d0a8fc16588d",
@@ -3116,7 +3895,8 @@
 					72.29313659668,
 					63.746047973633,
 					-15.287875175476
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_d118387fc29f",
@@ -3128,7 +3908,8 @@
 					-274.8766784668,
 					-117.7516784668,
 					-20.200000762939
-				]
+				],
+				"floorIndex": 3
 			},
 			{
 				"id": "supply_spawn_d2ce9418313f",
@@ -3140,7 +3921,8 @@
 					-7.9591641426086,
 					-35.883739471436,
 					-17.065999984741
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_d418af4001e3",
@@ -3152,7 +3934,8 @@
 					-278,
 					-80.999969482422,
 					5.8220000267029
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_d55c8f018d87",
@@ -3164,7 +3947,8 @@
 					54.623329162598,
 					69.459449768066,
 					-15.303999900818
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_d5beb22af180",
@@ -3176,7 +3960,8 @@
 					-27.000003814697,
 					56.250003814697,
 					-15.564999580383
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_d98a6b204272",
@@ -3188,7 +3973,8 @@
 					-145.37498474121,
 					-19.625,
 					4.4800000190735
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_dbaf0316e66e",
@@ -3200,7 +3986,8 @@
 					107.8302154541,
 					55.629806518555,
 					-12.515000343323
-				]
+				],
+				"floorIndex": 1
 			},
 			{
 				"id": "supply_spawn_dbe941aa9d7e",
@@ -3212,7 +3999,8 @@
 					-121.65999603271,
 					47.340000152588,
 					1.5
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_dfe21501d151",
@@ -3224,7 +4012,8 @@
 					-326.125,
 					-135.375,
 					-46.516998291016
-				]
+				],
+				"floorIndex": 1
 			},
 			{
 				"id": "supply_spawn_e263b33cbb99",
@@ -3236,7 +4025,8 @@
 					-171.50001525879,
 					-14.500000953674,
 					2.5
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_e2a3d6a77be8",
@@ -3248,7 +4038,8 @@
 					-308.125,
 					-103.25,
 					-46.515998840332
-				]
+				],
+				"floorIndex": 1
 			},
 			{
 				"id": "supply_spawn_e4640be06d9c",
@@ -3260,7 +4051,8 @@
 					-188.625,
 					-19.75,
 					3.7179999351501
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_ed7184925c86",
@@ -3272,7 +4064,8 @@
 					-178,
 					24.25,
 					0.483000010252
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_ef76249cdb35",
@@ -3284,7 +4077,8 @@
 					90.75,
 					53.75,
 					-17.496999740601
-				]
+				],
+				"floorIndex": 0
 			},
 			{
 				"id": "supply_spawn_f2abc7bea8a2",
@@ -3296,7 +4090,8 @@
 					-307.37503051758,
 					-66.500015258789,
 					-4.0359997749329
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_f2e8b07cdb06",
@@ -3308,7 +4103,8 @@
 					-143.69000244141,
 					9.9199981689453,
 					4.4879999160767
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_f75acc43aa10",
@@ -3320,7 +4116,8 @@
 					-83.169990539551,
 					102.93998718262,
 					3.5
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_f9002e301d98",
@@ -3332,7 +4129,8 @@
 					-143.63505554199,
 					4.5,
 					4.5
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_f90cf59e1743",
@@ -3344,7 +4142,8 @@
 					108,
 					78.25,
 					-12.531000137329
-				]
+				],
+				"floorIndex": 1
 			},
 			{
 				"id": "supply_spawn_f9b0c08d8a11",
@@ -3356,7 +4155,8 @@
 					-97.875,
 					103,
 					4.7150001525879
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_f9d0b8a45672",
@@ -3368,7 +4168,8 @@
 					-287.7724609375,
 					-72.795303344727,
 					4.4860010147095
-				]
+				],
+				"floorIndex": 4
 			},
 			{
 				"id": "supply_spawn_fe489471ee08",
@@ -3380,7 +4181,8 @@
 					-111.625,
 					109,
 					3.4839999675751
-				]
+				],
+				"floorIndex": 4
 			}
 		]
 	},
@@ -3388,33 +4190,33 @@
 		"blockedEdges": {
 			"file": "./data/maps/cm_archives/blocked_edges.glb",
 			"stats": {
-				"inputEdges": 3717,
-				"doorFilteredEdges": 1671,
-				"dynamicVolumeFilteredEdges": 6,
-				"markerCollisionFilteredEdges": 169,
-				"inputComponents": 584,
+				"inputEdges": 8942,
+				"doorFilteredEdges": 1919,
+				"dynamicVolumeFilteredEdges": 4,
+				"markerCollisionFilteredEdges": 256,
+				"inputComponents": 2286,
 				"includedComponents": 1,
-				"splitComponents": 17,
-				"renderedComponents": 38,
-				"renderedFragments": 19,
-				"keptRenderedFragments": 14,
-				"filteredEdges": 3300,
-				"renderedEdges": 417,
-				"sourcePolygons": 14,
+				"splitComponents": 37,
+				"renderedComponents": 174,
+				"renderedFragments": 53,
+				"keptRenderedFragments": 20,
+				"filteredEdges": 8447,
+				"renderedEdges": 495,
+				"sourcePolygons": 19,
 				"manualExcludePoints": 0,
 				"manualExcludedPolygons": 0,
-				"renderedTriangles": 1075,
-				"renderedPolygons": 745
+				"renderedTriangles": 1408,
+				"renderedPolygons": 967
 			},
 			"navmeshCarve": {
-				"inputTriangles": 48693,
-				"outputTriangles": 48783,
-				"carvedTriangles": 730,
-				"blockerFootprints": 745,
+				"inputTriangles": 48695,
+				"outputTriangles": 48847,
+				"carvedTriangles": 949,
+				"blockerFootprints": 967,
 				"skippedDegenerateTriangles": 0,
-				"removedFragmentComponents": 3,
-				"removedFragmentTriangles": 3,
-				"removedFragmentArea": 0.3092601125166365
+				"removedFragmentComponents": 7,
+				"removedFragmentTriangles": 15,
+				"removedFragmentArea": 0.555128662610016
 			}
 		}
 	}

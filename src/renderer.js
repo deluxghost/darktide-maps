@@ -2,10 +2,14 @@ import { COORDINATE_SYSTEM, Deck, OrbitView, OrbitViewport } from "@deck.gl/core
 import { IconLayer, PathLayer } from "@deck.gl/layers";
 import { SimpleMeshLayer } from "@deck.gl/mesh-layers";
 import { APP_CONFIG } from "./config.js";
+import { FloorClipExtension } from "./floorclip.js";
 import { pinIconForCategory, positionMarkerIcon } from "./icons.js";
+import { createMesh } from "./navmesh.js";
 
 const RUNTIME = APP_CONFIG.runtime;
 const VISUAL = RUNTIME.visual;
+const FLOOR_CLIP_EXTENSION = new FloorClipExtension();
+const FLOOR_PATH_EXTENSION = new FloorClipExtension({path: true});
 const OVERLAY_LINE_PARAMETERS = {
 	blend: false,
 	depthCompare: "less-equal",
@@ -27,12 +31,32 @@ function viewDepth(pin, viewport) {
 	return matrix[2] * position[0] + matrix[6] * position[1] + matrix[10] * position[2] + matrix[14];
 }
 
-function sortedPins(pins, visibleCategories, viewport) {
+function pinFloorIndex(pin) {
+	return pin.markerType === "auxiliary_pin"
+		? pin.parentMarker?.floorIndex
+		: pin.floorIndex;
+}
+
+function pinInFloorRange(pin, range) {
+	if (!range) {
+		return true;
+	}
+
+	if (pin.markerType === "position_marker") {
+		return true;
+	}
+
+	const floorIndex = pinFloorIndex(pin);
+
+	return Number.isInteger(floorIndex) && floorIndex >= range[0] && floorIndex < range[1];
+}
+
+function sortedPins(pins, visibleCategories, viewport, floorRange) {
 	const visiblePins = pins.filter((pin) => (
 		visibleCategories.has(pin.category)
 		|| pin.markerType === "auxiliary_pin"
 		|| pin.markerType === "position_marker"
-	));
+	) && pinInFloorRange(pin, floorRange));
 
 	if (!viewport) {
 		return visiblePins;
@@ -343,6 +367,10 @@ export function createMapRenderer(mapElement, onError) {
 	let viewChangeFrame = 0;
 	let renderToken = 0;
 
+	function currentViewport() {
+		return deckInstance?.isInitialized ? deckInstance.getViewports()[0] : null;
+	}
+
 	function nextFrame() {
 		return new Promise((resolve) => requestAnimationFrame(resolve));
 	}
@@ -363,7 +391,11 @@ export function createMapRenderer(mapElement, onError) {
 	}
 
 	function navmeshSurfaceLayerIds() {
-		return currentState ? [`navmesh-surface-${currentState.map.id}`] : [];
+		if (!currentState?.mesh) {
+			return [];
+		}
+
+		return [`navmesh-surface-${currentState.map.id}`];
 	}
 
 	function pickNavmeshCoordinate(pixel) {
@@ -450,7 +482,7 @@ export function createMapRenderer(mapElement, onError) {
 	}
 
 	function sampleRotationAnchor() {
-		const viewport = deckInstance?.getViewports()[0];
+		const viewport = currentViewport();
 
 		if (!viewport) {
 			return null;
@@ -499,7 +531,7 @@ export function createMapRenderer(mapElement, onError) {
 
 	function applyRotationAnchor(viewState) {
 		const anchor = rotationAnchor();
-		const viewport = deckInstance?.getViewports()[0];
+		const viewport = currentViewport();
 
 		if (!anchor || !viewport) {
 			return viewState;
@@ -552,29 +584,28 @@ export function createMapRenderer(mapElement, onError) {
 			return [];
 		}
 
-		const { map, mesh, boundaryPaths, mainPathMeshes, blockedEdgeMeshes, blockedEdgesVisible, mainPathVisible, markerPins, auxiliaryMarkerOwner, visiblePinCategories } = currentState;
-		const viewport = deckInstance?.getViewports()[0];
+		const {
+			map,
+			mesh,
+			boundaryPaths,
+			mainPathMeshes,
+			blockedEdgeMeshes,
+			blockedEdgesVisible,
+			mainPathVisible,
+			markerPins,
+			auxiliaryMarkerOwner,
+			visiblePinCategories,
+			floorRange,
+		} = currentState;
+		const viewport = currentViewport();
 		const auxiliaryPins = auxiliaryPinsForMarker(auxiliaryMarkerOwner);
 		const visiblePins = sortedPins(
 			auxiliaryPins.length ? [...markerPins, ...auxiliaryPins] : markerPins,
 			visiblePinCategories,
 			viewport,
+			floorRange,
 		);
-		const layers = [
-			new SimpleMeshLayer({
-				id: `navmesh-surface-${map.id}`,
-				data: [{}],
-				mesh,
-				coordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
-				getPosition: [0, 0, 0],
-				getColor: [255, 255, 255, 255],
-				wireframe: false,
-				pickable: true,
-				material: VISUAL.lighting.navmeshMaterial,
-				getPolygonOffset: () => [0, 0],
-				parameters: RUNTIME.layers.opaqueMeshParameters,
-			}),
-		];
+		const layers = [];
 
 		function addPartMeshLayers(parts, createLayer) {
 			if (!parts) {
@@ -582,11 +613,22 @@ export function createMapRenderer(mapElement, onError) {
 			}
 
 			for (const [part, partData] of Object.entries(parts)) {
+				if (!partData.mesh) {
+					continue;
+				}
+
 				layers.push(createLayer(part, partData));
 			}
 		}
 
-		function createStaticMeshLayer({id, layerMesh, color, material, parameters = RUNTIME.layers.opaqueMeshParameters, pickable = false}) {
+		function createStaticMeshLayer({
+			id,
+			layerMesh,
+			color,
+			material,
+			parameters = RUNTIME.layers.opaqueMeshParameters,
+			pickable = false,
+		}) {
 			return new SimpleMeshLayer({
 				id,
 				data: [{}],
@@ -599,20 +641,45 @@ export function createMapRenderer(mapElement, onError) {
 				material,
 				getPolygonOffset: () => [0, 0],
 				parameters,
+				_instanced: false,
+				extensions: [FLOOR_CLIP_EXTENSION],
+				floorRange,
 			});
 		}
 
-		layers.push(new PathLayer({
+		function createBoundaryLayer({id, paths, color, width, parameters}) {
+			return new PathLayer({
+				id,
+				data: paths,
+				coordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
+				getPath: (boundary) => boundary.path,
+				getColor: color,
+				getWidth: width,
+				widthUnits: "common",
+				jointRounded: true,
+				capRounded: true,
+				getPolygonOffset: () => [0, 0],
+				parameters,
+				extensions: [FLOOR_PATH_EXTENSION],
+				floorRange,
+			});
+		}
+
+		if (mesh) {
+			layers.push(createStaticMeshLayer({
+				id: `navmesh-surface-${map.id}`,
+				layerMesh: mesh,
+				color: [255, 255, 255, 255],
+				material: VISUAL.lighting.navmeshMaterial,
+				pickable: true,
+			}));
+		}
+
+		layers.push(createBoundaryLayer({
 			id: `navmesh-boundaries-${map.id}`,
-			data: boundaryPaths,
-			coordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
-			getPath: (boundary) => boundary.path,
-			getColor: VISUAL.navmesh.boundaryColor,
-			getWidth: VISUAL.navmesh.boundaryWidth,
-			widthUnits: "common",
-			jointRounded: true,
-			capRounded: true,
-			getPolygonOffset: () => [0, 0],
+			paths: boundaryPaths,
+			color: VISUAL.navmesh.boundaryColor,
+			width: VISUAL.navmesh.boundaryWidth,
 			parameters: OVERLAY_LINE_PARAMETERS,
 		}));
 
@@ -634,17 +701,11 @@ export function createMapRenderer(mapElement, onError) {
 				parameters: RUNTIME.layers.diagnosticFillParameters,
 				pickable: Boolean(currentState.onMapCoordinatePick),
 			}));
-			addPartMeshLayers(blockedEdgeMeshes, (part, partData) => new PathLayer({
+			addPartMeshLayers(blockedEdgeMeshes, (part, partData) => createBoundaryLayer({
 				id: `diagnostic-blocked-edges-outline-${part}-${map.id}`,
-				data: partData.boundaryPaths,
-				coordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
-				getPath: (boundary) => boundary.path,
-				getColor: VISUAL.blockedEdges.outlineColor,
-				getWidth: VISUAL.blockedEdges.outlineWidth,
-				widthUnits: "common",
-				jointRounded: true,
-				capRounded: true,
-				getPolygonOffset: () => [0, 0],
+				paths: partData.boundaryPaths,
+				color: VISUAL.blockedEdges.outlineColor,
+				width: VISUAL.blockedEdges.outlineWidth,
 				parameters: RUNTIME.layers.diagnosticOutlineParameters,
 			}));
 		}
@@ -697,7 +758,13 @@ export function createMapRenderer(mapElement, onError) {
 			}
 		}
 
-		layerIds.push(`navmesh-surface-${currentState.map.id}`);
+		layerIds.push(...navmeshSurfaceLayerIds());
+
+		if (layerIds.length === 0) {
+			currentState.onMapCoordinatePick(null);
+
+			return;
+		}
 
 		const picked = deckInstance.pickObject({
 			x,
@@ -709,7 +776,7 @@ export function createMapRenderer(mapElement, onError) {
 		currentState.onMapCoordinatePick(picked?.coordinate ?? null);
 	}
 
-	function render(map, mesh, boundaryPaths, mainPathMeshes, options) {
+	function render(map, navmeshGlb, boundaryPaths, mainPathMeshes, options) {
 		const viewState = constrainedViewState(map, options.fitPositions, {
 			width: mapElement.clientWidth || window.innerWidth,
 			height: mapElement.clientHeight || window.innerHeight,
@@ -719,10 +786,11 @@ export function createMapRenderer(mapElement, onError) {
 		currentState = {
 			map,
 			token,
-			mesh,
+			mesh: createMesh(navmeshGlb),
 			boundaryPaths,
 			mainPathMeshes,
 			blockedEdgeMeshes: options.blockedEdgeMeshes,
+			floorRange: null,
 			blockedEdgesVisible: options.blockedEdgesVisible,
 			mainPathVisible: options.mainPathVisible,
 			markerPins: options.markerPins,
@@ -747,6 +815,10 @@ export function createMapRenderer(mapElement, onError) {
 
 		deckInstance = new Deck({
 			parent: mapElement,
+			onLoad: () => {
+				updateLayers();
+				requestViewChange();
+			},
 			views: new OrbitView({
 				id: "map",
 				near: RUNTIME.view.near,
@@ -818,12 +890,10 @@ export function createMapRenderer(mapElement, onError) {
 			getCursor: () => currentState?.hoveredMarker ? "pointer" : null,
 		});
 
-		requestAnimationFrame(updateLayers);
-		requestViewChange();
 	}
 
 	function projectPosition(position) {
-		const viewport = deckInstance?.getViewports()[0];
+		const viewport = currentViewport();
 
 		if (!viewport) {
 			return null;
@@ -907,6 +977,27 @@ export function createMapRenderer(mapElement, onError) {
 		updateLayers();
 	}
 
+	function sameFloorRange(left, right) {
+		if (!left || !right) {
+			return left === right;
+		}
+
+		return left[0] === right[0] && left[1] === right[1];
+	}
+
+	function setFloorSelection(selection) {
+		const floorRange = selection?.floorRange ?? null;
+
+		if (!currentState || sameFloorRange(currentState.floorRange, floorRange)) {
+			return;
+		}
+
+		currentState.floorRange = floorRange;
+		currentState.rotationAnchor = undefined;
+		updateLayers();
+		requestViewChange();
+	}
+
 	function setAuxiliaryMarkerOwner(marker) {
 		if (!currentState || currentState.auxiliaryMarkerOwner === marker) {
 			return;
@@ -948,6 +1039,7 @@ export function createMapRenderer(mapElement, onError) {
 		rotateBy,
 		setAuxiliaryMarkerOwner,
 		setBlockedEdgesVisible,
+		setFloorSelection,
 		setMainPathVisible,
 		setPinCategoryVisible,
 	};

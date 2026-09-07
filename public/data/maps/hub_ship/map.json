@@ -14,7 +14,7 @@
 		]
 	},
 	"view": {
-		"projectedArea": 4346.556656236586,
+		"projectedArea": 4155.526483559521,
 		"projectedHull": [
 			[
 				-57.428984522819626,
@@ -65,8 +65,16 @@
 				-117.50510193904232
 			],
 			[
-				9.01164066791538,
+				17.870390693346714,
+				-79.41801963249871
+			],
+			[
+				4.582265655199713,
 				-65.97551999489508
+			],
+			[
+				3.474921902020789,
+				-64.85531169176146
 			],
 			[
 				1.2602343956629625,
@@ -102,44 +110,114 @@
 			]
 		]
 	},
+	"floorSlices": {
+		"algorithm": "ordered-cut-v3",
+		"layers": [
+			{
+				"id": "floor-0",
+				"minZ": 98.499877,
+				"maxZ": 105.999877
+			}
+		],
+		"stats": {
+			"triangles": 4633,
+			"pieces": 5738,
+			"nodes": 61,
+			"connectedEdges": 6002,
+			"rejectedAdjacency": 2,
+			"originalArea": 4174.278887688506,
+			"analysisAreaError": 1.6370904631912708e-11,
+			"adjacencyMs": 82.08020000000397,
+			"graphMs": 94.77560000000085,
+			"floors": 1,
+			"outputTriangles": 4633,
+			"outputVertices": 3354,
+			"areaError": 0,
+			"maxTriangleAreaError": 4.547473508864641e-13,
+			"floatAreaError": 0,
+			"maxFloatTriangleAreaError": 4.547473508864641e-13,
+			"clearance": 2,
+			"pairCandidates": 29,
+			"polygonIntersections": 15,
+			"relations": 2,
+			"overlapMs": 22.16359999999986,
+			"regions": 6,
+			"algorithm": "ordered-cut-v3",
+			"minimumFloors": 2,
+			"solverVertices": 63,
+			"solverEdges": 245,
+			"solverMs": 1.1023000115528703,
+			"optimizationMs": 1401.2704000000012,
+			"baselineEnergy": 1.734888658254854,
+			"cutEnergy": 1.734888658254854,
+			"baselineFloors": 2,
+			"baselineRegions": 6,
+			"structuralSolverMs": 5.573000002186745,
+			"attachmentSolverMs": 1.1023000115528703,
+			"logicalFloors": 2,
+			"minimumDisplayArea": 64,
+			"displayAreas": [
+				4174.2788876885015
+			],
+			"mergedFloorBoundaries": 1,
+			"mergedOcclusionArea": 1.7350657471948365,
+			"mergedFloorGroups": [
+				{
+					"floors": [
+						1
+					],
+					"into": [
+						0
+					],
+					"area": 3.0098386565413273,
+					"overlap": 1.7350657471948365
+				}
+			],
+			"attachmentComponents": 5,
+			"attachmentNodes": 7,
+			"unattachedComponents": 0,
+			"attachmentMs": 4.595100000005914,
+			"totalMs": 1543.5941999999995
+		}
+	},
 	"boundaries": {
 		"file": "./data/maps/hub_ship/navmesh_boundaries.glb",
 		"stats": {
-			"paths": 23,
-			"points": 2050
+			"paths": 21,
+			"points": 1965
 		}
 	},
 	"diagnostics": {
 		"blockedEdges": {
 			"file": "./data/maps/hub_ship/blocked_edges.glb",
 			"stats": {
-				"inputEdges": 806,
+				"inputEdges": 1196,
 				"doorFilteredEdges": 0,
 				"dynamicVolumeFilteredEdges": 0,
 				"markerCollisionFilteredEdges": 0,
-				"inputComponents": 129,
+				"inputComponents": 252,
 				"includedComponents": 0,
-				"splitComponents": 10,
-				"renderedComponents": 21,
-				"renderedFragments": 23,
-				"keptRenderedFragments": 15,
-				"filteredEdges": 593,
-				"renderedEdges": 213,
-				"sourcePolygons": 10,
+				"splitComponents": 9,
+				"renderedComponents": 39,
+				"renderedFragments": 27,
+				"keptRenderedFragments": 10,
+				"filteredEdges": 1025,
+				"renderedEdges": 171,
+				"sourcePolygons": 7,
 				"manualExcludePoints": 2,
 				"manualExcludedPolygons": 2,
-				"renderedTriangles": 707,
-				"renderedPolygons": 491
+				"renderedTriangles": 472,
+				"renderedPolygons": 350
 			},
 			"navmeshCarve": {
 				"inputTriangles": 4763,
-				"outputTriangles": 4712,
-				"carvedTriangles": 489,
-				"blockerFootprints": 491,
+				"outputTriangles": 4633,
+				"carvedTriangles": 349,
+				"blockerFootprints": 350,
 				"skippedDegenerateTriangles": 0,
-				"removedFragmentComponents": 19,
-				"removedFragmentTriangles": 48,
-				"removedFragmentArea": 1.9517225727902503
+				"removedFragmentComponents": 10,
+				"removedFragmentTriangles": 19,
+				"removedFragmentArea": 0.5828102761741597
 			}
 		}
 	}

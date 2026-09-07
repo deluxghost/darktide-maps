@@ -1,6 +1,8 @@
 node_modules/
 dist/
 .npm-cache/
+.venv/
+__pycache__/
 
 # wrangler files
 .wrangler

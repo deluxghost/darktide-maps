@@ -122,6 +122,121 @@ img {
 	pointer-events: none;
 }
 
+.floor-control {
+	--floor-axis-x: 84px;
+	--floor-handle-height: 12px;
+	--floor-handle-width: 22px;
+	--floor-intervals: 1;
+	--floor-step: 28px;
+	--floor-bottom-gap: 124px;
+	position: absolute;
+	top: 64px;
+	right: calc(env(safe-area-inset-right) + 16px);
+	z-index: calc(var(--z-hud) - 1);
+	width: 110px;
+	touch-action: none;
+}
+
+.floor-control-track {
+	position: relative;
+	width: 100%;
+	height: var(--floor-track-height, 104px);
+	min-height: 0;
+}
+
+.floor-control-track::before {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: var(--floor-axis-x);
+	width: 2px;
+	background: #a0b79f;
+	transform: translateX(-50%);
+	content: "";
+	z-index: 0;
+}
+
+.floor-control-tick {
+	position: absolute;
+	left: calc(var(--floor-axis-x) - 8px);
+	width: 16px;
+	height: 1px;
+	background: #a0b79f;
+	transform: translateY(50%);
+	z-index: 1;
+}
+
+.floor-control-selection {
+	position: absolute;
+	left: calc(var(--floor-axis-x) - 4px);
+	width: 8px;
+	border: 0;
+	background: #d6b34a;
+	cursor: grab;
+	z-index: 2;
+}
+
+.floor-control-selection::before {
+	position: absolute;
+	left: 50%;
+	width: 2px;
+	height: 2px;
+	background: #1b241d;
+	box-shadow:
+		0 -4px 0 #1b241d,
+		0 4px 0 #1b241d;
+	transform: translate(-50%, -50%);
+	content: "";
+	pointer-events: none;
+	top: 50%;
+}
+
+.floor-control-selection:active {
+	cursor: grabbing;
+}
+
+.floor-control-handle {
+	position: absolute;
+	left: var(--floor-axis-x);
+	width: var(--floor-handle-width);
+	height: var(--floor-handle-height);
+	padding: 0;
+	border: 1px solid rgba(214, 179, 74, 0.88);
+	background: #1b241d;
+	transform: translate(-50%, 50%);
+	z-index: 3;
+}
+
+.floor-control-handle::before {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 12px;
+	height: 2px;
+	background: #d6b34a;
+	transform: translate(-50%, -50%);
+	content: "";
+}
+
+.floor-control-handle:disabled,
+.floor-control-track:has(.floor-control-handle:disabled) .floor-control-selection {
+	cursor: default;
+}
+
+.floor-control-label {
+	position: absolute;
+	right: calc(100% - var(--floor-axis-x) + 18px);
+	color: #d6b34a;
+	font-size: min(13px, calc(var(--floor-track-height) / var(--floor-intervals) - 2px));
+	font-weight: 700;
+	line-height: 1;
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.75);
+	transform: translateY(50%);
+	white-space: nowrap;
+	pointer-events: none;
+	z-index: 4;
+}
+
 .panel {
 	position: absolute;
 	top: 16px;
@@ -675,6 +790,12 @@ option {
 	.support-link {
 		top: 8px;
 		right: 8px;
+	}
+
+	.floor-control {
+		top: 52px;
+		right: calc(env(safe-area-inset-right) + 8px);
+		--floor-step: 24px;
 	}
 
 	.panel-header {

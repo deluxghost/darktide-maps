@@ -2,6 +2,7 @@ import {mkdir, readdir, writeFile} from "node:fs/promises";
 import path from "node:path";
 import {buildMissionAssets, removeStaleAssets} from "./assets.mjs";
 import {compactObject, indexById, readOptionalJson} from "./utils.mjs";
+import {verifyFloorDependencies} from "./floors/ordered_cut.mjs";
 
 const inputDirectory = process.argv[2];
 const outputDirectory = process.argv[3] ?? path.resolve("public", "data");
@@ -21,6 +22,7 @@ if (!inputDirectory) {
 	throw new Error("Usage: node scripts/preprocess/index.mjs <nav-exporter-directory> [output-directory]");
 }
 
+verifyFloorDependencies();
 await mkdir(outputDirectory, {recursive: true});
 
 const metadata = await readOptionalJson(path.join(directories.metadata, "missions.json"));

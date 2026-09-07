@@ -23,6 +23,16 @@ export const PREPROCESS_CONFIG = {
 	view: {
 		fitGridSize: 96,
 	},
+	floors: {
+		analysisBandStep: 0.5,
+		broadPhaseCellSize: 4,
+		occlusionClearance: 2,
+		minimumDisplayFloorArea: 64,
+		minimumDisplayFloorShare: 0.005,
+		maximumDisplayFloorArea: 250,
+		attachmentDistance: 12,
+		attachmentVerticalScale: 2,
+	},
 	boundaries: {
 		coordinatePrecision: 4,
 		minimumCollapsedArea: 0.05,
@@ -69,14 +79,9 @@ export const PREPROCESS_CONFIG = {
 				km_heresy: [
 					[-62.768, -9.839, -19.408],
 				],
-				km_station: [
-					[44.813, -129.929, -1.088],
-				],
 				lm_rails: [
 					[-249.626, 331.076, -61.854],
 					[-240.547, 326.257, -61.866],
-					[-233.122, 322.552, -61.87],
-					[-198.936, 384.461, -66.192],
 				],
 				op_no_mans_land: [
 					[-128.172, 37.303, -4.369],

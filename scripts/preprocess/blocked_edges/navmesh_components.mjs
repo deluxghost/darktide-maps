@@ -18,7 +18,7 @@ function triangleArea3d(points) {
 }
 
 function trianglePoints(mesh, triangleIndex) {
-	return mesh.triangles[triangleIndex].map((index) => mesh.vertices[index - 1]);
+	return mesh.triangles[triangleIndex].slice(0, 3).map((index) => mesh.vertices[index - 1]);
 }
 
 function edgeLength2d(edge) {
@@ -130,7 +130,7 @@ function addAdjacency(adjacency, left, right) {
 	adjacency[right].add(left);
 }
 
-function triangleAdjacency(mesh) {
+export function createTriangleAdjacency(mesh) {
 	const adjacency = mesh.triangles.map(() => new Set());
 	const edgeGrid = new Map();
 	const edges = [];
@@ -172,7 +172,7 @@ function triangleAdjacency(mesh) {
 }
 
 export function createTriangleComponents(mesh) {
-	const adjacency = triangleAdjacency(mesh);
+	const adjacency = createTriangleAdjacency(mesh);
 	const visited = new Set();
 	const components = [];
 
