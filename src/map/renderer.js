@@ -5,6 +5,7 @@ import { pickNavmeshCoordinates } from "./picking.js";
 import { viewDepth, pinInFloorRange } from "../markers/pins.js";
 import { constrainedViewState, createOrbitViewportForViewState, viewportCenter } from "./view.js";
 import { createMapLayers } from "./layers.js";
+import { createPinOcclusion } from "./pin_occlusion.js";
 
 const RUNTIME = APP_CONFIG.runtime;
 const TOUCH_TILT_DEGREES = 180;
@@ -31,8 +32,10 @@ export function createMapRenderer(mapElement, onError) {
 	let deckInstance;
 	let currentState;
 	let viewChangeFrame = 0;
+	let layerUpdateFrame = 0;
 	let renderToken = 0;
 	let pinchGesture = null;
+	const pinOcclusion = createPinOcclusion(requestLayerUpdate, onError);
 
 	class MapController extends OrbitController {
 		constructor(options) {
@@ -303,6 +306,14 @@ export function createMapRenderer(mapElement, onError) {
 		}
 	}
 
+	function requestLayerUpdate() {
+		if (layerUpdateFrame) return;
+		layerUpdateFrame = requestAnimationFrame(() => {
+			layerUpdateFrame = 0;
+			updateLayers();
+		});
+	}
+
 	function pickMapCoordinate(x, y) {
 		if (!deckInstance || !currentState?.onMapCoordinatePick) {
 			return;
@@ -341,11 +352,13 @@ export function createMapRenderer(mapElement, onError) {
 			height: mapElement.clientHeight || window.innerHeight,
 		});
 		const token = ++renderToken;
+		pinOcclusion.setMap(navmeshGlb, options.markerPins);
 
 		currentState = {
 			map,
 			token,
 			mesh: createMesh(navmeshGlb, options.heightColors),
+			pinOcclusion,
 			boundaryPaths,
 			mainPathMeshes,
 			terrainClipMeshes: options.terrainClipMeshes,
@@ -401,6 +414,9 @@ export function createMapRenderer(mapElement, onError) {
 			viewState,
 			layers: createLayers(),
 			onError,
+			onAfterRender: () => {
+				if (currentState) pinOcclusion.update(currentViewport(), currentState.floorRange);
+			},
 			onViewStateChange: ({viewState: nextViewState, interactionState}) => {
 				if (!currentState) return nextViewState;
 				const previousViewState = currentState.viewState;
@@ -416,7 +432,7 @@ export function createMapRenderer(mapElement, onError) {
 				setViewState(adjustedViewState);
 
 				if (rotationChanged(adjustedViewState, previousViewState)) {
-					requestAnimationFrame(updateLayers);
+					requestLayerUpdate();
 				}
 
 				requestViewChange();
@@ -465,6 +481,7 @@ export function createMapRenderer(mapElement, onError) {
 	}
 
 	function clear() {
+		pinOcclusion.clear();
 		pinchGesture = null;
 		currentState = null;
 		updateLayers();

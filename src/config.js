@@ -146,6 +146,10 @@ export const APP_CONFIG = {
 				tooltipViewportPadding: 8,
 			},
 			pins: {
+				occludedBrightness: 0.65,
+				occlusionTolerance: 0.15,
+				occlusionLayerOpacity: 0.45,
+				occlusionTransitionMs: 140,
 				iconWidth: 28,
 				iconHeight: 36,
 				iconTextureScale: 3,

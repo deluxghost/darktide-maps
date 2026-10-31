@@ -4,6 +4,7 @@ import { SimpleMeshLayer } from "@deck.gl/mesh-layers";
 import { APP_CONFIG } from "../config.js";
 import { FloorClipExtension } from "./floorclip.js";
 import { NavmeshDepthExtension } from "./picking.js";
+import { PinOcclusionExtension } from "./pin_occlusion.js";
 import { pinIconForCategory, positionMarkerIcon } from "../markers/icons.js";
 import { sortedPins, auxiliaryPinsForMarker } from "../markers/pins.js";
 
@@ -12,6 +13,7 @@ const VISUAL = RUNTIME.visual;
 const FLOOR_CLIP_EXTENSION = new FloorClipExtension();
 const FLOOR_PATH_EXTENSION = new FloorClipExtension({path: true});
 const NAVMESH_DEPTH_EXTENSION = new NavmeshDepthExtension();
+const PIN_OCCLUSION_EXTENSION = new PinOcclusionExtension();
 const OVERLAY_LINE_PARAMETERS = {
 	blend: false,
 	depthCompare: "less-equal",
@@ -39,6 +41,7 @@ export function createMapLayers(currentState, viewport) {
 		auxiliaryMarkerOwner,
 		visiblePinCategories,
 		floorRange,
+		pinOcclusion,
 	} = currentState;
 	const auxiliaryPins = auxiliaryPinsForMarker(auxiliaryMarkerOwner);
 	const visiblePins = sortedPins(
@@ -176,6 +179,9 @@ export function createMapLayers(currentState, viewport) {
 		alphaCutoff: 0.05,
 		textureParameters: RUNTIME.layers.iconTextureParameters,
 		parameters: RUNTIME.layers.screenMarkerParameters,
+		extensions: [PIN_OCCLUSION_EXTENSION],
+		getPinBrightness: (pin) => pinOcclusion.brightness(pin),
+		updateTriggers: {getPinBrightness: pinOcclusion.revision},
 	}));
 
 	return layers;
