@@ -40,9 +40,9 @@ export function createMarkerOverlays({
 		return pins.categories[marker.category].color;
 	}
 
-	function linkedOwner() {
+	function linkedOwners() {
 		const hovered = isAuxiliary(activeTooltipMarker) ? activeTooltipMarker.parentMarker : activeTooltipMarker;
-		return hovered ?? activeMarker;
+		return [...new Map([activeMarker, hovered].filter(Boolean).map((marker) => [marker.id, marker])).values()];
 	}
 
 	function markerLinks(owner) {
@@ -82,7 +82,7 @@ export function createMarkerOverlays({
 		element.classList.toggle("tooltip-side-right", label.side === "right");
 	}
 
-	function updateTooltips(frame, relations, geometries, owner) {
+	function updateTooltips(frame, relations, geometries, owners) {
 		const {bounds, points, tooltipPoints} = frame;
 		const maximumWidth = Math.min(links.tooltipMaxWidth,
 			(bounds.width - pins.iconWidth - 2 * (links.tooltipOffset[0] + links.tooltipViewportPadding)) / 2);
@@ -124,7 +124,7 @@ export function createMarkerOverlays({
 		if (primaryLabel) occupied.push(primaryLabel);
 		const candidates = [...tooltipPoints.values()].filter((point) => linkedIds.has(point.marker.id)
 			&& point.marker.id !== activeTooltipMarker?.id && point.marker.id !== activeMarker?.id);
-		const anchors = [points.get(owner?.id), primary].filter(Boolean);
+		const anchors = [...owners.map((owner) => points.get(owner.id)), primary].filter(Boolean);
 		const limit = links.tooltipMaxCount - Number(Boolean(primaryLabel));
 		const labels = candidates.length ? spreadTooltipLabels(candidates, anchors, place, limit) : [];
 		while (relatedTooltips.length < labels.length) {
@@ -137,11 +137,11 @@ export function createMarkerOverlays({
 		labels.forEach((label, index) => paintTooltip(relatedTooltips[index], label));
 	}
 
-	function updateArrows(relations, frame, owner) {
+	function updateArrows(relations, frame) {
 		let offset = {x: 0, y: 0};
 		if (relations.length) {
-			const anchor = frame.points.get(owner.id);
-			const key = `${owner.id}|${frame.viewKey}`;
+			const anchor = frame.points.get(relations[0].from.id);
+			const key = `${anchor.marker.id}|${frame.viewKey}`;
 			if (arrowView?.key !== key) arrowView = {key, x: anchor.x, y: anchor.y};
 			offset = {x: anchor.x - arrowView.x, y: anchor.y - arrowView.y};
 		} else {
@@ -190,9 +190,11 @@ export function createMarkerOverlays({
 	}
 
 	function update() {
-		const owner = linkedOwner();
-		const relations = markerLinks(owner);
-		mapRenderer.setAuxiliaryMarkerOwner(relations.length ? owner : null);
+		const owners = linkedOwners();
+		// Hover wins shared links without replacing unrelated popup links.
+		const relations = [...new Map(owners.flatMap(markerLinks)
+			.map((relation) => [`${relation.from.id}|${relation.to.id}`, relation])).values()];
+		mapRenderer.setAuxiliaryMarkerOwners(owners.filter((owner) => owner.auxiliaryMarkers?.length));
 		const markers = new Map(relations.flatMap(({from, to}) => [[from.id, from], [to.id, to]]));
 		if (activeTooltipMarker) markers.set(activeTooltipMarker.id, activeTooltipMarker);
 		const popupOnly = activeMarker && !markers.has(activeMarker.id);
@@ -201,14 +203,14 @@ export function createMarkerOverlays({
 		if (!projection) {
 			paintTooltip(markerTooltip, null);
 			while (relatedTooltips.length) relatedTooltips.pop().remove();
-			updateArrows([], null, null);
+			updateArrows([], null);
 			return;
 		}
 		const projected = projection.points.filter((point) => !popupOnly || point.marker !== activeMarker).map((point) => {
 			const width = pins.iconWidth * pinScale(point.marker), height = pins.iconHeight * pinScale(point.marker);
 			return {...point, tipY: point.y, y: point.y - height * PIN_BELLY_CENTER_FROM_TIP, width, height};
 		});
-		const forcedIds = new Set([owner?.id, activeMarker?.id, activeTooltipMarker?.id]);
+		const forcedIds = new Set([...owners.map((owner) => owner.id), activeMarker?.id, activeTooltipMarker?.id]);
 		const tooltipPoints = visibleMarkerPoints(projected, projection.bounds, forcedIds);
 		const points = new Map(projected.map((point) => [point.marker.id, point]));
 		const frame = {bounds: projection.bounds, viewKey: projection.viewKey, points, tooltipPoints, occupied: occupiedBounds()};
@@ -218,8 +220,8 @@ export function createMarkerOverlays({
 			markerPopup.style.top = `${point.y}px`;
 			frame.occupied.push(markerPopup.getBoundingClientRect());
 		}
-		const arrows = updateArrows(relations, frame, owner);
-		updateTooltips(frame, relations, arrows, owner);
+		const arrows = updateArrows(relations, frame);
+		updateTooltips(frame, relations, arrows, owners);
 	}
 
 	function hidePopup() {

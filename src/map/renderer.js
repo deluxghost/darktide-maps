@@ -374,7 +374,7 @@ export function createMapRenderer(mapElement, onError) {
 			onMarkerHover: options.onMarkerHover,
 			onMapCoordinatePick: options.onMapCoordinatePick,
 			onViewChange: options.onViewChange,
-			auxiliaryMarkerOwner: null,
+			auxiliaryMarkerOwners: [],
 			viewState,
 		};
 		if (!Array.isArray(currentState.relations)) throw new Error(`Missing marker relations for ${map.id}`);
@@ -591,12 +591,13 @@ export function createMapRenderer(mapElement, onError) {
 		requestViewChange();
 	}
 
-	function setAuxiliaryMarkerOwner(marker) {
-		if (!currentState || currentState.auxiliaryMarkerOwner === marker) {
+	function setAuxiliaryMarkerOwners(markers) {
+		if (!currentState || currentState.auxiliaryMarkerOwners.length === markers.length
+			&& markers.every((marker, index) => currentState.auxiliaryMarkerOwners[index].id === marker.id)) {
 			return;
 		}
 
-		currentState.auxiliaryMarkerOwner = marker;
+		currentState.auxiliaryMarkerOwners = markers;
 		updateLayers();
 	}
 
@@ -616,7 +617,7 @@ export function createMapRenderer(mapElement, onError) {
 		centerOnPosition,
 		projectMarkers,
 		markerRelations,
-		setAuxiliaryMarkerOwner,
+		setAuxiliaryMarkerOwners,
 		setTerrainClipVisible,
 		setFloorSelection,
 		setMainPathVisible,

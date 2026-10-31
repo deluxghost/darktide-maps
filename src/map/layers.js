@@ -38,12 +38,12 @@ export function createMapLayers(currentState, viewport) {
 		terrainClipVisible,
 		mainPathVisible,
 		markerPins,
-		auxiliaryMarkerOwner,
+		auxiliaryMarkerOwners,
 		visiblePinCategories,
 		floorRange,
 		pinOcclusion,
 	} = currentState;
-	const auxiliaryPins = auxiliaryPinsForMarker(auxiliaryMarkerOwner);
+	const auxiliaryPins = auxiliaryMarkerOwners.flatMap(auxiliaryPinsForMarker);
 	const visiblePins = sortedPins(
 		auxiliaryPins.length ? [...markerPins, ...auxiliaryPins] : markerPins,
 		visiblePinCategories,
