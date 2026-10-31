@@ -345,7 +345,7 @@ export function createMapRenderer(mapElement, onError) {
 		currentState = {
 			map,
 			token,
-			mesh: createMesh(navmeshGlb),
+			mesh: createMesh(navmeshGlb, options.heightColors),
 			boundaryPaths,
 			mainPathMeshes,
 			terrainClipMeshes: options.terrainClipMeshes,

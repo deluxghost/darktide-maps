@@ -38,6 +38,7 @@ function cssPixels(element, property, defaultValue) {
 export function createFloorController({root, onChange}) {
 	const track = document.createElement("div");
 	const selection = document.createElement("div");
+	const colorBand = document.createElement("div");
 	const minHandle = document.createElement("button");
 	const maxHandle = document.createElement("button");
 	const minLabel = document.createElement("div");
@@ -51,6 +52,8 @@ export function createFloorController({root, onChange}) {
 
 	track.className = "floor-control-track";
 	selection.className = "floor-control-selection";
+	colorBand.className = "floor-control-color-band";
+	colorBand.setAttribute("aria-hidden", "true");
 	minHandle.className = "floor-control-handle floor-control-handle-min";
 	maxHandle.className = "floor-control-handle floor-control-handle-max";
 	minLabel.className = "floor-control-label floor-control-label-min";
@@ -59,7 +62,7 @@ export function createFloorController({root, onChange}) {
 	maxHandle.type = "button";
 	minHandle.setAttribute("aria-label", t("floorMinimum"));
 	maxHandle.setAttribute("aria-label", t("floorMaximum"));
-	track.append(selection, minHandle, maxHandle, minLabel, maxLabel);
+	track.append(colorBand, selection, minHandle, maxHandle, minLabel, maxLabel);
 	root.replaceChildren(track);
 
 	function tickRatio(tick) {
@@ -117,12 +120,14 @@ export function createFloorController({root, onChange}) {
 	}
 
 	function render() {
-		if (layers.length <= 1) {
+		if (layers.length === 0) {
 			root.hidden = true;
 			return;
 		}
 
 		root.hidden = false;
+		minHandle.disabled = layers.length === 1;
+		maxHandle.disabled = layers.length === 1;
 		updateTrackHeight();
 
 		const minText = floorLabel(minTick);
@@ -239,8 +244,9 @@ export function createFloorController({root, onChange}) {
 		}
 	});
 
-	function setMap(map) {
+	function setMap(map, gradient) {
 		layers = map?.floorSlices?.layers ?? [];
+		colorBand.style.background = map ? gradient : "";
 		minTick = 0;
 		maxTick = layers.length;
 		renderTicks();

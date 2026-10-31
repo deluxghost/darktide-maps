@@ -3,6 +3,7 @@ import { applyTranslations, loadGameText, localizeValue, t } from "./i18n.js";
 import { createGeometryBoundaryPaths, createLandmarkMesh, createPathBoundaryPaths } from "./map/landmarks.js";
 import { APP_CONFIG } from "./config.js";
 import { createMapRenderer } from "./map/renderer.js";
+import { createHeightColors } from "./map/height_colors.js";
 import { createFilterController } from "./ui/filters.js";
 import { createFloorController } from "./ui/floors.js";
 import { createMarkerOverlays } from "./markers/overlays.js";
@@ -377,6 +378,7 @@ async function loadMap(mapEntry, locator, signal) {
 		? await loadGeometryPartMeshes(map.diagnostics?.terrainClip, signal, true)
 		: null;
 	if (signal.aborted) return;
+	const heightColors = createHeightColors(glb, map.floorSlices.layers.length);
 	const markerPins = markerPinsForMap(map, locator);
 	const selectedMarker = locator?.type === "marker"
 		? markerPins.find((marker) => marker.id === locator.markerId && marker.markerType === "pin")
@@ -389,6 +391,7 @@ async function loadMap(mapEntry, locator, signal) {
 		boundaryPaths,
 		mainPathMeshes,
 		{
+			heightColors: heightColors.colors,
 			terrainClipMeshes,
 			terrainClipVisible: import.meta.env.DEV && debugTerrainClippingVisible,
 			mainPathVisible: filters.mainPathVisible,
@@ -401,7 +404,7 @@ async function loadMap(mapEntry, locator, signal) {
 			onViewChange: markerOverlays.update,
 		},
 	);
-	floorController.setMap(map);
+	floorController.setMap(map, heightColors.gradient);
 	filters.writeFilters(map);
 	clearLoading();
 	if (locator?.type === "position") {
