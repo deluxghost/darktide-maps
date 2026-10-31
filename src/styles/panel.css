@@ -1,7 +1,9 @@
 .panel {
+	--panel-top: 16px;
+	--panel-left: 16px;
 	position: absolute;
-	top: 16px;
-	left: 16px;
+	top: var(--panel-top);
+	left: var(--panel-left);
 	z-index: var(--z-hud);
 	display: flex;
 	flex-direction: column;
@@ -18,8 +20,8 @@
 	flex: 0 0 auto;
 	align-items: center;
 	gap: 8px;
-	height: 52px;
-	padding: 0 12px 0 var(--panel-toolbar-height);
+	height: var(--panel-header-height);
+	padding: 0 12px 0 var(--panel-menu-slot-width);
 }
 
 .panel-brand {
@@ -73,16 +75,20 @@
 }
 
 .panel.collapsed {
-	width: calc(var(--panel-toolbar-height) + 2px);
-	height: calc(var(--panel-toolbar-height) + 2px);
-	border-color: #546453;
-	background: #1b241d;
+	width: calc(var(--panel-menu-slot-width) + 2px);
+	height: calc(var(--panel-header-height) + 2px);
+	border-color: transparent;
+	background: transparent;
 	box-shadow: none;
 }
 
 .panel.collapsed .panel-header {
-	height: var(--panel-toolbar-height);
 	padding: 0;
+}
+
+.panel.collapsed .panel-toggle {
+	border-color: #546453;
+	background: #1b241d;
 }
 
 .panel.collapsed .panel-brand,
@@ -95,22 +101,22 @@
 .panel-toggle {
 	position: absolute;
 	top: 50%;
-	left: var(--panel-toolbar-padding);
+	left: calc(var(--panel-menu-slot-width) / 2);
 	display: grid;
 	place-items: center;
 	width: var(--menu-button-size);
 	height: var(--menu-button-size);
 	flex: 0 0 auto;
 	padding: 0;
-	border: 0;
+	border: 1px solid transparent;
 	background: transparent;
-	transform: translateY(-50%);
+	transform: translate(-50%, -50%);
 }
 
 .panel-toggle svg {
 	display: block;
-	width: 20px;
-	height: 20px;
+	width: 24px;
+	height: 24px;
 	stroke-width: 2;
 	stroke-linecap: square;
 	stroke-linejoin: miter;
@@ -220,8 +226,8 @@
 
 @media (max-width: 640px) {
 	.panel {
-		top: 8px;
-		left: 8px;
+		--panel-top: 8px;
+		--panel-left: 8px;
 		width: min(340px, calc(100vw - 16px));
 		max-height: calc(100vh - 16px);
 	}

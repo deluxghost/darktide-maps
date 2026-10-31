@@ -367,16 +367,18 @@ function clearMap() {
 async function loadMap(mapEntry, locator, signal) {
 	setLoading(t("loadingMap", {
 		title: mapTitle(mapEntry),
-		size: formatBytes(mapEntry.resourceBytes),
+		size: formatBytes(mapEntry.resourceBytes + (import.meta.env.DEV ? mapEntry.debugResourceBytes : 0)),
 	}));
 
 	const map = await loadMapData(mapEntry, signal);
-	const glb = await loadGlb(map.file, signal);
-	const boundaryPaths = await loadBoundaryPaths(map.boundaries, signal);
-	const mainPathMeshes = await loadGeometryPartMeshes(map.landmarks?.mainPath, signal, false);
-	const terrainClipMeshes = import.meta.env.DEV
-		? await loadGeometryPartMeshes(map.diagnostics?.terrainClip, signal, true)
-		: null;
+	const [glb, boundaryPaths, mainPathMeshes, terrainClipMeshes] = await Promise.all([
+		loadGlb(map.file, signal),
+		loadBoundaryPaths(map.boundaries, signal),
+		loadGeometryPartMeshes(map.landmarks?.mainPath, signal, false),
+		import.meta.env.DEV
+			? loadGeometryPartMeshes(map.diagnostics?.terrainClip, signal, true)
+			: null,
+	]);
 	if (signal.aborted) return;
 	const heightColors = createHeightColors(glb, map.floorSlices.layers.length);
 	const markerPins = markerPinsForMap(map, locator);

@@ -1,3 +1,5 @@
+import {MeshoptEncoder} from "meshoptimizer/encoder";
+
 const GLB_MAGIC = 0x46546c67;
 const GLB_VERSION = 2;
 const JSON_CHUNK_TYPE = 0x4e4f534a;
@@ -25,7 +27,35 @@ function writeChunk(target, offset, type, content, paddingByte) {
 	return offset + 8 + paddedLength;
 }
 
-function createGlbFile(gltf, binary) {
+export async function createGlbFile(gltf, binary) {
+	await MeshoptEncoder.ready;
+	const chunks = [];
+	for (const [index, view] of gltf.bufferViews.entries()) {
+		const accessor = gltf.accessors.find((accessor) => accessor.bufferView === index);
+		const components = {SCALAR: 1, VEC2: 2, VEC3: 3}[accessor.type];
+		const byteStride = components * (accessor.componentType === UNSIGNED_SHORT_COMPONENT_TYPE ? 2 : 4);
+		// Index sequences preserve the exact order, including each triangle's first vertex.
+		const mode = view.target === ELEMENT_ARRAY_BUFFER_TARGET ? "INDICES" : "ATTRIBUTES";
+		const source = binary.subarray(view.byteOffset ?? 0, (view.byteOffset ?? 0) + view.byteLength);
+		const encoded = Buffer.from(MeshoptEncoder.encodeGltfBuffer(source, accessor.count, byteStride, mode));
+		view.buffer = 1;
+		view.extensions = {EXT_meshopt_compression: {
+			buffer: 0,
+			byteOffset: appendAligned(chunks, encoded),
+			byteLength: encoded.length,
+			byteStride,
+			count: accessor.count,
+			mode,
+		}};
+	}
+	const compressed = writeChunks(chunks);
+	gltf.buffers = [{byteLength: compressed.length}, {byteLength: binary.length}];
+	gltf.extensionsUsed = ["EXT_meshopt_compression"];
+	gltf.extensionsRequired = ["EXT_meshopt_compression"];
+	return packGlbFile(gltf, compressed);
+}
+
+function packGlbFile(gltf, binary) {
 	const json = Buffer.from(JSON.stringify(gltf));
 	const file = Buffer.alloc(12 + 8 + align4(json.length) + 8 + align4(binary.length));
 

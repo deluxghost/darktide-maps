@@ -26,7 +26,7 @@ function validateMesh(mesh, count, uniform, name) {
 	}
 }
 
-export function validateAssets(root) {
+export async function validateAssets(root) {
 	const manifest = readJson(path.join(root, "maps.json"));
 	for (const entry of manifest.maps) {
 		const directory = path.join(root, "maps", entry.id);
@@ -36,10 +36,10 @@ export function validateAssets(root) {
 		for (const layer of map.floorSlices.layers) {
 			assert.ok(Number.isFinite(layer.minZ) && Number.isFinite(layer.maxZ) && layer.minZ <= layer.maxZ);
 		}
-		const navmesh = readGlb(path.join(directory, "navmesh.glb"));
+		const navmesh = await readGlb(path.join(directory, "navmesh.glb"));
 		validateMesh(navmesh, count, true, entry.id + "/navmesh");
 		assert.equal(new Set(Array.from(navmesh.floorIds, Math.floor)).size, count, entry.id + ": empty layer");
-		const boundary = readGlb(path.join(directory, "navmesh_boundaries.glb"));
+		const boundary = await readGlb(path.join(directory, "navmesh_boundaries.glb"));
 		assert.equal(boundary.extras.pathLengths.length, boundary.extras.floorIndices.length);
 		assert.equal(boundary.extras.pathLengths.reduce((sum, length) => sum + length, 0), boundary.positions.length / 3);
 		for (const floor of boundary.extras.floorIndices) assert.ok(Number.isInteger(floor) && floor >= 0 && floor < count);
@@ -47,7 +47,7 @@ export function validateAssets(root) {
 			assert.ok(Number.isInteger(marker.floorIndex) && marker.floorIndex >= 0 && marker.floorIndex < count);
 		}
 		for (const asset of [map.diagnostics.terrainClip, map.landmarks?.mainPath].filter(Boolean)) {
-			const glb = readGlb(path.join(directory, path.basename(asset.file)));
+			const glb = await readGlb(path.join(directory, path.basename(asset.file)));
 			if (asset === map.diagnostics.terrainClip) assert.deepEqual(Object.keys(glb.parts), ["removed"]);
 			for (const [part, mesh] of Object.entries(glb.parts)) validateMesh(mesh, count, part !== "connectors", entry.id + "/" + part);
 		}

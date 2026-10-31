@@ -52,7 +52,7 @@ async function buildMainPathAsset(missionId, data, context) {
 
 	const fileName = "main_path.glb";
 	const outputPath = path.join(context.missionDirectory, fileName);
-	const glb = createGeometryPartsGlb(`${missionId}_main_path`, meshes, {
+	const glb = await createGeometryPartsGlb(`${missionId}_main_path`, meshes, {
 		schemaVersion: data.schema_version,
 		kind: "mainPath",
 		stats: data.stats,
@@ -72,7 +72,7 @@ async function buildTerrainClipAsset(missionId, context, surface) {
 	const fileName = "terrain_clip.glb";
 	const outputPath = path.join(context.missionDirectory, fileName);
 	const labelOptions = {verticalOffset: surface.data.overlay_offset};
-	const glb = createGeometryPartsGlb(`${missionId}_terrain_clip`, {
+	const glb = await createGeometryPartsGlb(`${missionId}_terrain_clip`, {
 		removed: context.floors.sampler.labelMesh(surface.removedMesh, labelOptions),
 	}, {
 		schemaVersion: surface.data.schema_version,
@@ -83,6 +83,7 @@ async function buildTerrainClipAsset(missionId, context, surface) {
 	await writeFile(outputPath, glb);
 
 	return {
+		byteLength: glb.length,
 		asset: {
 			file: `./data/maps/${sanitizeFileName(missionId)}/${fileName}`,
 		},
@@ -99,7 +100,7 @@ async function buildNavmeshBoundaryAsset(missionId, navmesh, context) {
 	};
 	const fileName = "navmesh_boundaries.glb";
 	const outputPath = path.join(context.missionDirectory, fileName);
-	const glb = createPathLinesGlb(`${missionId}_navmesh_boundaries`, paths, {
+	const glb = await createPathLinesGlb(`${missionId}_navmesh_boundaries`, paths, {
 		schemaVersion: navmesh.schema_version,
 		kind: "navmeshBoundaries",
 		stats,
@@ -155,7 +156,7 @@ export async function buildMissionAssets(packet, context) {
 		floors,
 	}, surface);
 	const layeredMarkers = assignMarkerFloors(markers, floors);
-	const glb = createNavmeshGlb(floors.navmesh);
+	const glb = await createNavmeshGlb(floors.navmesh);
 	const boundaries = await buildNavmeshBoundaryAsset(data.mission, renderNavmesh, {
 		...context,
 		missionDirectory,
@@ -186,7 +187,8 @@ export async function buildMissionAssets(packet, context) {
 
 	await writeFile(path.join(missionDirectory, "map.json"), mapJson);
 
-	manifestEntry.resourceBytes = await directoryFileBytes(missionDirectory);
+	manifestEntry.resourceBytes = await directoryFileBytes(missionDirectory) - terrainClip.byteLength;
+	manifestEntry.debugResourceBytes = terrainClip.byteLength;
 
 	return {
 		manifest: manifestEntry,

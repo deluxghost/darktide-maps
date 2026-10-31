@@ -40,4 +40,4 @@ const manifest = gameText.pack(compactObject({
 }));
 await writeFile(path.join(outputDirectory, "game-text.json"), `${JSON.stringify(gameText.data())}\n`);
 await writeFile(path.join(outputDirectory, "maps.json"), `${JSON.stringify(manifest)}\n`);
-validateAssets(outputDirectory);
+await validateAssets(outputDirectory);

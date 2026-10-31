@@ -1,3 +1,5 @@
+import {MeshoptDecoder} from "meshoptimizer/decoder";
+
 const GLB_MAGIC = 0x46546c67;
 const GLB_VERSION = 2;
 const JSON_CHUNK_TYPE = 0x4e4f534a;
@@ -35,7 +37,7 @@ function typedArrayForAccessor(json, binary, accessorIndex) {
 	throw new Error(`Unsupported GLB component type: ${accessor.componentType}`);
 }
 
-export function parseGlb(arrayBuffer) {
+export async function parseGlb(arrayBuffer) {
 	const view = new DataView(arrayBuffer);
 
 	if (view.getUint32(0, true) !== GLB_MAGIC || view.getUint32(4, true) !== GLB_VERSION) {
@@ -63,6 +65,17 @@ export function parseGlb(arrayBuffer) {
 	if (!json || !binary) {
 		throw new Error("GLB is missing its JSON or binary chunk.");
 	}
+	await MeshoptDecoder.ready;
+	const decoded = new Uint8Array(json.buffers[1].byteLength);
+	for (const bufferView of json.bufferViews) {
+		const {byteOffset = 0, byteLength, byteStride, count, mode} = bufferView.extensions.EXT_meshopt_compression;
+		const targetOffset = bufferView.byteOffset ?? 0;
+		MeshoptDecoder.decodeGltfBuffer(
+			decoded.subarray(targetOffset, targetOffset + bufferView.byteLength),
+			count, byteStride, binary.subarray(byteOffset, byteOffset + byteLength), mode,
+		);
+	}
+	binary = decoded;
 
 	function parsePrimitive(primitive) {
 		return {

@@ -7,11 +7,11 @@
 	--z-marker-tooltip: 4;
 	--z-marker-popup: 5;
 	--z-hud: 6;
-	--menu-button-size: 36px;
+	--menu-button-size: 40px;
 	--marker-popup-anchor-offset: 44px;
 	--panel-separator: 1px solid rgba(160, 183, 159, 0.22);
-	--panel-toolbar-padding: 4px;
-	--panel-toolbar-height: calc(var(--menu-button-size) + var(--panel-toolbar-padding) * 2);
+	--panel-header-height: 52px;
+	--panel-menu-slot-width: 44px;
 }
 
 html {
