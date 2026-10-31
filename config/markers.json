@@ -205,16 +205,13 @@
   },
   "families": {
     "interactions": {
-      "category": "interaction",
-      "nameKey": "markerInteraction"
+      "category": "interaction"
     },
     "luggables": {
-      "category": "luggable",
-      "nameKey": "markerLuggable"
+      "category": "luggable"
     },
     "objectives": {
-      "category": "objective",
-      "nameKey": "markerObjective"
+      "category": "objective"
     },
     "start_points": {
       "category": "objective",
@@ -228,28 +225,23 @@
       "nameKey": "markerExtractionPoint"
     },
     "locations": {
-      "category": "location",
-      "nameKey": "markerLocation"
+      "category": "location"
     },
     "heretic_idols": {
-      "category": "heretic_idol",
-      "nameKey": "markerHereticIdol"
+      "category": "heretic_idol"
     },
     "martyr_skulls": {
-      "category": "martyr_skull",
-      "nameKey": "markerMartyrSkull"
+      "category": "martyr_skull"
     },
     "fixed_boss_spawns": {
       "category": "boss_spawn",
       "nameKey": "markerTaskBossSpawn"
     },
     "explosives": {
-      "category": "explosive",
-      "nameKey": "markerExplosiveSpawn"
+      "category": "explosive"
     },
     "chests": {
       "category": "chest",
-      "nameKey": "markerChest",
       "stackNameKey": "markerChestStack",
       "mergeHorizontalDistance": 2,
       "mergeVerticalDistance": 1,
@@ -257,20 +249,18 @@
     },
     "health_stations": {
       "category": "health_station",
-      "nameKey": "markerHealthStation",
       "auxiliary": {
+        "source": "pickups",
         "category": "luggable",
         "direction": "to_parent"
       }
     },
     "respawn_points": {
-      "category": "respawn_point",
-      "nameKey": "markerRespawnPoint"
+      "category": "respawn_point"
     },
     "supply_spawns": {
       "source": "pickups",
       "category": "supply_spawn",
-      "nameKey": "markerSupplySpawn",
       "distributions": [
         "primary",
         "secondary",
@@ -294,29 +284,30 @@
     "scripture_spawns": {
       "source": "pickups",
       "category": "scripture_spawn",
-      "nameKey": "markerScriptureSpawn",
       "pickupType": "tome"
     },
     "grimoire_spawns": {
       "source": "pickups",
       "category": "grimoire_spawn",
-      "nameKey": "markerGrimoireSpawn",
       "pickupType": "grimoire"
     },
     "boss_spawns": {
       "category": "boss_spawn",
-      "nameKey": "markerTaskBossSpawn",
-      "routeTriggers": true
+      "auxiliary": {
+        "source": "trigger",
+        "nameKey": "bossTriggerPoint"
+      }
     },
     "daemonhosts": {
-      "category": "daemonhost",
-      "nameKey": "markerDaemonhostSpawn"
+      "category": "daemonhost"
     },
     "havoc_boss_spawns": {
       "category": "havoc_boss_spawn",
-      "nameKey": "markerHavocBossSpawn",
       "descriptionKey": "markerHavocBossSpawnDescription",
-      "routeTriggers": true
+      "auxiliary": {
+        "source": "trigger",
+        "nameKey": "bossTriggerPoint"
+      }
     }
   },
   "extraction": {
@@ -338,6 +329,39 @@
     }
   },
   "sourcePolicies": {
+    "health_stations": {
+      "fullNameKey": "markerHealthStationFullName"
+    },
+    "interactions": {
+      "includedGameModes": [
+        "hub",
+        "shooting_range"
+      ]
+    },
+    "fixed_boss_spawns": {
+      "breedTags": [
+        "captain",
+        "monster"
+      ]
+    },
+    "boss_spawns": {
+      "projection": {
+        "verticalClearance": 1,
+        "nearestSurfaceDistance": 5
+      }
+    },
+    "daemonhosts": {
+      "projection": {
+        "verticalClearance": 1,
+        "nearestSurfaceDistance": 5
+      }
+    },
+    "havoc_boss_spawns": {
+      "projection": {
+        "verticalClearance": 5,
+        "nearestSurfaceDistance": 0
+      }
+    },
     "start_points": {
       "excludedGameModes": [
         "hub",

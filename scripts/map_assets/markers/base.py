@@ -8,6 +8,7 @@ from ..formats.level import key32
 from ..scene.components import component_value
 from ..scene.main_path import route_triggers
 from ..formats.unit_geometry import node_matrices
+from ..config import configuration
 
 MARKER_FAMILIES = ("chests", "health_stations", "respawn_points", "pickups",
                    "boss_spawns", "daemonhosts", "havoc_boss_spawns")
@@ -42,7 +43,7 @@ def build_markers(mission, scene, geometry, definitions, settings, path):
                 full = not value("use_distribution_pool") and value("battery_spawning_mode") == "plugged" and value("available_charges") >= 4
                 pin = {"position": unit["position"], "source": source}
                 if full:
-                    pin["name_key"] = "markerHealthStationFullName"
+                    pin["name_key"] = configuration("markers")["sourcePolicies"]["health_stations"]["fullNameKey"]
                 families["health_stations"].append(pin)
             elif kind == "RespawnBeacon":
                 families["respawn_points"].append({"position": unit["position"],

@@ -122,14 +122,14 @@ function formatCoordinate(position) {
 
 function copyMapCoordinate(position) {
 	if (!position) {
-		showWarning("No navmesh position picked.");
+		showWarning(t("noNavmeshPositionPicked"));
 		return;
 	}
 
 	const text = formatCoordinate(position);
 
 	navigator.clipboard.writeText(text)
-		.then(() => showInfo(`Copied coordinate: ${text}`))
+		.then(() => showInfo(t("coordinateCopied", {position: text})))
 		.catch(showError);
 }
 

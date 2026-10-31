@@ -24,9 +24,8 @@ from .scene.main_path import prepare_main_path
 from .source.localization import read_strings
 from .formats.physics import read_physics
 from .terrain.collisions import export_collision, resource_names
+from .config import configuration
 from .scene.physics import PhysicsControls
-
-ONBOARDING_VARIANTS = {"om_hub_01", "om_hub_02", "om_basic_combat_01"}
 
 
 def extract(args):
@@ -40,9 +39,13 @@ def extract(args):
     output.mkdir(parents=True, exist_ok=False)
     (output / "missions").mkdir()
     missions = mission_templates(assets, Path(args.decompiler).resolve())
+    omitted = configuration("build")["maps"]["excludedMissions"]
+    unknown = omitted.keys() - missions.keys()
+    if unknown:
+        raise ValueError(f"Unknown excluded mission ids: {sorted(unknown)}")
     fixed = {name: data for name, data in missions.items()
-             if data["mechanism_name"] != "expedition" and name not in ONBOARDING_VARIANTS}
-    excluded = [{"id": name, "reason": "onboarding_variant" if name in ONBOARDING_VARIANTS else "procedurally_assembled_level"}
+             if data["mechanism_name"] != "expedition" and name not in omitted}
+    excluded = [{"id": name, "reason": omitted.get(name, "procedurally_assembled_level")}
                 for name in missions if name not in fixed]
     if args.missions:
         requested = set(args.missions)

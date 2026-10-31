@@ -240,8 +240,11 @@ export function createMarkerOverlays({
 		activeMarker = marker;
 		markerPopupTitle.textContent = markerName(marker);
 		markerPopupType.textContent = categoryTitle(marker.category);
-		markerPopupDescription.hidden = !marker.description;
-		markerPopupDescription.textContent = marker.description ? localizeValue(marker.description, "") : "";
+		const descriptionKey = pins.categories[marker.category].descriptionKey;
+		const description = Object.hasOwn(marker, "description") ? marker.description : descriptionKey ? {key: descriptionKey} : null;
+		const text = localizeValue(description, "");
+		markerPopupDescription.hidden = !text;
+		markerPopupDescription.textContent = text;
 		markerPopup.hidden = false;
 		update();
 	}

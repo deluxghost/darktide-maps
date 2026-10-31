@@ -38,10 +38,10 @@ def build_extra_markers(mission, scene, geometry, definitions, settings, flow, d
         for spawn in settings["terror_spawns"]["scripts/settings/terror_event/terror_event_templates/" + name]:
             breed = settings["breeds"].get(spawn.get("breed_name"))
             tags = {tag for group in spawn.get("breed_tags", []) for tag in group}
-            if breed and breed.get("is_boss") or tags.intersection({"captain", "monster"}):
+            if breed and breed.get("is_boss") or tags.intersection(MARKER_CONFIG["sourcePolicies"]["fixed_boss_spawns"]["breedTags"]):
                 fixed_spawns.append(spawn)
     pickup_anchors = {entry["identifier"]: entry["pickup"] for entry in settings["scripted_pickups"]}
-    interaction_map = mission["game_mode_name"] in {"hub", "shooting_range"}
+    interaction_map = mission["game_mode_name"] in MARKER_CONFIG["sourcePolicies"]["interactions"]["includedGameModes"]
     boss_handlers = {component_value(component, definitions, "template")
                      for unit in scene for component in unit["components"] if component["name"] == "BossHandler"}
 

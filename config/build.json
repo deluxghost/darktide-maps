@@ -1,5 +1,10 @@
 {
   "maps": {
+    "excludedMissions": {
+      "om_hub_01": "onboarding_variant",
+      "om_hub_02": "onboarding_variant",
+      "om_basic_combat_01": "onboarding_variant"
+    },
     "ungroupedMissions": [
       "hub_ship",
       "prologue",

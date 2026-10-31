@@ -1,6 +1,7 @@
 import {BUILD_CONFIG} from "./config.mjs";
 import markerConfig from "../../../config/markers.json" with {type: "json"};
 import {requireArray, compactObject, stableHash} from "./utils.mjs";
+import {applyMarkerOverrides} from "./marker_overrides.mjs";
 
 const MAIN_PATH = BUILD_CONFIG.mainPath;
 const SIDE_MISSION_PICKUP_TYPES = new Set(Object.values(markerConfig.families)
@@ -130,11 +131,13 @@ function buildMarkerAuxiliaryMarkers(group, family) {
 	return family.auxiliaryMarkers(group[0]);
 }
 
-function bossTriggerAuxiliaryMarkers(pin) {
+function bossTriggerAuxiliaryMarkers(pin, style) {
 	if (!pin.trigger) return undefined;
 	return requireArray(pin.trigger.positions, "boss trigger positions").map(({position}) => ({
 		key: `boss_trigger_${stableHash(JSON.stringify(position))}`,
-		name: {key: "bossTriggerPoint"},
+		name: {key: style.nameKey},
+		category: style.category,
+		direction: style.direction,
 		position: [position[0], position[1], position[2] + MAIN_PATH.verticalOffset],
 	}));
 }
@@ -172,7 +175,6 @@ function buildAuxiliaryMarkers(missionId, category, sourceKeys, auxiliaryMarkers
 		return compactObject({
 			id: auxiliaryId(missionId, category, sourceKeys, auxiliary.key),
 			name: auxiliary.name ?? keyedValue(auxiliary.nameKey),
-			description: auxiliary.description ?? keyedValue(auxiliary.descriptionKey),
 			position: auxiliary.position,
 			category: auxiliary.category,
 			direction: auxiliary.direction,
@@ -184,7 +186,7 @@ function buildMarkerGroup(missionId, group, family) {
 	const sourceKeys = group.map((pin) => family.sourceKey(pin)).sort();
 	const id = family.id(missionId, sourceKeys);
 	const auxiliaryMarkers = buildMarkerAuxiliaryMarkers(group, family);
-	const description = group[0].description ?? keyedValue(group[0].description_key ?? family.descriptionKey);
+	const description = Object.hasOwn(group[0], "description") ? group[0].description : keyedValue(group[0].description_key ?? family.descriptionKey);
 
 	return compactObject({
 		id,
@@ -228,13 +230,13 @@ function markerFamilies(missionId) {
 			fileLabel: key,
 			id: markerId(config.category),
 			sourceKey: config.sourceKey === "unit_id" ? chestSourceKey : sourceKey,
-			defaultName: {key: config.nameKey},
+			defaultName: keyedValue(config.nameKey),
 			stackName: keyedValue(config.stackNameKey),
 			mergeKey: config.mergeBy ? (pin) => pin.source[config.mergeBy] : undefined,
 			selectPins: config.distributions ? (pin) => config.distributions.includes(pin.source.distribution_type)
 				&& (pin.spawnable_pickups === "all" || requireArray(pin.pickup_groups, "pickup groups").some((group) => config.pickupGroups.includes(group)))
 				: config.pickupType ? (pin) => hasPickupType(pin, config.pickupType) : undefined,
-			auxiliaryMarkers: config.routeTriggers ? bossTriggerAuxiliaryMarkers
+			auxiliaryMarkers: config.auxiliary?.source === "trigger" ? (pin) => bossTriggerAuxiliaryMarkers(pin, config.auxiliary)
 				: config.auxiliary ? (pin) => pickupAuxiliaryMarkers(pin, config.auxiliary) : undefined,
 		}));
 }
@@ -256,8 +258,8 @@ export function buildMarkers(missionId, sources) {
 		if (!from || !to) throw new Error(`Unresolved task relation: ${JSON.stringify(relation)}`);
 		return {kind: relation.kind, from, to};
 	});
-	return pins.length ? {
+	return applyMarkerOverrides(missionId, {
 		pins: pins.map(({taskKey, ...pin}) => pin).sort((a, b) => a.id.localeCompare(b.id)),
 		relations,
-	} : null;
+	});
 }

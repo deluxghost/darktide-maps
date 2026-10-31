@@ -5,9 +5,11 @@ import {compactObject, readJson} from "./utils.mjs";
 import {verifyFloorDependencies} from "./floors/ordered_cut.mjs";
 import {createGameTextRegistry} from "./game_text.mjs";
 import {validateAssets} from "./validate.mjs";
+import {validateMarkerConfiguration} from "./marker_overrides.mjs";
 
 const [work, outputDirectory] = process.argv.slice(2);
 if (!work || !outputDirectory) throw new Error("Missing internal map build directories");
+validateMarkerConfiguration();
 verifyFloorDependencies();
 const plan = await readJson(path.join(work, "build.json"));
 if (plan.format !== "static-map-build-v2") throw new Error("Invalid map build plan");
