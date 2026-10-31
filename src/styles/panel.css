@@ -1,0 +1,242 @@
+.panel {
+	position: absolute;
+	top: 16px;
+	left: 16px;
+	z-index: var(--z-hud);
+	display: flex;
+	flex-direction: column;
+	width: 340px;
+	max-height: calc(100vh - 32px);
+	border: 1px solid rgba(160, 183, 159, 0.35);
+	background: rgba(13, 18, 15, 0.92);
+	box-shadow: 0 8px 28px rgba(0, 0, 0, 0.32);
+}
+
+.panel-header {
+	position: relative;
+	display: flex;
+	flex: 0 0 auto;
+	align-items: center;
+	gap: 8px;
+	height: 52px;
+	padding: 0 12px 0 var(--panel-toolbar-height);
+}
+
+.panel-brand {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	align-items: flex-start;
+	min-width: 0;
+	color: #e1c77c;
+	font-size: 20px;
+	line-height: 24px;
+	letter-spacing: 0;
+	text-transform: none;
+	white-space: nowrap;
+}
+
+.panel-game-title {
+	color: #a5b69f;
+	font-size: 12px;
+	font-weight: 400;
+	line-height: 16px;
+}
+
+.icon-button {
+	display: grid;
+	place-items: center;
+	width: 26px;
+	height: 26px;
+	padding: 0;
+	border-color: rgba(84, 100, 83, 0.8);
+	background: rgba(27, 36, 29, 0.82);
+}
+
+.icon-button svg {
+	display: block;
+	width: 16px;
+	height: 16px;
+	stroke-width: 2;
+}
+
+.icon-button:hover {
+	border-color: #a0b79f;
+	background: #27372a;
+}
+
+.panel-content {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow-y: auto;
+	padding: 0 16px 16px;
+}
+
+.panel.collapsed {
+	width: calc(var(--panel-toolbar-height) + 2px);
+	height: calc(var(--panel-toolbar-height) + 2px);
+	border-color: #546453;
+	background: #1b241d;
+	box-shadow: none;
+}
+
+.panel.collapsed .panel-header {
+	height: var(--panel-toolbar-height);
+	padding: 0;
+}
+
+.panel.collapsed .panel-brand,
+.panel.collapsed .about-toggle,
+.panel.collapsed .panel-divider,
+.panel.collapsed .panel-content {
+	display: none;
+}
+
+.panel-toggle {
+	position: absolute;
+	top: 50%;
+	left: var(--panel-toolbar-padding);
+	display: grid;
+	place-items: center;
+	width: var(--menu-button-size);
+	height: var(--menu-button-size);
+	flex: 0 0 auto;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	transform: translateY(-50%);
+}
+
+.panel-toggle svg {
+	display: block;
+	width: 20px;
+	height: 20px;
+	stroke-width: 2;
+	stroke-linecap: square;
+	stroke-linejoin: miter;
+}
+
+.filters {
+	margin-top: 20px;
+}
+
+.map-selector {
+	margin-top: 14px;
+}
+
+.muted {
+	margin: 0;
+	color: #9eae9d;
+	font-size: 13px;
+	line-height: 1.45;
+}
+
+.panel-divider {
+	flex: 0 0 auto;
+	margin: 12px 16px 0;
+	border: 0;
+	border-top: var(--panel-separator);
+}
+
+.filter-color {
+	width: 10px;
+	height: 10px;
+	border: 1px solid rgba(255, 255, 255, 0.42);
+}
+
+.filter-toolbar {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 6px;
+	margin-bottom: 10px;
+}
+
+.filter-toolbar button {
+	border-color: rgba(84, 100, 83, 0.8);
+	background: rgba(27, 36, 29, 0.82);
+}
+
+.filter-toolbar button {
+	min-height: 26px;
+	font-size: 13px;
+}
+
+.filter-group {
+	margin-top: 10px;
+}
+
+.filter-group-title {
+	margin-bottom: 6px;
+	padding: 0 2px;
+	border: 0;
+	color: #d6b34a;
+	background: transparent;
+	text-align: left;
+	font-size: 15px;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+.filter-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 2px 4px;
+}
+
+.filter-item {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	gap: 5px;
+	min-height: 24px;
+	padding: 2px 4px;
+	border: 0;
+	color: #dce6db;
+	background: transparent;
+	font-size: 13px;
+	line-height: 1.15;
+	text-align: left;
+}
+
+.filter-item.disabled {
+	opacity: 0.42;
+}
+
+.filter-item.disabled .filter-label {
+	text-decoration: line-through;
+}
+
+.filter-label {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	text-transform: uppercase;
+	white-space: nowrap;
+}
+
+.filter-count {
+	color: #9eae9d;
+}
+
+@media (max-width: 640px) {
+	.panel {
+		top: 8px;
+		left: 8px;
+		width: min(340px, calc(100vw - 16px));
+		max-height: calc(100vh - 16px);
+	}
+
+	.panel-header {
+		padding-right: 10px;
+	}
+
+	.panel-content {
+		padding: 0 12px 12px;
+	}
+
+	.panel-divider {
+		margin-right: 12px;
+		margin-left: 12px;
+	}
+
+}

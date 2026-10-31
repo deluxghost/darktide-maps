@@ -1,0 +1,72 @@
+[
+  {
+    "date": "2026-10-31",
+    "items": [
+      {
+        "en": "Added the Spillway map.",
+        "zh-cn": "添加泄洪道地图。"
+      },
+      {
+        "en": "Added Objective, Luggable, Location, Interaction (on the Mourningstar and in the Psykhanium), Heretical Idol Spawn, Martyr's Skull, and Explosive Spawn markers.",
+        "zh-cn": "添加任务点、搬运物、地点、哀星号与灵能室交互点、异端雕像生成点、殉道者之颅和爆炸物生成点标记。"
+      },
+      {
+        "en": "Added power cell locations associated with Medical Stations.",
+        "zh-cn": "添加医疗站关联的能量电池位置。"
+      },
+      {
+        "en": "Optimized marker rendering performance.",
+        "zh-cn": "优化标记渲染性能。"
+      }
+    ]
+  },
+  {
+    "date": "2026-09-07",
+    "items": [
+      {
+        "en": "Added map layers.",
+        "zh-cn": "添加地图图层。"
+      }
+    ]
+  },
+  {
+    "date": "2026-06-11",
+    "items": [
+      {
+        "en": "Scripture Spawn and Grimoire Spawn markers can now be filtered separately.",
+        "zh-cn": "圣经生成点与魔法书生成点可分别筛选。"
+      }
+    ]
+  },
+  {
+    "date": "2026-06-10",
+    "items": [
+      {
+        "en": "Added shareable links to maps, markers, and coordinates.",
+        "zh-cn": "支持分享地图、标记和坐标定位链接。"
+      },
+      {
+        "en": "Improved obstacle detection accuracy.",
+        "zh-cn": "提高障碍物识别的准确性。"
+      }
+    ]
+  },
+  {
+    "date": "2026-06-05",
+    "items": [
+      {
+        "en": "Added Boss trigger point markers.",
+        "zh-cn": "添加 Boss 触发点标记。"
+      }
+    ]
+  },
+  {
+    "date": "2026-06-03",
+    "items": [
+      {
+        "en": "Initial release. Includes Main Path, Supply Spawn, Medical Station, Respawn Point, Side Mission Spawn, and Boss Spawn markers.",
+        "zh-cn": "首次发布。包含主路径、补给生成点、医疗站、复活点、次要任务生成点、Boss 生成点标记。"
+      }
+    ]
+  }
+]

@@ -1,15 +1,15 @@
-import { parseGlb } from "./glb.js";
-import { applyTranslations, localizeValue, t } from "./i18n.js";
-import { createGeometryBoundaryPaths, createLandmarkMesh, createPathBoundaryPaths } from "./landmarks.js";
+import { parseGlb } from "./data/glb.js";
+import { applyTranslations, loadGameText, localizeValue, t } from "./i18n.js";
+import { createGeometryBoundaryPaths, createLandmarkMesh, createPathBoundaryPaths } from "./map/landmarks.js";
 import { APP_CONFIG } from "./config.js";
-import { createMapRenderer } from "./renderer.js";
-import { createFilterController } from "./filters.js";
-import { createFloorController } from "./floors.js";
-import { createMarkerOverlays } from "./overlays.js";
-import { mapTitle, writeMapOptions } from "./manifest.js";
-import { createRotationControl } from "./joystick.js";
+import { createMapRenderer } from "./map/renderer.js";
+import { createFilterController } from "./ui/filters.js";
+import { createFloorController } from "./ui/floors.js";
+import { createMarkerOverlays } from "./markers/overlays.js";
+import { initializeAbout } from "./ui/about.js";
+import { mapTitle, writeMapOptions } from "./data/manifest.js";
 import { formatLocalTimestampFromUnix } from "./time.js";
-import { createNotifications } from "./notifications.js";
+import { createNotifications } from "./ui/notifications.js";
 import { readStoredObject, writeStoredProperty } from "./storage.js";
 import {
 	mapLocationUrl,
@@ -19,7 +19,7 @@ import {
 	replaceUrl,
 	tryParsePositionParameter,
 } from "./location.js";
-import { createElement as createLucideElement, createIcons, Bug, Menu, Rotate3d, X } from "lucide";
+import { createElement as createLucideElement, createIcons, Bug, Info, Menu, X } from "lucide";
 
 const mapElement = document.querySelector("#map");
 const mapSelect = document.querySelector("#map-select");
@@ -29,8 +29,7 @@ const panel = document.querySelector(".panel");
 const panelToggle = document.querySelector("#panel-toggle");
 const debugToggle = document.querySelector("#debug-toggle");
 const debugPanel = document.querySelector("#debug-panel");
-const debugBlockedPolygons = document.querySelector("#debug-blocked-polygons");
-const helpElement = document.querySelector("#help");
+const debugTerrainClipping = document.querySelector("#debug-terrain-clipping");
 const filterList = document.querySelector("#filter-list");
 const markerPopup = document.querySelector("#marker-popup");
 const markerPopupTitle = document.querySelector("#marker-popup-title");
@@ -39,20 +38,14 @@ const markerPopupDescription = document.querySelector("#marker-popup-description
 const markerPopupClose = document.querySelector("#marker-popup-close");
 const markerTooltip = document.querySelector("#marker-tooltip");
 const auxiliaryArrow = document.querySelector("#auxiliary-arrow");
-const auxiliaryArrowArc = document.querySelector("#auxiliary-arrow-arc");
-const auxiliaryArrowArcOutline = document.querySelector("#auxiliary-arrow-arc-outline");
 const dataUpdatedElement = document.querySelector("#data-updated");
-const rotationControl = document.querySelector("#rotation-control");
-const rotationControlHandle = document.querySelector("#rotation-control-handle");
 const floorControl = document.querySelector("#floor-control");
 const mobileMedia = window.matchMedia(APP_CONFIG.ui.mobileMediaQuery);
-const touchPrimaryMedia = window.matchMedia("(hover: none) and (pointer: coarse)");
 const DEBUG_STORAGE_KEY = "darktide-maps.debug.v1";
 const URL_POSITION_MARKER_ID = "url-position";
 
 let loadController;
-let touchInputEnabled = shouldStartInTouchMode();
-let debugBlockedPolygonsVisible = readDebugBlockedPolygonsVisible();
+let debugTerrainClippingVisible = readDebugTerrainClippingVisible();
 const mapDataCache = new Map();
 const notifications = createNotifications({
 	container: notificationsElement,
@@ -61,11 +54,15 @@ const notifications = createNotifications({
 });
 
 function formatBytes(bytes) {
-	if (bytes < 1024) {
-		return `${bytes} B`;
+	const units = ["B", "KB", "MB", "GB", "TB"];
+	let value = bytes;
+	let unit = 0;
+	while (value >= 1024 && unit < units.length - 1) {
+		value /= 1024;
+		unit++;
 	}
 
-	return `${(bytes / 1024).toFixed(1)} KB`;
+	return `${unit === 0 ? value : value.toFixed(2)} ${units[unit]}`;
 }
 
 function setLoading(message) {
@@ -97,12 +94,12 @@ function readDebugSettings() {
 	return readStoredObject(DEBUG_STORAGE_KEY);
 }
 
-function readDebugBlockedPolygonsVisible() {
-	return readDebugSettings().blockedPolygonsVisible === true;
+function readDebugTerrainClippingVisible() {
+	return readDebugSettings().terrainClippingVisible === true;
 }
 
-function writeDebugBlockedPolygonsVisible(visible) {
-	writeStoredProperty(DEBUG_STORAGE_KEY, "blockedPolygonsVisible", visible);
+function writeDebugTerrainClippingVisible(visible) {
+	writeStoredProperty(DEBUG_STORAGE_KEY, "terrainClippingVisible", visible);
 }
 
 async function copyMarkerUrl(marker) {
@@ -140,41 +137,6 @@ function setPanelCollapsed(collapsed) {
 	panelToggle.setAttribute("aria-expanded", String(!collapsed));
 }
 
-function writeHelp() {
-	helpElement.textContent = touchInputEnabled
-		? t("helpTouch")
-		: t("helpDesktop");
-}
-
-function writeInputMode() {
-	document.documentElement.classList.toggle("touch-input", touchInputEnabled);
-	writeHelp();
-}
-
-function shouldStartInTouchMode() {
-	return touchPrimaryMedia.matches || mobileMedia.matches;
-}
-
-function setTouchInputEnabled(enabled) {
-	if (touchInputEnabled === enabled) {
-		return;
-	}
-
-	touchInputEnabled = enabled;
-	writeInputMode();
-}
-
-function updateInputModeFromPointer(event) {
-	if (event.pointerType === "mouse") {
-		setTouchInputEnabled(false);
-		return;
-	}
-
-	if (event.pointerType === "touch" || event.pointerType === "pen") {
-		setTouchInputEnabled(true);
-	}
-}
-
 function writeDataUpdatedAt(unixTimestamp) {
 	dataUpdatedElement.textContent = t("dataUpdatedAt", {
 		time: formatLocalTimestampFromUnix(unixTimestamp),
@@ -200,8 +162,6 @@ const markerOverlays = createMarkerOverlays({
 	markerPopupDescription,
 	markerTooltip,
 	auxiliaryArrow,
-	auxiliaryArrowArc,
-	auxiliaryArrowArcOutline,
 	mapRenderer,
 	categoryTitle,
 	markerName,
@@ -301,7 +261,7 @@ function markerById(map, markerId) {
 	return (map.markers?.pins ?? []).find((marker) => marker.id === markerId) ?? null;
 }
 
-async function markerLocation(manifest, markerId, preferredMapId) {
+async function markerLocation(manifest, markerId, preferredMapId, signal) {
 	const preferredMap = preferredMapId ? mapEntryById(manifest, preferredMapId) : null;
 	const maps = [
 		...(preferredMap ? [preferredMap] : []),
@@ -309,7 +269,7 @@ async function markerLocation(manifest, markerId, preferredMapId) {
 	];
 
 	for (const mapEntry of maps) {
-		const map = await loadMapData(mapEntry);
+		const map = await loadMapData(mapEntry, signal);
 		const marker = markerById(map, markerId);
 
 		if (marker) {
@@ -320,11 +280,11 @@ async function markerLocation(manifest, markerId, preferredMapId) {
 	return null;
 }
 
-async function resolveLocationRequest(manifest, request) {
+async function resolveLocationRequest(manifest, request, signal) {
 	let invalidLocationUrl = false;
 
 	function result(mapEntry, locator = null, canonicalUrl = null) {
-		if (invalidLocationUrl) {
+		if (invalidLocationUrl && !signal.aborted) {
 			showWarning(t("errorInvalidLocationUrl"));
 		}
 
@@ -348,7 +308,7 @@ async function resolveLocationRequest(manifest, request) {
 	}
 
 	if (request.markerId) {
-		const location = await markerLocation(manifest, request.markerId, request.mapId);
+		const location = await markerLocation(manifest, request.markerId, request.mapId, signal);
 
 		if (location) {
 			return result(location.mapEntry, {
@@ -393,80 +353,88 @@ function markerPinsForMap(map, locator) {
 	return pins;
 }
 
-async function loadMap(mapEntry, locator = null) {
-	if (loadController) {
-		loadController.abort();
-	}
-
-	loadController = new AbortController();
+function clearMap() {
+	mapRenderer.clear();
 	markerOverlays.hidePopup();
 	markerOverlays.hideTooltip();
 	floorController.setMap(null);
+	filters.setCurrentMap(null);
+	filters.writeFilters(null);
+	clearLoading();
+}
+
+async function loadMap(mapEntry, locator, signal) {
 	setLoading(t("loadingMap", {
 		title: mapTitle(mapEntry),
 		size: formatBytes(mapEntry.resourceBytes),
 	}));
 
-	try {
-		const map = await loadMapData(mapEntry, loadController.signal);
-		const glb = await loadGlb(map.file, loadController.signal);
-		const boundaryPaths = await loadBoundaryPaths(map.boundaries, loadController.signal);
-		const mainPathMeshes = await loadGeometryPartMeshes(map.landmarks?.mainPath, loadController.signal, false);
-		const blockedEdgeMeshes = import.meta.env.DEV
-			? await loadGeometryPartMeshes(map.diagnostics?.blockedEdges, loadController.signal, true)
-			: null;
-		const markerPins = markerPinsForMap(map, locator);
-		const selectedMarker = locator?.type === "marker"
-			? markerPins.find((marker) => marker.id === locator.markerId && marker.markerType === "pin")
-			: null;
+	const map = await loadMapData(mapEntry, signal);
+	const glb = await loadGlb(map.file, signal);
+	const boundaryPaths = await loadBoundaryPaths(map.boundaries, signal);
+	const mainPathMeshes = await loadGeometryPartMeshes(map.landmarks?.mainPath, signal, false);
+	const terrainClipMeshes = import.meta.env.DEV
+		? await loadGeometryPartMeshes(map.diagnostics?.terrainClip, signal, true)
+		: null;
+	if (signal.aborted) return;
+	const markerPins = markerPinsForMap(map, locator);
+	const selectedMarker = locator?.type === "marker"
+		? markerPins.find((marker) => marker.id === locator.markerId && marker.markerType === "pin")
+		: null;
 
-		filters.setCurrentMap(map);
-		mapRenderer.render(
-			map,
-			glb,
-			boundaryPaths,
-			mainPathMeshes,
-			{
-				blockedEdgeMeshes,
-				blockedEdgesVisible: import.meta.env.DEV && debugBlockedPolygonsVisible,
-				mainPathVisible: filters.mainPathVisible,
-				fitPositions: glb.positions,
-				markerPins,
-				visiblePinCategories: filters.visiblePinCategorySet(map),
-				onMarkerClick: markerOverlays.showPopup,
-				onMarkerHover: markerOverlays.showTooltip,
-				onMapCoordinatePick: import.meta.env.DEV ? copyMapCoordinate : null,
-				onViewChange: markerOverlays.update,
-			},
-		);
-		floorController.setMap(map);
-		filters.writeFilters(map);
-		clearLoading();
-		if (locator?.type === "position") {
-			await mapRenderer.centerOnPosition(locator.position, map.id);
-		}
-		if (selectedMarker) {
-			if (await mapRenderer.centerOnPosition(selectedMarker.position, map.id)) {
-				markerOverlays.showPopup(selectedMarker);
-			}
-		}
-	} catch (error) {
-		if (error.name !== "AbortError") {
-			clearLoading();
-			showError(error);
+	filters.setCurrentMap(map);
+	mapRenderer.render(
+		map,
+		glb,
+		boundaryPaths,
+		mainPathMeshes,
+		{
+			terrainClipMeshes,
+			terrainClipVisible: import.meta.env.DEV && debugTerrainClippingVisible,
+			mainPathVisible: filters.mainPathVisible,
+			fitPositions: glb.positions,
+			markerPins,
+			visiblePinCategories: filters.visiblePinCategorySet(map),
+			onMarkerClick: markerOverlays.showPopup,
+			onMarkerHover: markerOverlays.showTooltip,
+			onMapCoordinatePick: import.meta.env.DEV ? copyMapCoordinate : null,
+			onViewChange: markerOverlays.update,
+		},
+	);
+	floorController.setMap(map);
+	filters.writeFilters(map);
+	clearLoading();
+	if (locator?.type === "position") {
+		await mapRenderer.centerOnPosition(locator.position, map.id);
+	}
+	if (selectedMarker) {
+		if (await mapRenderer.centerOnPosition(selectedMarker.position, map.id)) {
+			markerOverlays.showPopup(selectedMarker);
 		}
 	}
 }
 
 async function loadLocationFromUrl(manifest) {
-	const request = readLocationRequest();
-	const location = await resolveLocationRequest(manifest, request);
+	loadController?.abort();
+	const controller = new AbortController();
+	loadController = controller;
+	const {signal} = controller;
+	clearMap();
+	try {
+		const request = readLocationRequest();
+		const location = await resolveLocationRequest(manifest, request, signal);
+		if (signal.aborted) return;
 
-	mapSelect.value = location.mapEntry.id;
-	if (location.canonicalUrl) {
-		replaceUrl(location.canonicalUrl);
+		mapSelect.value = location.mapEntry.id;
+		if (location.canonicalUrl) {
+			replaceUrl(location.canonicalUrl);
+		}
+		await loadMap(location.mapEntry, location.locator, signal);
+	} catch (error) {
+		if (signal.aborted) return;
+		clearMap();
+		showError(error);
 	}
-	await loadMap(location.mapEntry, location.locator);
 }
 
 async function initialize() {
@@ -482,6 +450,7 @@ async function initialize() {
 		throw new Error(t("errorNoMaps"));
 	}
 
+	await loadGameText(manifest.gameText);
 	writeMapOptions(mapSelect, manifest);
 	writeDataUpdatedAt(manifest.dataUpdatedAtUnix);
 
@@ -489,30 +458,24 @@ async function initialize() {
 		const mapEntry = mapEntryById(manifest, mapSelect.value);
 
 		pushUrl(mapLocationUrl(mapEntry.id));
-		loadMap(mapEntry);
+		loadLocationFromUrl(manifest);
 	});
 	window.addEventListener("popstate", () => {
-		loadLocationFromUrl(manifest).catch(showError);
+		loadLocationFromUrl(manifest);
 	});
 
 	await loadLocationFromUrl(manifest);
 }
 
 export function startApp() {
-	createIcons({ icons: { Bug, Menu, Rotate3d, X } });
+	createIcons({ icons: { Bug, Info, Menu, X } });
 	applyTranslations();
+	initializeAbout();
 	document.title = t("appTitle");
 	document.documentElement.classList.toggle("dev-tools", import.meta.env.DEV);
 	setPanelCollapsed(mobileMedia.matches);
-	writeInputMode();
-	debugBlockedPolygons.checked = debugBlockedPolygonsVisible;
+	debugTerrainClipping.checked = debugTerrainClippingVisible;
 	filters.initialize();
-	createRotationControl({
-		root: rotationControl,
-		handle: rotationControlHandle,
-		mapRenderer,
-	});
-	window.addEventListener("pointerdown", updateInputModeFromPointer, { capture: true });
 	mapElement.addEventListener("contextmenu", (event) => {
 		event.preventDefault();
 	});
@@ -525,10 +488,10 @@ export function startApp() {
 		debugPanel.hidden = !expanded;
 		debugToggle.setAttribute("aria-expanded", String(expanded));
 	});
-	debugBlockedPolygons.addEventListener("change", () => {
-		debugBlockedPolygonsVisible = debugBlockedPolygons.checked;
-		writeDebugBlockedPolygonsVisible(debugBlockedPolygonsVisible);
-		mapRenderer.setBlockedEdgesVisible(debugBlockedPolygonsVisible);
+	debugTerrainClipping.addEventListener("change", () => {
+		debugTerrainClippingVisible = debugTerrainClipping.checked;
+		writeDebugTerrainClippingVisible(debugTerrainClippingVisible);
+		mapRenderer.setTerrainClipVisible(debugTerrainClippingVisible);
 	});
 	markerPopupClose.addEventListener("click", markerOverlays.hidePopup);
 

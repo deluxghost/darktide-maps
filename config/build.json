@@ -1,0 +1,121 @@
+{
+  "maps": {
+    "ungroupedMissions": [
+      "hub_ship",
+      "prologue",
+      "psykhanium",
+      "tg_shooting_range"
+    ]
+  },
+  "mainPath": {
+    "verticalOffset": 1.1,
+    "tubeRadius": 0.5,
+    "tubeSides": 12,
+    "tubeStepsPerSegment": 8,
+    "segmentConnectorDashLength": 4,
+    "segmentConnectorGapLength": 3,
+    "arrowTailOverlap": 1.2,
+    "arrowTipOffset": 2.1,
+    "arrowRadius": 1.25,
+    "arrowSides": 12,
+    "startSphereRadius": 1.5,
+    "sphereLatitudes": 8,
+    "sphereLongitudes": 12
+  },
+  "view": {
+    "fitGridSize": 96
+  },
+  "floors": {
+    "analysisBandStep": 0.5,
+    "broadPhaseCellSize": 4,
+    "occlusionClearance": 2,
+    "minimumLayerOcclusionArea": 128,
+    "minimumLayerOcclusionShare": 0.005,
+    "maximumLayerOcclusionArea": 250,
+    "attachmentVerticalScale": 2
+  },
+  "boundaries": {
+    "coordinatePrecision": 4,
+    "minimumCollapsedArea": 0.05,
+    "maximumDanglingBranchLength": 3.5
+  },
+  "terrain": {
+    "clearanceLow": 0.35,
+    "clearanceHigh": 1.2,
+    "overlayOffset": 0.02,
+    "curveError": 0.001,
+    "heightfieldChunk": 256
+  },
+  "collision": {
+    "gameplayCallbackResources": {
+      "734de5a2ad1c7976": "content/environment/artsets/imperial/train/train_operation/props/vat_rotating_machine/vat_tank_rotating_machine_01"
+    },
+    "excludedResources": {
+      "65550d0f74a046f7": "ritual_shield"
+    },
+    "transientActorResources": {
+      "823dd56d7ad8b535": "content/environment/gameplay/events/propaganda/mid/large_sand_fan_01"
+    },
+    "nonObstacleActors": {
+      "dm_stockpile": [
+        {
+          "ancestry": [
+            "07ab06ec4ad24ab0"
+          ],
+          "unit": "63da3b692bdef9dd",
+          "resource": "21027a51c6c203af",
+          "actor": 3199297567,
+          "reason": "mission_gate"
+        },
+        {
+          "ancestry": [
+            "07ab06ec4ad24ab0"
+          ],
+          "unit": "cdfd424384159837",
+          "resource": "21027a51c6c203af",
+          "actor": 3199297567,
+          "reason": "mission_gate"
+        }
+      ],
+      "lm_rails": [
+        {
+          "ancestry": [
+            "5d9d03baf5abbbd0"
+          ],
+          "unit": "c8bd10933a7ae34d",
+          "resource": "eaca047f9084d5d7",
+          "actor": 3229172091,
+          "reason": "walkable_support"
+        },
+        {
+          "ancestry": [
+            "5d9d03baf5abbbd0"
+          ],
+          "unit": "c9d985561a63d061",
+          "resource": "eaca047f9084d5d7",
+          "actor": 3229172091,
+          "reason": "walkable_support"
+        },
+        {
+          "ancestry": [
+            "5d9d03baf5abbbd0"
+          ],
+          "unit": "ee00d3cbca129164",
+          "resource": "eaca047f9084d5d7",
+          "actor": 3229172091,
+          "reason": "walkable_support"
+        }
+      ]
+    }
+  },
+  "omit": {
+    "byMission": {
+      "psykhanium": {
+        "mainPath": true
+      },
+      "tg_shooting_range": {
+        "mainPath": true
+      }
+    }
+  }
+}

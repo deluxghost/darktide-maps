@@ -1,6 +1,5 @@
 node_modules/
 dist/
-.npm-cache/
 .venv/
 __pycache__/
 

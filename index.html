@@ -5,11 +5,11 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<meta name="description" content="Interactive maps for Warhammer 40,000: Darktide. Explore mission maps, main paths, and marker locations.">
 		<meta property="og:type" content="website">
-		<meta property="og:title" content="Darktide Maps">
+		<meta property="og:title" content="Warhammer 40,000: Darktide - Interactive Maps">
 		<meta property="og:description" content="Interactive maps for Warhammer 40,000: Darktide. Explore mission maps, main paths, and marker locations.">
 		<meta property="og:url" content="https://dtmaps.deluxghost.me/">
 		<meta name="theme-color" content="#0d120f">
-		<title>Darktide Maps</title>
+		<title>Warhammer 40,000: Darktide - Interactive Maps</title>
 		<link rel="canonical" href="https://dtmaps.deluxghost.me/">
 		<link rel="icon" type="image/webp" href="./icon.webp">
 		<link rel="stylesheet" href="./styles.css">
@@ -24,28 +24,19 @@
 				<button id="panel-toggle" class="panel-toggle" type="button" aria-label="Toggle menu" aria-expanded="true" aria-controls="panel-content" data-i18n-aria-label="toggleMenu" data-i18n-title="toggleMenu">
 					<i data-lucide="menu"></i>
 				</button>
-				<h1 data-i18n="appTitle">Darktide Maps</h1>
-				<span class="app-badge" data-i18n="appBadge">Beta</span>
+				<h1 class="panel-brand">
+					<span class="panel-game-title" data-i18n="gameTitle">Warhammer 40,000: Darktide</span>
+					<span data-i18n="menuTitle">Interactive Maps</span>
+				</h1>
+				<button id="about-toggle" class="icon-button about-toggle" type="button" data-i18n-aria-label="about" data-i18n-title="about" aria-haspopup="dialog" aria-controls="about-dialog">
+					<i data-lucide="info"></i>
+				</button>
 			</header>
-			<div class="developer-row">
-				<p class="author" data-i18n="author">by deluxghost</p>
-				<div class="debug-root">
-					<button id="debug-toggle" class="debug-toggle" type="button" aria-label="Debug" title="Debug" aria-expanded="false" aria-controls="debug-panel">
-						<i data-lucide="bug"></i>
-					</button>
-					<div id="debug-panel" class="debug-panel" hidden>
-						<label class="debug-option">
-							<input id="debug-blocked-polygons" type="checkbox">
-							<span>Show blocked polygons</span>
-						</label>
-					</div>
-				</div>
-			</div>
-			<p id="help" class="help"></p>
+			<hr class="panel-divider">
 			<div id="panel-content" class="panel-content">
 				<section class="map-selector">
-					<h2 data-i18n="mission">Mission</h2>
-					<select id="map-select" aria-label="Mission" data-i18n-aria-label="mission" data-i18n-title="tooltipSelectMission"></select>
+					<h2 data-i18n="map">Map</h2>
+					<select id="map-select" aria-label="Map" data-i18n-aria-label="map" data-i18n-title="tooltipSelectMap"></select>
 				</section>
 				<section class="filters">
 					<h2 data-i18n="filters">Filters</h2>
@@ -55,14 +46,34 @@
 				</section>
 			</div>
 		</section>
-		<div id="data-updated" class="data-updated" hidden></div>
-		<div id="rotation-control" class="rotation-control" role="application" aria-label="Rotate view" data-i18n-aria-label="rotateView" data-i18n-title="rotateView">
-			<div class="rotation-control-base">
-				<div id="rotation-control-handle" class="rotation-control-handle">
-					<i data-lucide="rotate-3d"></i>
+		<dialog id="about-dialog" class="about-dialog" aria-labelledby="about-title">
+			<div class="about-fixed">
+				<header class="about-header">
+					<h2 id="about-title" data-i18n="appTitle">Warhammer 40,000: Darktide - Interactive Maps</h2>
+					<button id="about-close" class="icon-button" type="button" data-i18n-aria-label="dismiss" data-i18n-title="dismiss"><i data-lucide="x"></i></button>
+				</header>
+				<div class="about-author">
+					<a href="https://deluxghost.me/" target="_blank" rel="noopener noreferrer">deluxghost</a>
+					<div class="debug-root">
+						<button id="debug-toggle" class="icon-button" type="button" aria-label="Debug" title="Debug" aria-expanded="false" aria-controls="debug-panel">
+							<i data-lucide="bug"></i>
+						</button>
+						<div id="debug-panel" class="debug-panel" hidden>
+							<label class="debug-option">
+								<input id="debug-terrain-clipping" type="checkbox">
+								<span>Show terrain clipping</span>
+							</label>
+						</div>
+					</div>
 				</div>
 			</div>
-		</div>
+			<div class="about-body">
+				<p data-i18n-html="aboutText">Inspired by <a href="https://github.com/funkthemonk" target="_blank" rel="noopener noreferrer">funkthemonk</a>'s navigation mesh experiments.</p>
+				<h3 data-i18n="changelog">Changelog</h3>
+				<div id="changelog-entries"></div>
+			</div>
+		</dialog>
+		<div id="data-updated" class="data-updated" hidden></div>
 		<div id="floor-control" class="floor-control" hidden></div>
 		<div id="loading-overlay" class="loading-overlay" role="status" aria-live="polite" hidden></div>
 		<div id="marker-popup" class="marker-popup" hidden>
@@ -76,10 +87,7 @@
 			<p id="marker-popup-description"></p>
 		</div>
 		<div id="marker-tooltip" class="marker-tooltip" hidden></div>
-		<svg id="auxiliary-arrow" class="auxiliary-arrow">
-			<path id="auxiliary-arrow-arc-outline" class="auxiliary-arrow-outline"></path>
-			<path id="auxiliary-arrow-arc" class="auxiliary-arrow-line"></path>
-		</svg>
+		<canvas id="auxiliary-arrow" class="auxiliary-arrow" aria-hidden="true"></canvas>
 		<div id="notifications" class="notifications" aria-live="polite" aria-atomic="false"></div>
 		<script type="module" src="./app.js"></script>
 	</body>

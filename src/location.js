@@ -13,10 +13,17 @@ export function tryParsePositionParameter(value) {
 		return null;
 	}
 
-	const normalized = text.replace(/^\[/, "").replace(/\]$/, "");
-	const parts = normalized.split(",").map((part) => Number(part.trim()));
+	if (text.startsWith("[") !== text.endsWith("]")) {
+		return null;
+	}
+	const normalized = text.startsWith("[") ? text.slice(1, -1) : text;
+	const components = normalized.split(",").map((part) => part.trim());
+	if (components.length !== POSITION_COMPONENTS || components.some((part) => part === "")) {
+		return null;
+	}
+	const parts = components.map(Number);
 
-	if (parts.length !== POSITION_COMPONENTS || !parts.every(Number.isFinite)) {
+	if (!parts.every(Number.isFinite)) {
 		return null;
 	}
 

@@ -1,3 +1,5 @@
+import markerConfig from "../config/markers.json";
+
 export const APP_CONFIG = {
 	ui: {
 		mobileMediaQuery: "(max-width: 640px)",
@@ -24,10 +26,6 @@ export const APP_CONFIG = {
 			minWorldSize: 1,
 		},
 		controls: {
-			dragMode: "pan",
-			joystickOrbitDegreesPerFrame: 1.2,
-			joystickPitchDegreesPerFrame: 0.8,
-			touchRotate: false,
 			orbitAxis: "Z",
 			orthographic: true,
 			rotationAnchor: {
@@ -90,7 +88,7 @@ export const APP_CONFIG = {
 					shininess: 8,
 					specularColor: [12, 12, 12],
 				},
-				blockedEdgesMaterial: {
+				terrainClipMaterial: {
 					ambient: 0.9,
 					diffuse: 0.1,
 					shininess: 4,
@@ -118,7 +116,7 @@ export const APP_CONFIG = {
 				arrowsColor: [255, 61, 41, 255],
 				startColor: [86, 255, 131, 255],
 			},
-			blockedEdges: {
+			terrainClip: {
 				fillColor: [255, 0, 0, 70],
 				outlineColor: [255, 0, 0, 235],
 				outlineWidth: 0.45,
@@ -135,56 +133,24 @@ export const APP_CONFIG = {
 				arcMaxTiltDegrees: 35,
 				arcWidth: 3,
 				arcOutlineWidth: 2.6,
+				arcPixelTolerance: 0.25,
 				arrowPadding: 7,
 				arrowHeadLength: 14,
 				arrowHeadWidth: 10,
 				auxiliaryPinScale: 0.65,
 				auxiliaryPinStrokeWidth: 1.9,
 				tooltipOffset: [7, 0],
+				tooltipLinePadding: 4,
+				tooltipMaxWidth: 280,
+				tooltipMaxCount: 6,
+				tooltipViewportPadding: 8,
 			},
 			pins: {
 				iconWidth: 28,
 				iconHeight: 36,
 				iconTextureScale: 3,
 				tooltipOffset: [18, -23],
-				categories: {
-					chest: {
-						labelKey: "markerChest",
-						color: [244, 190, 76, 245],
-					},
-					health_station: {
-						labelKey: "markerHealthStation",
-						color: [96, 226, 132, 245],
-					},
-					respawn_point: {
-						labelKey: "markerRespawnPoint",
-						color: [92, 190, 255, 245],
-					},
-					supply_spawn: {
-						labelKey: "markerSupplySpawn",
-						color: [189, 163, 132, 245],
-					},
-					scripture_spawn: {
-						labelKey: "markerScriptureSpawn",
-						color: [147, 188, 132, 245],
-					},
-					grimoire_spawn: {
-						labelKey: "markerGrimoireSpawn",
-						color: [154, 132, 188, 245],
-					},
-					boss_spawn: {
-						labelKey: "markerBossSpawn",
-						color: [255, 92, 75, 245],
-					},
-					daemonhost: {
-						labelKey: "markerDaemonhostSpawn",
-						color: [210, 86, 255, 245],
-					},
-					havoc_boss_spawn: {
-						labelKey: "markerHavocBossSpawn",
-						color: [255, 128, 96, 245],
-					},
-				},
+				categories: markerConfig.categories,
 			},
 		},
 	},

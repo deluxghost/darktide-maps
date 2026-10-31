@@ -6,8 +6,6 @@
     "build": "vite build",
     "dev": "vite",
     "preview": "npm run build && wrangler dev",
-    "build:maps": "node ./scripts/preprocess/index.mjs",
-    "verify:floors": "node ./scripts/verify/floors.mjs",
     "deploy": "npm run build && wrangler deploy"
   },
   "dependencies": {
@@ -18,12 +16,11 @@
     "@luma.gl/engine": "9.1.9",
     "@luma.gl/shadertools": "9.1.9",
     "@luma.gl/webgl": "9.1.9",
-    "earcut": "^3.0.2",
-    "lucide": "1.17.0",
-    "polygon-clipping": "^0.15.7"
+    "lucide": "1.17.0"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.39.2",
+    "luaparse": "0.3.1",
     "three": "0.180.0",
     "three-mesh-bvh": "0.9.1",
     "vite": "7.3.5",

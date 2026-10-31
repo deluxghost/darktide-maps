@@ -1,9 +1,0 @@
-{
-	"defaults": {
-		"havoc_boss_spawn": {
-			"descriptionKey": "markerHavocBossSpawnDescription"
-		}
-	},
-	"manual": {},
-	"overrides": {}
-}

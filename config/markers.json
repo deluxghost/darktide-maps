@@ -1,0 +1,364 @@
+{
+  "groups": [
+    {
+      "labelKey": "filterGroupMission",
+      "items": [
+        "main_path",
+        "objective",
+        "luggable",
+        "interaction"
+      ]
+    },
+    {
+      "labelKey": "filterGroupTeam",
+      "items": [
+        "health_station",
+        "respawn_point"
+      ]
+    },
+    {
+      "labelKey": "filterGroupEnemies",
+      "items": [
+        "boss_spawn",
+        "daemonhost",
+        "havoc_boss_spawn"
+      ]
+    },
+    {
+      "labelKey": "filterGroupResources",
+      "items": [
+        "chest",
+        "supply_spawn"
+      ]
+    },
+    {
+      "labelKey": "filterGroupCollectibles",
+      "items": [
+        "scripture_spawn",
+        "grimoire_spawn",
+        "martyr_skull",
+        "heretic_idol"
+      ]
+    },
+    {
+      "labelKey": "filterGroupOther",
+      "items": [
+        "explosive",
+        "location"
+      ]
+    }
+  ],
+  "defaultHidden": [
+    "chest",
+    "supply_spawn",
+    "scripture_spawn",
+    "grimoire_spawn",
+    "martyr_skull",
+    "heretic_idol",
+    "explosive"
+  ],
+  "categories": {
+    "interaction": {
+      "labelKey": "markerInteraction",
+      "color": [
+        64,
+        222,
+        210,
+        245
+      ]
+    },
+    "luggable": {
+      "labelKey": "markerLuggable",
+      "color": [
+        64,
+        222,
+        210,
+        245
+      ]
+    },
+    "objective": {
+      "labelKey": "markerObjective",
+      "color": [
+        255,
+        232,
+        110,
+        245
+      ]
+    },
+    "location": {
+      "labelKey": "markerLocation",
+      "color": [
+        228,
+        232,
+        240,
+        245
+      ]
+    },
+    "heretic_idol": {
+      "labelKey": "markerHereticIdol",
+      "color": [
+        176,
+        218,
+        48,
+        245
+      ]
+    },
+    "martyr_skull": {
+      "labelKey": "markerMartyrSkull",
+      "color": [
+        235,
+        65,
+        138,
+        245
+      ]
+    },
+    "explosive": {
+      "labelKey": "markerExplosiveSpawn",
+      "color": [
+        240,
+        133,
+        34,
+        245
+      ]
+    },
+    "chest": {
+      "labelKey": "markerChest",
+      "color": [
+        255,
+        191,
+        71,
+        245
+      ]
+    },
+    "health_station": {
+      "labelKey": "markerHealthStation",
+      "color": [
+        88,
+        227,
+        131,
+        245
+      ]
+    },
+    "respawn_point": {
+      "labelKey": "markerRespawnPoint",
+      "color": [
+        80,
+        176,
+        255,
+        245
+      ]
+    },
+    "supply_spawn": {
+      "labelKey": "markerSupplySpawn",
+      "color": [
+        188,
+        197,
+        190,
+        245
+      ]
+    },
+    "scripture_spawn": {
+      "labelKey": "markerScriptureSpawn",
+      "color": [
+        120,
+        190,
+        112,
+        245
+      ]
+    },
+    "grimoire_spawn": {
+      "labelKey": "markerGrimoireSpawn",
+      "color": [
+        152,
+        160,
+        255,
+        245
+      ]
+    },
+    "boss_spawn": {
+      "labelKey": "markerBossSpawn",
+      "color": [
+        255,
+        80,
+        72,
+        245
+      ]
+    },
+    "daemonhost": {
+      "labelKey": "markerDaemonhostSpawn",
+      "color": [
+        196,
+        95,
+        246,
+        245
+      ]
+    },
+    "havoc_boss_spawn": {
+      "labelKey": "markerHavocBossSpawn",
+      "color": [
+        255,
+        179,
+        143,
+        245
+      ]
+    }
+  },
+  "families": {
+    "interactions": {
+      "category": "interaction",
+      "nameKey": "markerInteraction"
+    },
+    "luggables": {
+      "category": "luggable",
+      "nameKey": "markerLuggable"
+    },
+    "objectives": {
+      "category": "objective",
+      "nameKey": "markerObjective"
+    },
+    "start_points": {
+      "category": "objective",
+      "nameKey": "markerStartPoint",
+      "mergeHorizontalDistance": 8,
+      "mergeVerticalDistance": 4,
+      "mergeBy": "spawn_identifier"
+    },
+    "extraction_points": {
+      "category": "objective",
+      "nameKey": "markerExtractionPoint"
+    },
+    "locations": {
+      "category": "location",
+      "nameKey": "markerLocation"
+    },
+    "heretic_idols": {
+      "category": "heretic_idol",
+      "nameKey": "markerHereticIdol"
+    },
+    "martyr_skulls": {
+      "category": "martyr_skull",
+      "nameKey": "markerMartyrSkull"
+    },
+    "fixed_boss_spawns": {
+      "category": "boss_spawn",
+      "nameKey": "markerTaskBossSpawn"
+    },
+    "explosives": {
+      "category": "explosive",
+      "nameKey": "markerExplosiveSpawn"
+    },
+    "chests": {
+      "category": "chest",
+      "nameKey": "markerChest",
+      "stackNameKey": "markerChestStack",
+      "mergeHorizontalDistance": 2,
+      "mergeVerticalDistance": 1,
+      "sourceKey": "unit_id"
+    },
+    "health_stations": {
+      "category": "health_station",
+      "nameKey": "markerHealthStation",
+      "auxiliary": {
+        "category": "luggable",
+        "direction": "to_parent"
+      }
+    },
+    "respawn_points": {
+      "category": "respawn_point",
+      "nameKey": "markerRespawnPoint"
+    },
+    "supply_spawns": {
+      "source": "pickups",
+      "category": "supply_spawn",
+      "nameKey": "markerSupplySpawn",
+      "distributions": [
+        "primary",
+        "secondary",
+        "mid_event",
+        "end_event",
+        "reward",
+        "bonus_reward",
+        "guaranteed",
+        "manual",
+        "flow"
+      ],
+      "pickupGroups": [
+        "ammo",
+        "ability",
+        "forge_material",
+        "pocketable",
+        "deployable",
+        "timed"
+      ]
+    },
+    "scripture_spawns": {
+      "source": "pickups",
+      "category": "scripture_spawn",
+      "nameKey": "markerScriptureSpawn",
+      "pickupType": "tome"
+    },
+    "grimoire_spawns": {
+      "source": "pickups",
+      "category": "grimoire_spawn",
+      "nameKey": "markerGrimoireSpawn",
+      "pickupType": "grimoire"
+    },
+    "boss_spawns": {
+      "category": "boss_spawn",
+      "nameKey": "markerTaskBossSpawn",
+      "routeTriggers": true
+    },
+    "daemonhosts": {
+      "category": "daemonhost",
+      "nameKey": "markerDaemonhostSpawn"
+    },
+    "havoc_boss_spawns": {
+      "category": "havoc_boss_spawn",
+      "nameKey": "markerHavocBossSpawn",
+      "descriptionKey": "markerHavocBossSpawnDescription",
+      "routeTriggers": true
+    }
+  },
+  "extraction": {
+    "horizontalDistance": 3,
+    "verticalDistance": 3
+  },
+  "explosiveShapes": {
+    "99fad0d64c2697b0": {
+      "nameKey": "markerExplosiveBarrel"
+    },
+    "45eca359f148a037": {
+      "nameKey": "markerExplosiveCanister"
+    },
+    "f95e1c91bf867a9b": {
+      "nameKey": "markerExplosiveSphere"
+    },
+    "189c7a25a86a6764": {
+      "nameKey": "markerExplosivePipe"
+    }
+  },
+  "sourcePolicies": {
+    "start_points": {
+      "excludedGameModes": [
+        "hub",
+        "shooting_range"
+      ]
+    },
+    "objectives": {
+      "excludedGameModes": [
+        "shooting_range"
+      ]
+    }
+  },
+  "omittedFamilies": {
+    "km_enforcer_twins": [
+      "boss_spawns",
+      "daemonhosts",
+      "scripture_spawns",
+      "grimoire_spawns"
+    ]
+  },
+  "scriptedBossSources": [
+    "scripts/managers/mutator/mutators/mutator_toxic_gas_twins"
+  ]
+}
