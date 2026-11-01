@@ -104,7 +104,7 @@
       ]
     },
     "martyr_skull": {
-      "labelKey": "markerMartyrSkull",
+      "labelKey": "loc_pickup_collectible",
       "color": [
         235,
         65,
@@ -122,7 +122,7 @@
       ]
     },
     "chest": {
-      "labelKey": "markerChest",
+      "labelKey": "loc_chest",
       "color": [
         255,
         191,
@@ -131,7 +131,7 @@
       ]
     },
     "health_station": {
-      "labelKey": "markerHealthStation",
+      "labelKey": "loc_health_station",
       "color": [
         88,
         227,
@@ -242,7 +242,7 @@
     },
     "chests": {
       "category": "chest",
-      "stackNameKey": "markerChestStack",
+      "showCount": true,
       "mergeHorizontalDistance": 2,
       "mergeVerticalDistance": 1,
       "sourceKey": "unit_id"

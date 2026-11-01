@@ -9,10 +9,10 @@ import {validateMarkerConfiguration} from "./marker_overrides.mjs";
 
 const [work, outputDirectory] = process.argv.slice(2);
 if (!work || !outputDirectory) throw new Error("Missing internal map build directories");
-validateMarkerConfiguration();
 verifyFloorDependencies();
 const plan = await readJson(path.join(work, "build.json"));
 if (plan.format !== "static-map-build-v2") throw new Error("Invalid map build plan");
+validateMarkerConfiguration(plan.missions.map((mission) => mission.id), plan.markerLabels);
 await mkdir(outputDirectory, {recursive: true});
 const maps = [], reports = [];
 const gameText = createGameTextRegistry();
@@ -33,6 +33,7 @@ await writeFile(path.join(work, "geometry_report.json"), `${JSON.stringify(repor
 const manifest = gameText.pack(compactObject({
 	schemaVersion: 1,
 	gameText: "./data/game-text.json",
+	markerLabels: plan.markerLabels,
 	dataUpdatedAtUnix: Math.floor(Date.now() / 1000),
 	zones: plan.zones,
 	source: plan.source,

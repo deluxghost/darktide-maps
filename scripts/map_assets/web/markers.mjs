@@ -92,16 +92,6 @@ function clusterPins(pins, horizontalDistance, verticalDistance) {
 }
 
 function markerName(group, family) {
-	if (group.length > 1 && family.stackName) {
-		return {
-			...family.stackName,
-			values: {
-				...(family.stackName.values ?? {}),
-				count: group.length,
-			},
-		};
-	}
-
 	if (group[0].name_key) {
 		return {key: group[0].name_key};
 	}
@@ -192,6 +182,7 @@ function buildMarkerGroup(missionId, group, family) {
 		id,
 		category: family.category,
 		name: markerName(group, family),
+		count: family.showCount && group.length > 1 ? group.length : undefined,
 		description,
 		position: centerPosition(group),
 		auxiliaryMarkers: buildAuxiliaryMarkers(missionId, family.category, sourceKeys, auxiliaryMarkers),
@@ -231,7 +222,6 @@ function markerFamilies(missionId) {
 			id: markerId(config.category),
 			sourceKey: config.sourceKey === "unit_id" ? chestSourceKey : sourceKey,
 			defaultName: keyedValue(config.nameKey),
-			stackName: keyedValue(config.stackNameKey),
 			mergeKey: config.mergeBy ? (pin) => pin.source[config.mergeBy] : undefined,
 			selectPins: config.distributions ? (pin) => config.distributions.includes(pin.source.distribution_type)
 				&& (pin.spawnable_pickups === "all" || requireArray(pin.pickup_groups, "pickup groups").some((group) => config.pickupGroups.includes(group)))

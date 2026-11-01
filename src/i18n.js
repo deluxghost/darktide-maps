@@ -1,45 +1,17 @@
 import translations from "./translations.json";
+import { resolveLanguage } from "./languages.js";
 
-const queryLanguage = new URLSearchParams(window.location.search).get("l")?.toLowerCase();
-const browserLanguages = (navigator.languages?.length ? navigator.languages : [navigator.language])
-	.map((locale) => locale.toLowerCase());
-const languageAliases = new Map([
-	["zh", "zh-cn"],
-]);
+const queryLanguage = new URLSearchParams(window.location.search).get("l");
+const browserLanguages = navigator.languages?.length ? navigator.languages : [navigator.language];
 
-function expandLocale(locale) {
-	const baseLocale = locale.split("-")[0];
-	const aliasedLocale = languageAliases.get(locale) ?? languageAliases.get(baseLocale);
-
-	return [
-		locale,
-		aliasedLocale,
-		baseLocale,
-	].filter(Boolean);
-}
-
-function selectLocale(availableLocales, fallbackLocale = "en") {
-	const available = new Set(availableLocales.map((locale) => locale.toLowerCase()));
-	const preferredLocales = queryLanguage
-		? [queryLanguage, ...browserLanguages]
-		: browserLanguages;
-
-	for (const locale of preferredLocales) {
-		for (const candidate of expandLocale(locale)) {
-			if (available.has(candidate)) {
-				return candidate;
-			}
-		}
-	}
-
-	return fallbackLocale;
-}
-
-export const language = selectLocale(Object.keys(translations));
+export const language = resolveLanguage("auto", queryLanguage, browserLanguages);
 let gameText = new Map();
 
-export async function loadGameText(url) {
+export async function loadGameText(url, markerLabels) {
 	if (typeof url !== "string" || !url) throw new Error("Missing game text resource");
+	if (!markerLabels || typeof markerLabels !== "object" || Array.isArray(markerLabels)) {
+		throw new Error("Missing game marker label definitions");
+	}
 	const response = await fetch(url);
 	if (!response.ok) throw new Error(t("errorLoadingGameText", {status: response.status}));
 	const entries = await response.json();
@@ -48,12 +20,24 @@ export async function loadGameText(url) {
 		if (!value || typeof value.en !== "string" || Object.values(value).some(text => typeof text !== "string")) {
 			throw new Error(`Invalid game text: ${key}`);
 		}
-		selected.set(key, value[selectLocale(Object.keys(value))] ?? value.en);
+		selected.set(key, value);
+	}
+	for (const [key, reference] of Object.entries(markerLabels)) {
+		if (!key.startsWith("loc_") || selected.has(key) || !selected.has(reference?.gameText)) {
+			throw new Error(`Invalid game marker label: ${key}`);
+		}
+		selected.set(key, selected.get(reference.gameText));
 	}
 	gameText = selected;
 }
 
-export function localizeValue(value, fallback) {
+function gameTextValue(key, locale) {
+	if (!gameText.has(key)) throw new Error(`Unknown game text: ${key}`);
+	const text = gameText.get(key);
+	return text[locale] ?? text.en;
+}
+
+export function localizeValue(value, fallback, locale = language) {
 	if (typeof value === "string") {
 		return value;
 	}
@@ -63,27 +47,27 @@ export function localizeValue(value, fallback) {
 	}
 
 	if (value.key) {
-		return t(value.key, value.values ?? {});
+		return t(value.key, value.values ?? {}, locale);
 	}
 	if (Object.hasOwn(value, "gameText")) {
-		if (!gameText.has(value.gameText)) throw new Error(`Unknown game text: ${value.gameText}`);
-		return gameText.get(value.gameText);
+		return gameTextValue(value.gameText, locale);
 	}
-
-	const locale = selectLocale(Object.keys(value));
 
 	return value[locale]
 		?? value.en
 		?? fallback;
 }
 
-export function t(key, values = {}) {
-	const template = translations[language][key] ?? translations.en[key] ?? key;
+export function t(key, values = {}, locale = language) {
+	const template = key.startsWith("loc_")
+		? gameTextValue(key, locale)
+		: translations[locale][key] ?? translations.en[key] ?? key;
 
 	return template.replace(/\{([^}]+)\}/g, (_, name) => values[name] ?? "");
 }
 
 export function applyTranslations(root = document) {
+	document.documentElement.lang = new Intl.Locale(language).baseName;
 	for (const element of root.querySelectorAll("[data-i18n]")) {
 		element.textContent = t(element.dataset.i18n);
 	}

@@ -1,10 +1,10 @@
 import { language, localizeValue, t } from "../i18n.js";
 import { APP_CONFIG } from "../config.js";
 
-const nameOrder = new Intl.Collator(language, {numeric: true, sensitivity: "base"});
+const nameOrder = new Intl.Collator("en", {numeric: true, sensitivity: "base"});
 
-export function mapTitle(map) {
-	return localizeValue(map.title, map.id);
+export function mapTitle(map, locale = language) {
+	return localizeValue(map.title, map.id, locale);
 }
 
 function appendMapOption(parent, map) {
@@ -24,6 +24,7 @@ function zoneTitle(zoneId, title) {
 }
 
 export function writeMapOptions(mapSelect, manifest) {
+	mapSelect.replaceChildren();
 	const zones = manifest.zones ?? {};
 	const groupedMaps = new Map();
 
@@ -40,8 +41,9 @@ export function writeMapOptions(mapSelect, manifest) {
 
 	const zoneIds = [...groupedMaps.keys()]
 		.filter((zone) => !APP_CONFIG.ui.trailingZoneIds.includes(zone))
-		.sort((left, right) => nameOrder.compare(zoneTitle(left, zones[left]), zoneTitle(right, zones[right]))
-			|| left.localeCompare(right));
+		.sort((left, right) => nameOrder.compare(
+			localizeValue(zones[left], left, "en"), localizeValue(zones[right], right, "en"),
+		) || nameOrder.compare(left, right));
 
 	for (const zone of APP_CONFIG.ui.trailingZoneIds) {
 		if (groupedMaps.has(zone)) {
@@ -59,8 +61,8 @@ export function writeMapOptions(mapSelect, manifest) {
 		const group = document.createElement("optgroup");
 
 		group.label = zoneTitle(zone, zones[zone]);
-		for (const map of [...maps].sort((left, right) => nameOrder.compare(mapTitle(left), mapTitle(right))
-			|| left.id.localeCompare(right.id))) {
+		for (const map of [...maps].sort((left, right) => nameOrder.compare(mapTitle(left, "en"), mapTitle(right, "en"))
+			|| nameOrder.compare(left.id, right.id))) {
 			appendMapOption(group, map);
 		}
 		mapSelect.append(group);

@@ -3,6 +3,9 @@ import markerConfig from "../../../config/markers.json" with {type: "json"};
 import overrides from "../../../config/marker-overrides.json" with {type: "json"};
 import translations from "../../../src/translations.json" with {type: "json"};
 
+const gameLabelKeys = new Set(Object.values(markerConfig.categories)
+	.map((category) => category.labelKey).filter((key) => key.startsWith("loc_")));
+
 function object(value, label) {
 	assert.ok(value && typeof value === "object" && !Array.isArray(value), `${label}: expected an object`);
 }
@@ -14,6 +17,7 @@ function fields(value, allowed, label) {
 
 function textKey(key) {
 	assert.ok(typeof key === "string" && key.length > 0, "Invalid translation key");
+	if (gameLabelKeys.has(key)) return;
 	for (const [locale, values] of Object.entries(translations)) {
 		assert.equal(typeof values[key], "string", `Missing ${locale} translation: ${key}`);
 	}
@@ -49,9 +53,10 @@ function category(value) {
 }
 
 function patch(value, label, auxiliary = false) {
-	fields(value, ["name", "category", "position", ...(auxiliary ? ["direction"] : ["description", "auxiliaryMarkers"])], label);
+	fields(value, ["name", "category", "position", ...(auxiliary ? ["direction"] : ["description", "auxiliaryMarkers", "count"])], label);
 	for (const key of ["name", "description"]) if (Object.hasOwn(value, key)) text(value[key], `${label}.${key}`);
 	if (Object.hasOwn(value, "category")) category(value.category);
+	if (Object.hasOwn(value, "count")) assert.ok(Number.isInteger(value.count) && value.count > 1, `${label}: invalid count`);
 	if (Object.hasOwn(value, "position")) {
 		assert.ok(Array.isArray(value.position) && value.position.length === 3 && value.position.every(Number.isFinite), `${label}: invalid position`);
 	}
@@ -99,7 +104,9 @@ function mapPolicy(mission, policy) {
 	}
 }
 
-export function validateMarkerConfiguration(missionIds) {
+export function validateMarkerConfiguration(missionIds, gameLabels) {
+	object(gameLabels, "game marker labels");
+	assert.deepEqual(Object.keys(gameLabels).sort(), [...gameLabelKeys].sort(), "Game marker label keys differ from configuration");
 	fields(markerConfig, ["groups", "defaultHidden", "categories", "families", "extraction", "explosiveShapes",
 		"sourcePolicies", "omittedFamilies", "scriptedBossSources"], "marker configuration");
 	const filterIds = new Set(["main_path", ...Object.keys(markerConfig.categories)]);
@@ -120,12 +127,12 @@ export function validateMarkerConfiguration(missionIds) {
 			&& value.color.every((channel) => Number.isInteger(channel) && channel >= 0 && channel <= 255), `${id}: invalid RGBA color`);
 	}
 	for (const [id, value] of Object.entries(markerConfig.families)) {
-		fields(value, ["category", "source", "nameKey", "descriptionKey", "stackNameKey", "mergeHorizontalDistance", "mergeVerticalDistance",
+		fields(value, ["category", "source", "nameKey", "descriptionKey", "showCount", "mergeHorizontalDistance", "mergeVerticalDistance",
 			"mergeBy", "sourceKey", "distributions", "pickupGroups", "pickupType", "auxiliary"], id);
 		category(value.category);
 		if (Object.hasOwn(value, "nameKey")) textKey(value.nameKey);
 		if (Object.hasOwn(value, "descriptionKey")) textKey(value.descriptionKey);
-		if (Object.hasOwn(value, "stackNameKey")) textKey(value.stackNameKey);
+		if (Object.hasOwn(value, "showCount")) assert.equal(typeof value.showCount, "boolean", `${id}: showCount must be a boolean`);
 		for (const key of ["source", "mergeBy", "pickupType"]) if (Object.hasOwn(value, key)) assert.ok(typeof value[key] === "string" && value[key].length > 0, `${id}.${key}: expected a nonempty string`);
 		if (Object.hasOwn(value, "sourceKey")) assert.equal(value.sourceKey, "unit_id", `${id}: unsupported sourceKey`);
 		for (const key of ["mergeHorizontalDistance", "mergeVerticalDistance"]) if (Object.hasOwn(value, key)) assert.ok(Number.isFinite(value[key]) && value[key] >= 0, `${id}.${key}: invalid distance`);

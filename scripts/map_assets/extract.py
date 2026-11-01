@@ -54,6 +54,9 @@ def extract(args):
             raise ValueError(f"Unknown or procedural missions: {sorted(unknown)}")
         fixed = {name: data for name, data in fixed.items() if name in requested}
     localization = assets.extract("strings", ["content/localization/ui"])
+    label_keys = sorted({category["labelKey"] for category in configuration("markers")["categories"].values()
+                         if category["labelKey"].startswith("loc_")})
+    marker_labels = read_strings(localization[murmur64("content/localization/ui")], label_keys)
     metadata, zones = map_metadata(assets, Path(args.decompiler).resolve(), fixed,
                                  localization[murmur64("content/localization/ui")])
     packages = assets.extract("package", {mission["level"] for mission in fixed.values()})
@@ -167,7 +170,8 @@ def extract(args):
         report["marker_candidates"] = {family: len(pins) for family, pins in markers.items()}
         reports.append(report)
         print(f"{name}: {report.get('navigation', report.get('navigation_error'))}, {len(scene)} scene objects", flush=True)
-    plan = {"format": "static-map-build-v2", "source": identity, "zones": zones, "missions": reports, "excluded": excluded, "collision": collision_stats,
+    plan = {"format": "static-map-build-v2", "source": identity, "zones": zones, "markerLabels": marker_labels,
+            "missions": reports, "excluded": excluded, "collision": collision_stats,
             "havocTriggerDistance": settings["havoc_distance"], "complete": False,
             "extractSeconds": time.monotonic() - started}
     write_json(output / "build.json", plan)

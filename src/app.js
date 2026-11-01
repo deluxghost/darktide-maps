@@ -152,7 +152,8 @@ function categoryTitle(category) {
 }
 
 function markerName(marker) {
-	return localizeValue(marker.name, categoryTitle(marker.category));
+	const name = localizeValue(marker.name, categoryTitle(marker.category));
+	return marker.count > 1 ? `${name} ×${marker.count}` : name;
 }
 
 const mapRenderer = createMapRenderer(mapElement, showError);
@@ -455,7 +456,7 @@ async function initialize() {
 		throw new Error(t("errorNoMaps"));
 	}
 
-	await loadGameText(manifest.gameText);
+	await loadGameText(manifest.gameText, manifest.markerLabels);
 	writeMapOptions(mapSelect, manifest);
 	writeDataUpdatedAt(manifest.dataUpdatedAtUnix);
 

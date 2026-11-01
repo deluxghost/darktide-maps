@@ -4,19 +4,59 @@
     "items": [
       {
         "en": "Added the Spillway map.",
-        "zh-cn": "添加泄洪道地图。"
+        "zh-cn": "添加泄洪道地图。",
+        "de": "Karte „Überlauf“ hinzugefügt.",
+        "es": "Añadido el mapa Aliviadero.",
+        "fr": "Ajout de la carte Déversoir.",
+        "it": "Aggiunta la mappa Sfioratore.",
+        "ja": "放水路のマップを追加。",
+        "ko": "스필웨이 지도 추가.",
+        "pl": "Dodano mapę Przelew.",
+        "pt-br": "Adicionado o mapa Vertedouro.",
+        "ru": "Добавлена карта «Водоотвод».",
+        "zh-tw": "新增溢洪道地圖。"
       },
       {
         "en": "Added Objective, Luggable, Location, Interaction (on the Mourningstar and in the Psykhanium), Heretical Idol Spawn, Martyr's Skull, and Explosive Spawn markers.",
-        "zh-cn": "添加任务点、搬运物、地点、哀星号与灵能室交互点、异端雕像生成点、殉道者之颅和爆炸物生成点标记。"
+        "zh-cn": "添加任务点、搬运物、地点、哀星号与灵能室交互点、异端雕像生成点、殉道者头骨和爆炸物生成点标记。",
+        "de": "Markierungen für Missionsziele, tragbare Objekte, Orte, Interaktionspunkte auf der Mourningstar und im Psykhanium, Spawnpunkte ketzerischer Götzen, Schädel des Märtyrers und Sprengobjekt-Spawnpunkte hinzugefügt.",
+        "es": "Añadidos marcadores de objetivos, objetos transportables, lugares, puntos de interacción de la Mourningstar y el Psykhanium, apariciones de ídolos herejes, cráneos de mártir y apariciones de explosivos.",
+        "fr": "Ajout de marqueurs pour les objectifs, objets à transporter, lieux, points d’interaction du Mourningstar et du Psykhanium, apparitions d’idoles hérétiques, crânes du martyr et apparitions d’explosifs.",
+        "it": "Aggiunti segnaposti per obiettivi, oggetti trasportabili, luoghi, punti d’interazione sulla Mourningstar e nello Psykhanium, comparse di idoli eretici, teschi del martire e comparse di esplosivi.",
+        "ja": "ミッション目標、運搬アイテム、エリア、モーニングスターとサイカニウムのインタラクト地点、異端の偶像の出現地点、殉教者の髑髏、爆発物の出現地点のマーカーを追加。",
+        "ko": "임무 목표, 운반물, 장소, 모어닝스타 및 사이카니움 상호작용 지점, 이교도 우상 생성 지점, 순교자의 두개골, 폭발물 생성 지점 마커 추가.",
+        "pl": "Dodano znaczniki celów misji, przedmiotów do przeniesienia, miejsc, punktów interakcji na Mourningstar i w Psikhanium, miejsc pojawienia się heretyckich bożków, czaszek męczenników i miejsc pojawienia się ładunków wybuchowych.",
+        "pt-br": "Adicionados marcadores de objetivos, objetos transportáveis, locais, pontos de interação na Mourningstar e no Psykhanium, aparecimentos de Ídolos Hereges, Caveiras do Mártir e aparecimentos de explosivos.",
+        "ru": "Добавлены метки целей миссии, переносимых предметов, локаций, точек взаимодействия на «Моунингстар» и в Псайканиуме, мест появления еретических идолов, черепов мучеников и мест появления взрывоопасных объектов.",
+        "zh-tw": "新增任務點、搬運物、地點、哀星號與靈能室互動點、異端神像生成點、殉道者之顱及爆炸物生成點標記。"
       },
       {
-        "en": "Added power cell locations associated with Medical Stations.",
-        "zh-cn": "添加医疗站关联的能量电池位置。"
+        "en": "Added power cell locations associated with Medicae Stations.",
+        "zh-cn": "添加医疗站关联的能量电池位置。",
+        "de": "Positionen der zu Medicae-Stationen gehörenden Energiezellen hinzugefügt.",
+        "es": "Añadidas las ubicaciones de las células de energía de las estaciones médicas.",
+        "fr": "Ajout des emplacements des batteries associées aux stations médicales.",
+        "it": "Aggiunte le posizioni delle batterie associate alle stazioni medicae.",
+        "ja": "メディケアステーションに対応するパワーセルの位置を追加。",
+        "ko": "치료소에 연결된 배터리 위치 추가.",
+        "pl": "Dodano pozycje ogniw zasilania powiązanych z medstacjami.",
+        "pt-br": "Adicionadas as localizações das células de energia associadas às Estações de Remédios.",
+        "ru": "Добавлены позиции силовых элементов для медстанций.",
+        "zh-tw": "新增醫療站對應的能量電池位置。"
       },
       {
         "en": "Optimized marker rendering performance.",
-        "zh-cn": "优化标记渲染性能。"
+        "zh-cn": "优化标记渲染性能。",
+        "de": "Darstellungsleistung der Markierungen optimiert.",
+        "es": "Optimizado el rendimiento del renderizado de marcadores.",
+        "fr": "Optimisation des performances d’affichage des marqueurs.",
+        "it": "Ottimizzate le prestazioni di rendering dei segnaposti.",
+        "ja": "マーカー描画のパフォーマンスを改善。",
+        "ko": "마커 렌더링 성능 최적화.",
+        "pl": "Zoptymalizowano wydajność renderowania znaczników.",
+        "pt-br": "Otimizado o desempenho de renderização dos marcadores.",
+        "ru": "Оптимизирована отрисовка меток.",
+        "zh-tw": "最佳化標記繪製效能。"
       }
     ]
   },
@@ -25,7 +65,17 @@
     "items": [
       {
         "en": "Added map layers.",
-        "zh-cn": "添加地图图层。"
+        "zh-cn": "添加地图图层。",
+        "de": "Kartenebenen hinzugefügt.",
+        "es": "Añadidas las capas del mapa.",
+        "fr": "Ajout des couches de carte.",
+        "it": "Aggiunti i livelli della mappa.",
+        "ja": "マップのレイヤーを追加。",
+        "ko": "지도 레이어 추가.",
+        "pl": "Dodano warstwy mapy.",
+        "pt-br": "Adicionadas camadas ao mapa.",
+        "ru": "Добавлены слои карты.",
+        "zh-tw": "新增地圖圖層。"
       }
     ]
   },
@@ -33,8 +83,18 @@
     "date": "2026-06-11",
     "items": [
       {
-        "en": "Scripture Spawn and Grimoire Spawn markers can now be filtered separately.",
-        "zh-cn": "圣经生成点与魔法书生成点可分别筛选。"
+        "en": "Scriptures Spawn and Grimoire Spawn markers can now be filtered separately.",
+        "zh-cn": "圣经生成点与魔法书生成点可分别筛选。",
+        "de": "Schriften- und Grimoire-Fundorte lassen sich jetzt getrennt filtern.",
+        "es": "Las apariciones de escrituras y grimorios ahora se pueden filtrar por separado.",
+        "fr": "Les apparitions de textes sacrés et de grimoires peuvent désormais être filtrées séparément.",
+        "it": "Ora è possibile filtrare separatamente le comparse di scritture e grimori.",
+        "ja": "聖書と魔術書の出現地点を個別に絞り込み可能に。",
+        "ko": "경전과 그리모어 생성 지점을 개별적으로 필터링 가능.",
+        "pl": "Miejsca pojawienia się pism i grymuarów można teraz filtrować oddzielnie.",
+        "pt-br": "Agora é possível filtrar separadamente os aparecimentos de escrituras e grimórios.",
+        "ru": "Места появления писаний и гримуаров теперь можно фильтровать отдельно.",
+        "zh-tw": "聖書生成點與魔導書生成點可分別篩選。"
       }
     ]
   },
@@ -43,11 +103,31 @@
     "items": [
       {
         "en": "Added shareable links to maps, markers, and coordinates.",
-        "zh-cn": "支持分享地图、标记和坐标定位链接。"
+        "zh-cn": "支持分享地图、标记和坐标定位链接。",
+        "de": "Teilbare Links zu Karten, Markierungen und Koordinaten hinzugefügt.",
+        "es": "Añadidos enlaces para compartir mapas, marcadores y coordenadas.",
+        "fr": "Ajout de liens de partage vers les cartes, marqueurs et coordonnées.",
+        "it": "Aggiunti link condivisibili a mappe, segnaposti e coordinate.",
+        "ja": "マップ、マーカー、座標の共有リンクに対応。",
+        "ko": "지도, 마커, 좌표 공유 링크 추가.",
+        "pl": "Dodano linki do udostępniania map, znaczników i współrzędnych.",
+        "pt-br": "Adicionados links para compartilhar mapas, marcadores e coordenadas.",
+        "ru": "Добавлены ссылки для обмена картами, метками и координатами.",
+        "zh-tw": "支援分享地圖、標記與座標定位連結。"
       },
       {
         "en": "Improved obstacle detection accuracy.",
-        "zh-cn": "提高障碍物识别的准确性。"
+        "zh-cn": "提高障碍物识别的准确性。",
+        "de": "Genauigkeit der Hinderniserkennung verbessert.",
+        "es": "Mejorada la precisión de la detección de obstáculos.",
+        "fr": "Amélioration de la précision de détection des obstacles.",
+        "it": "Migliorata la precisione del rilevamento degli ostacoli.",
+        "ja": "障害物の検出精度を改善。",
+        "ko": "장애물 감지 정확도 개선.",
+        "pl": "Zwiększono dokładność wykrywania przeszkód.",
+        "pt-br": "Melhorada a precisão da detecção de obstáculos.",
+        "ru": "Повышена точность распознавания препятствий.",
+        "zh-tw": "提升障礙物辨識的準確度。"
       }
     ]
   },
@@ -56,7 +136,17 @@
     "items": [
       {
         "en": "Added Boss trigger point markers.",
-        "zh-cn": "添加 Boss 触发点标记。"
+        "zh-cn": "添加 Boss 触发点标记。",
+        "de": "Markierungen für Boss-Auslösepunkte hinzugefügt.",
+        "es": "Añadidos marcadores de puntos de activación de jefes.",
+        "fr": "Ajout de marqueurs pour les points de déclenchement des boss.",
+        "it": "Aggiunti segnaposti per i punti di attivazione dei boss.",
+        "ja": "ボスの出現トリガー地点のマーカーを追加。",
+        "ko": "보스 발동 지점 마커 추가.",
+        "pl": "Dodano znaczniki punktów aktywacji bossów.",
+        "pt-br": "Adicionados marcadores de pontos de ativação de chefes.",
+        "ru": "Добавлены метки точек активации боссов.",
+        "zh-tw": "新增 Boss 觸發點標記。"
       }
     ]
   },
@@ -64,8 +154,18 @@
     "date": "2026-06-03",
     "items": [
       {
-        "en": "Initial release. Includes Main Path, Supply Spawn, Medical Station, Respawn Point, Side Mission Spawn, and Boss Spawn markers.",
-        "zh-cn": "首次发布。包含主路径、补给生成点、医疗站、复活点、次要任务生成点、Boss 生成点标记。"
+        "en": "Initial release. Includes Main Path, Supply Spawn, Medicae Station, Respawn Point, Side Mission Spawn, and Boss Spawn markers.",
+        "zh-cn": "首次发布。包含主路径、补给生成点、医疗站、复活点、次要任务生成点、Boss 生成点标记。",
+        "de": "Erstveröffentlichung. Enthält Hauptrouten sowie Markierungen für Versorgungs-Spawnpunkte, Medicae-Stationen, Wiedereinstiegspunkte, Nebenmissions-Spawnpunkte und Boss-Spawnpunkte.",
+        "es": "Primera versión. Incluye la ruta principal y marcadores de apariciones de suministros, estaciones médicas, puntos de reaparición, apariciones de misiones secundarias y apariciones de jefes.",
+        "fr": "Première version. Comprend l’itinéraire principal et les marqueurs d’apparitions de ravitaillement, de stations médicales, de points de réapparition, d’apparitions de missions secondaires et d’apparitions de boss.",
+        "it": "Prima versione. Include il percorso principale e i segnaposti per comparse di rifornimenti, stazioni medicae, punti di rientro, comparse di missioni secondarie e comparse di boss.",
+        "ja": "初回リリース。メインルート、補給品の出現地点、メディケアステーション、リスポーン地点、サイドミッションの出現地点、ボスの出現地点のマーカーを収録。",
+        "ko": "첫 출시. 주 경로, 보급품 생성 지점, 치료소, 부활 지점, 보조 임무 생성 지점, 보스 생성 지점 마커 포함.",
+        "pl": "Pierwsze wydanie. Zawiera główną trasę oraz znaczniki miejsc pojawienia się zaopatrzenia, medstacji, punktów odrodzenia, miejsc pojawienia się misji pobocznych i bossów.",
+        "pt-br": "Primeira versão. Inclui a rota principal e marcadores de aparecimentos de suprimentos, Estações de Remédios, pontos de reaparecimento, aparecimentos de missões secundárias e aparecimentos de chefes.",
+        "ru": "Первый выпуск. Включает основной маршрут и метки мест появления припасов, медстанций, точек возрождения, мест появления побочных заданий и боссов.",
+        "zh-tw": "首次發布。包含主要路線、補給生成點、醫療站、重生點、次要任務生成點及 Boss 生成點標記。"
       }
     ]
   }
