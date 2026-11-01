@@ -11,19 +11,29 @@
 	outline: none;
 }
 
-.support-link {
+.support-links {
 	position: absolute;
 	top: 16px;
 	right: 12px;
 	z-index: var(--z-hud);
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.support-link {
 	display: block;
 	line-height: 0;
+}
+
+html:not(:lang(zh)) .support-link-bilibili {
+	display: none;
 }
 
 .support-link img {
 	display: block;
 	width: auto;
-	max-height: 32px;
+	height: 32px;
 }
 
 .floor-control {
@@ -153,7 +163,7 @@
 
 @media (max-width: 640px) {
 
-	.support-link {
+	.support-links {
 		top: 8px;
 		right: 8px;
 	}
