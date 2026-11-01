@@ -60,8 +60,6 @@ export function createFloorController({root, onChange}) {
 	maxLabel.className = "floor-control-label floor-control-label-max";
 	minHandle.type = "button";
 	maxHandle.type = "button";
-	minHandle.setAttribute("aria-label", t("floorMinimum"));
-	maxHandle.setAttribute("aria-label", t("floorMaximum"));
 	track.append(colorBand, selection, minHandle, maxHandle, minLabel, maxLabel);
 	root.replaceChildren(track);
 
@@ -120,6 +118,8 @@ export function createFloorController({root, onChange}) {
 	}
 
 	function render() {
+		minHandle.setAttribute("aria-label", t("floorMinimum"));
+		maxHandle.setAttribute("aria-label", t("floorMaximum"));
 		if (layers.length === 0) {
 			root.hidden = true;
 			return;
@@ -263,5 +263,6 @@ export function createFloorController({root, onChange}) {
 
 	return {
 		setMap,
+		refreshLabels: render,
 	};
 }

@@ -82,6 +82,11 @@ select {
 	background: #1b241d;
 }
 
+select:focus {
+	border-color: #a0b79f;
+	outline: none;
+}
+
 option {
 	color: #e4e8df;
 	background: #1b241d;

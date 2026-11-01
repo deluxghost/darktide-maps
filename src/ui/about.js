@@ -1,9 +1,15 @@
 import changelog from "../../config/changelog.json";
 import { localizeValue } from "../i18n.js";
+import { initializeDialog } from "./dialog.js";
 
 export function initializeAbout() {
-	const dialog = document.querySelector("#about-dialog");
+	initializeDialog("about");
+	renderChangelog();
+}
+
+export function renderChangelog() {
 	const entries = document.querySelector("#changelog-entries");
+	entries.replaceChildren();
 	for (const entry of changelog) {
 		const section = document.createElement("section");
 		const heading = document.createElement("h3");
@@ -17,18 +23,4 @@ export function initializeAbout() {
 		section.append(heading, list);
 		entries.append(section);
 	}
-	document.querySelector("#about-toggle").addEventListener("click", () => dialog.showModal());
-	document.querySelector("#about-close").addEventListener("click", () => dialog.close());
-	dialog.addEventListener("click", (event) => {
-		if (event.target !== dialog) return;
-		const bounds = dialog.getBoundingClientRect();
-		if (event.clientX < bounds.left || event.clientX >= bounds.right
-			|| event.clientY < bounds.top || event.clientY >= bounds.bottom) {
-			dialog.close();
-		}
-	});
-	dialog.addEventListener("close", () => {
-		document.querySelector("#debug-panel").hidden = true;
-		document.querySelector("#debug-toggle").setAttribute("aria-expanded", "false");
-	});
 }

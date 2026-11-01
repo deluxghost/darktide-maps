@@ -310,6 +310,7 @@ export function createFilterController({
 
 	return {
 		initialize,
+		refreshLabels: () => writeFilters(currentMap),
 		setCurrentMap,
 		visiblePinCategorySet,
 		writeFilters,

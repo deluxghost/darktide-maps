@@ -28,9 +28,10 @@
 					<span class="panel-game-title" data-i18n="gameTitle">Warhammer 40,000: Darktide</span>
 					<span data-i18n="menuTitle">Interactive Maps</span>
 				</h1>
-				<button id="about-toggle" class="icon-button about-toggle" type="button" data-i18n-aria-label="about" data-i18n-title="about" aria-haspopup="dialog" aria-controls="about-dialog">
-					<i data-lucide="info"></i>
-				</button>
+				<div class="panel-actions">
+					<button id="settings-toggle" class="icon-button" type="button" data-i18n-aria-label="settings" data-i18n-title="settings" aria-haspopup="dialog" aria-controls="settings-dialog"><i data-lucide="settings"></i></button>
+					<button id="about-toggle" class="icon-button" type="button" data-i18n-aria-label="about" data-i18n-title="about" aria-haspopup="dialog" aria-controls="about-dialog"><i data-lucide="info"></i></button>
+				</div>
 			</header>
 			<hr class="panel-divider">
 			<div id="panel-content" class="panel-content">
@@ -46,25 +47,34 @@
 				</section>
 			</div>
 		</section>
-		<dialog id="about-dialog" class="about-dialog" aria-labelledby="about-title">
+		<dialog id="settings-dialog" class="app-dialog settings-dialog" aria-labelledby="settings-title">
+			<header class="dialog-header">
+				<h2 id="settings-title" data-i18n="settings">Settings</h2>
+				<button id="settings-close" class="icon-button" type="button" data-i18n-aria-label="dismiss" data-i18n-title="dismiss"><i data-lucide="x"></i></button>
+			</header>
+			<div class="settings-body">
+				<div class="settings-group" data-settings-group="display">
+					<div class="settings-option">
+						<label for="language-select" data-i18n="language">Language</label>
+						<select id="language-select"></select>
+					</div>
+				</div>
+				<div class="settings-group" data-settings-group="debug" hidden>
+					<div class="settings-option">
+						<label for="debug-terrain-clipping" data-i18n="showTerrainClipping">Show terrain clipping</label>
+						<input id="debug-terrain-clipping" type="checkbox">
+					</div>
+				</div>
+			</div>
+		</dialog>
+		<dialog id="about-dialog" class="app-dialog about-dialog" aria-labelledby="about-title">
 			<div class="about-fixed">
-				<header class="about-header">
+				<header class="dialog-header">
 					<h2 id="about-title" data-i18n="appTitle">Warhammer 40,000: Darktide - Interactive Maps</h2>
 					<button id="about-close" class="icon-button" type="button" data-i18n-aria-label="dismiss" data-i18n-title="dismiss"><i data-lucide="x"></i></button>
 				</header>
 				<div class="about-author">
 					<a href="https://deluxghost.me/" target="_blank" rel="noopener noreferrer">deluxghost</a>
-					<div class="debug-root">
-						<button id="debug-toggle" class="icon-button" type="button" aria-label="Debug" title="Debug" data-i18n-aria-label="debug" data-i18n-title="debug" aria-expanded="false" aria-controls="debug-panel">
-							<i data-lucide="bug"></i>
-						</button>
-						<div id="debug-panel" class="debug-panel" hidden>
-							<label class="debug-option">
-								<input id="debug-terrain-clipping" type="checkbox">
-								<span data-i18n="showTerrainClipping">Show terrain clipping</span>
-							</label>
-						</div>
-					</div>
 				</div>
 			</div>
 			<div class="about-body">

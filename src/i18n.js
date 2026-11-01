@@ -1,11 +1,30 @@
 import translations from "./translations.json";
-import { resolveLanguage } from "./languages.js";
+import { locales, resolveLanguage } from "./languages.js";
+import { readStoredObject, writeStoredObject } from "./storage.js";
 
+const SETTINGS_STORAGE_KEY = "darktide-maps.settings.v1";
+const settings = {language: "auto", ...readStoredObject(SETTINGS_STORAGE_KEY)};
 const queryLanguage = new URLSearchParams(window.location.search).get("l");
 const browserLanguages = navigator.languages?.length ? navigator.languages : [navigator.language];
 
-export const language = resolveLanguage("auto", queryLanguage, browserLanguages);
+function validatePreference(value) {
+	if (value !== "auto" && !Object.hasOwn(locales, value)) throw new Error(`Invalid language preference: ${value}`);
+}
+
+validatePreference(settings.language);
+export let language = resolveLanguage(settings.language, queryLanguage, browserLanguages);
 let gameText = new Map();
+
+export function getLanguagePreference() {
+	return settings.language;
+}
+
+export function setLanguagePreference(value) {
+	validatePreference(value);
+	settings.language = value;
+	writeStoredObject(SETTINGS_STORAGE_KEY, settings);
+	language = resolveLanguage(value, queryLanguage, browserLanguages);
+}
 
 export async function loadGameText(url, markerLabels) {
 	if (typeof url !== "string" || !url) throw new Error("Missing game text resource");

@@ -1,6 +1,7 @@
 @import "./src/styles/base.css";
 @import "./src/styles/map.css";
 @import "./src/styles/panel.css";
+@import "./src/styles/dialog.css";
 @import "./src/styles/about.css";
 @import "./src/styles/overlays.css";
 

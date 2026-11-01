@@ -263,5 +263,11 @@ export function createMarkerOverlays({
 		if (!isAuxiliary(activeTooltipMarker) && activeTooltipMarker?.category === category) hideTooltip();
 	}
 
-	return {hidePopup, hideTooltip, hideForCategory, showPopup, showTooltip, update};
+	function refreshLabels() {
+		textSizes.clear();
+		if (activeMarker) showPopup(activeMarker);
+		else update();
+	}
+
+	return {hidePopup, hideTooltip, hideForCategory, showPopup, showTooltip, update, refreshLabels};
 }

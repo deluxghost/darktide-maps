@@ -7,7 +7,8 @@ import { createHeightColors } from "./map/height_colors.js";
 import { createFilterController } from "./ui/filters.js";
 import { createFloorController } from "./ui/floors.js";
 import { createMarkerOverlays } from "./markers/overlays.js";
-import { initializeAbout } from "./ui/about.js";
+import { initializeAbout, renderChangelog } from "./ui/about.js";
+import { initializeSettings } from "./ui/settings.js";
 import { mapTitle, writeMapOptions } from "./data/manifest.js";
 import { formatLocalTimestampFromUnix } from "./time.js";
 import { createNotifications } from "./ui/notifications.js";
@@ -20,7 +21,7 @@ import {
 	replaceUrl,
 	tryParsePositionParameter,
 } from "./location.js";
-import { createElement as createLucideElement, createIcons, Bug, Info, Menu, X } from "lucide";
+import { createElement as createLucideElement, createIcons, Info, Menu, Settings, X } from "lucide";
 
 const mapElement = document.querySelector("#map");
 const mapSelect = document.querySelector("#map-select");
@@ -28,9 +29,6 @@ const loadingOverlay = document.querySelector("#loading-overlay");
 const notificationsElement = document.querySelector("#notifications");
 const panel = document.querySelector(".panel");
 const panelToggle = document.querySelector("#panel-toggle");
-const debugToggle = document.querySelector("#debug-toggle");
-const debugPanel = document.querySelector("#debug-panel");
-const debugTerrainClipping = document.querySelector("#debug-terrain-clipping");
 const filterList = document.querySelector("#filter-list");
 const markerPopup = document.querySelector("#marker-popup");
 const markerPopupTitle = document.querySelector("#marker-popup-title");
@@ -46,6 +44,8 @@ const DEBUG_STORAGE_KEY = "darktide-maps.debug.v1";
 const URL_POSITION_MARKER_ID = "url-position";
 
 let loadController;
+let currentManifest = null;
+let loadingMap = null;
 let debugTerrainClippingVisible = readDebugTerrainClippingVisible();
 const mapDataCache = new Map();
 const notifications = createNotifications({
@@ -66,12 +66,17 @@ function formatBytes(bytes) {
 	return `${unit === 0 ? value : value.toFixed(2)} ${units[unit]}`;
 }
 
-function setLoading(message) {
-	loadingOverlay.textContent = message;
+function setLoading(map) {
+	loadingMap = map;
+	loadingOverlay.textContent = t("loadingMap", {
+		title: mapTitle(map),
+		size: formatBytes(map.resourceBytes + (import.meta.env.DEV ? map.debugResourceBytes : 0)),
+	});
 	loadingOverlay.hidden = false;
 }
 
 function clearLoading() {
+	loadingMap = null;
 	loadingOverlay.hidden = true;
 }
 
@@ -366,10 +371,7 @@ function clearMap() {
 }
 
 async function loadMap(mapEntry, locator, signal) {
-	setLoading(t("loadingMap", {
-		title: mapTitle(mapEntry),
-		size: formatBytes(mapEntry.resourceBytes + (import.meta.env.DEV ? mapEntry.debugResourceBytes : 0)),
-	}));
+	setLoading(mapEntry);
 
 	const map = await loadMapData(mapEntry, signal);
 	const [glb, boundaryPaths, mainPathMeshes, terrainClipMeshes] = await Promise.all([
@@ -457,6 +459,7 @@ async function initialize() {
 	}
 
 	await loadGameText(manifest.gameText, manifest.markerLabels);
+	currentManifest = manifest;
 	writeMapOptions(mapSelect, manifest);
 	writeDataUpdatedAt(manifest.dataUpdatedAtUnix);
 
@@ -474,13 +477,26 @@ async function initialize() {
 }
 
 export function startApp() {
-	createIcons({ icons: { Bug, Info, Menu, X } });
+	createIcons({ icons: { Info, Menu, Settings, X } });
 	applyTranslations();
 	initializeAbout();
+	initializeSettings(() => {
+		applyTranslations();
+		document.title = t("appTitle");
+		renderChangelog();
+		if (currentManifest) {
+			const mapId = mapSelect.value;
+			writeMapOptions(mapSelect, currentManifest);
+			mapSelect.value = mapId;
+			writeDataUpdatedAt(currentManifest.dataUpdatedAtUnix);
+		}
+		filters.refreshLabels();
+		floorController.refreshLabels();
+		markerOverlays.refreshLabels();
+		if (loadingMap) setLoading(loadingMap);
+	});
 	document.title = t("appTitle");
-	document.documentElement.classList.toggle("dev-tools", import.meta.env.DEV);
 	setPanelCollapsed(mobileMedia.matches);
-	debugTerrainClipping.checked = debugTerrainClippingVisible;
 	filters.initialize();
 	mapElement.addEventListener("contextmenu", (event) => {
 		event.preventDefault();
@@ -488,17 +504,15 @@ export function startApp() {
 	panelToggle.addEventListener("click", () => {
 		setPanelCollapsed(!panel.classList.contains("collapsed"));
 	});
-	debugToggle.addEventListener("click", () => {
-		const expanded = debugPanel.hidden;
-
-		debugPanel.hidden = !expanded;
-		debugToggle.setAttribute("aria-expanded", String(expanded));
-	});
-	debugTerrainClipping.addEventListener("change", () => {
-		debugTerrainClippingVisible = debugTerrainClipping.checked;
-		writeDebugTerrainClippingVisible(debugTerrainClippingVisible);
-		mapRenderer.setTerrainClipVisible(debugTerrainClippingVisible);
-	});
+	if (import.meta.env.DEV) {
+		const debugTerrainClipping = document.querySelector("#debug-terrain-clipping");
+		debugTerrainClipping.checked = debugTerrainClippingVisible;
+		debugTerrainClipping.addEventListener("change", () => {
+			debugTerrainClippingVisible = debugTerrainClipping.checked;
+			writeDebugTerrainClippingVisible(debugTerrainClippingVisible);
+			mapRenderer.setTerrainClipVisible(debugTerrainClippingVisible);
+		});
+	}
 	markerPopupClose.addEventListener("click", markerOverlays.hidePopup);
 
 	initialize().catch((error) => {

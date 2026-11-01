@@ -49,6 +49,13 @@
 	font-size: 16px;
 }
 
+.panel-actions {
+	display: flex;
+	flex: 0 0 auto;
+	gap: 6px;
+	margin-left: auto;
+}
+
 .icon-button {
 	display: grid;
 	place-items: center;
@@ -96,7 +103,7 @@
 }
 
 .panel.collapsed .panel-brand,
-.panel.collapsed .about-toggle,
+.panel.collapsed .panel-actions,
 .panel.collapsed .panel-divider,
 .panel.collapsed .panel-content {
 	display: none;
