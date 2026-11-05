@@ -5,6 +5,7 @@ from ..formats.resource import murmur64
 
 LANGUAGES = {0: "en", 1: "pl", 2: "ja", 4: "es", 16: "zh-tw", 32: "pt-br",
              64: "de", 128: "ko", 256: "ru", 512: "it", 1024: "zh-cn", 2048: "fr"}
+COMMENT_VARIANT = 8
 
 
 def read_strings(path, keys):
@@ -14,7 +15,7 @@ def read_strings(path, keys):
         raise ValueError("Localization key hash collision")
     titles = {key: {} for key in keys}
     for language, reader in variants:
-        if language == 8:
+        if language == COMMENT_VARIANT:
             continue
         if language not in LANGUAGES:
             raise ValueError(f"Unknown localization language variant {language}")

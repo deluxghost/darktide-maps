@@ -3,9 +3,8 @@
 from collections import defaultdict, deque
 
 from ..formats.level import key32
+from ..formats.flow import EVENT_CONTROL_NODES, FlowNode, FlowValueType, GateInput, VARIABLE_EXCHANGE
 from ..scene.objects import walk_levels
-
-EVENT_CONTROLS = {0, 1, 6, 17, 19, 20, 31, 35, 41, 52, 283}
 
 
 class MarkerFlow:
@@ -20,10 +19,10 @@ class MarkerFlow:
     def connect(self, ancestry, source, links):
         flow = self.instances[ancestry]["flow"]
         for offset, selector in links:
-            if selector == 65535 or flow.nodes[offset]["kind"] in (19, 20) and selector != 0:
+            if selector == VARIABLE_EXCHANGE or flow.nodes[offset]["kind"] in (FlowNode.ONCE, FlowNode.GATE) and selector != GateInput.IN:
                 continue
             self.reverse[ancestry, offset].append((source, selector, None))
-            if flow.nodes[offset]["kind"] == 10:
+            if flow.nodes[offset]["kind"] == FlowNode.UNIT_EVENT:
                 for index in flow.unit_bindings.get(offset, []):
                     unit = self.instances[ancestry]["units"][index]
                     self.unit_inputs[ancestry, unit["id"]].add((offset, selector))
@@ -39,14 +38,14 @@ class MarkerFlow:
             for offset, node in flow.nodes.items():
                 source = ancestry, offset
                 kind = node["kind"]
-                if kind == 17:
+                if kind == FlowNode.SCRIPT:
                     self.scripts.append((source, flow.script(offset)))
-                if kind in EVENT_CONTROLS:
+                if kind in EVENT_CONTROL_NODES:
                     self.connect(ancestry, source, flow.outgoing(offset))
-                elif kind == 10:
+                elif kind == FlowNode.UNIT_EVENT:
                     for event, links in flow.event_outputs(offset).items():
                         self.connect(ancestry, (*source, event), links)
-                elif kind == 284:
+                elif kind == FlowNode.LEVEL_EVENT:
                     for index in flow.level_bindings.get(offset, []):
                         child = (*ancestry, level["nested"][index]["id"])
                         nested = self.instances[child]["flow"]
@@ -55,7 +54,7 @@ class MarkerFlow:
                                 self.reverse[child, target].append((source, 0, selector))
                         for event, links in flow.event_outputs(offset).items():
                             for terminal, terminal_node in nested.nodes.items():
-                                if terminal_node["kind"] == 23 and nested.words(terminal + 8, 1)[0] == event:
+                                if terminal_node["kind"] == FlowNode.OUTPUT_EVENT and nested.words(terminal + 8, 1)[0] == event:
                                     self.connect(ancestry, (child, terminal), links)
 
     def spatial_sources(self, start, selector):
@@ -68,7 +67,7 @@ class MarkerFlow:
             ancestry, offset = key[:2]
             level = self.instances[ancestry]
             flow = level["flow"]
-            if key != start and flow.nodes[offset]["kind"] == 10:
+            if key != start and flow.nodes[offset]["kind"] == FlowNode.UNIT_EVENT:
                 transparent = set()
                 for index in flow.unit_bindings.get(offset, []):
                     unit = level["units"][index]
@@ -103,7 +102,7 @@ class MarkerFlow:
             if function not in script["functions"]:
                 continue
             kind, storage = script["inputs"]["objective_name"]
-            if kind != 7:
+            if kind != FlowValueType.STRING:
                 raise ValueError("Mission objective Flow name is not a string")
             flow = self.instances[key[0]]["flow"]
             name, _ = flow.string(flow.dynamic, storage)

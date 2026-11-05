@@ -3,9 +3,10 @@
 import math
 
 from .binary import Binary
+from .dynamic_data import DynamicDataType
 from .unit_geometry import read_unit_geometry
 
-END = 0xFFFFFFFF
+NO_DATA_OFFSET = 0xFFFFFFFF
 
 
 def read_tree(reader, offset=0, prefix=()):
@@ -14,27 +15,27 @@ def read_tree(reader, offset=0, prefix=()):
         key, following, kind, size = reader.unpack("<4I", offset)
         path = (*prefix, key)
         offset += 16
-        if kind == END:
+        if kind == DynamicDataType.OBJECT:
             child, = reader.unpack("<I", offset)
             offset += 4
-            if size != 4 or child not in (END, offset):
+            if size != 4 or child not in (NO_DATA_OFFSET, offset):
                 raise ValueError(f"{reader.name}: invalid dynamic child pointer")
-            if child != END:
+            if child != NO_DATA_OFFSET:
                 children, offset = read_tree(reader, child, path)
                 result.update(children)
-        elif kind in (1, 2):
+        elif kind in (DynamicDataType.BOOLEAN, DynamicDataType.NUMBER):
             if size != 4:
                 raise ValueError(f"{reader.name}: invalid dynamic scalar size")
-            value, = reader.unpack("<I" if kind == 1 else "<f", offset)
+            value, = reader.unpack("<I" if kind == DynamicDataType.BOOLEAN else "<f", offset)
             offset += 4
-            if kind == 1:
+            if kind == DynamicDataType.BOOLEAN:
                 if value not in (0, 1):
                     raise ValueError(f"{reader.name}: invalid dynamic boolean")
                 value = bool(value)
             elif not math.isfinite(value):
                 raise ValueError(f"{reader.name}: non-finite dynamic scalar")
             result[path] = value
-        elif kind == 3:
+        elif kind == DynamicDataType.STRING:
             reader.check(offset, size)
             raw = reader.data[offset:offset + size]
             end = raw.index(0)
@@ -44,7 +45,7 @@ def read_tree(reader, offset=0, prefix=()):
             offset += size
         else:
             raise ValueError(f"{reader.name}: unsupported dynamic tree type {kind}")
-        if following == END:
+        if following == NO_DATA_OFFSET:
             return result, offset
         if following != offset:
             raise ValueError(f"{reader.name}: invalid dynamic sibling pointer")
@@ -57,7 +58,7 @@ def read_unit_data(path):
         return name, {}, geometry["flow"]
     tree = Binary(raw, path)
     root, reserved = tree.unpack("<2I", 0)
-    if (root, reserved, len(raw)) == (END, 0, 8):
+    if (root, reserved, len(raw)) == (NO_DATA_OFFSET, 0, 8):
         return name, {}, geometry["flow"]
     if (root, reserved) != (8, 0):
         raise ValueError(f"{path}: unsupported dynamic-data header")

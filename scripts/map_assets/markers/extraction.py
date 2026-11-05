@@ -7,6 +7,7 @@ from ..scene.components import component_value
 from ..config import configuration
 from ..formats.level import key32
 from ..formats.unit_geometry import node_matrices
+from ..formats.collision_geometry import CollisionShape
 
 
 def unit_identity(unit):
@@ -32,7 +33,7 @@ def completion_region(unit, geometry, definitions):
     if not component_value(kinds["MoveablePlatform"], definitions, "require_all_players_onboard"):
         return None
     boxes = [(actor, shape) for actor in data["boarding_shapes"] for shape in actor["shapes"]]
-    if len(boxes) != 1 or boxes[0][1]["type"] != 1:
+    if len(boxes) != 1 or boxes[0][1]["type"] != CollisionShape.BOX:
         raise ValueError(f"Extraction platform has no unambiguous boarding box: {unit_identity(unit)}")
     actor, shape = boxes[0]
     extents = np.asarray(shape["parameters"])

@@ -3,7 +3,10 @@
 from collections import deque
 
 from ..formats.binary import Binary, resource
-from ..formats.flow import CompiledFlow
+from ..formats.flow import (
+    CompiledFlow, EVENT_CONTROL_NODES, FLOW_HEADER_SIZE, FlowNode, FlowValueType,
+    GateInput, INVALID_STORAGE, VARIABLE_EXCHANGE,
+)
 from ..formats.level import key32
 from ..formats.resource import murmur64
 from .objects import walk_levels
@@ -12,13 +15,17 @@ from .components import component_value
 
 STATE_VALUE = key32("out_value")
 UNIT_SPAWNED = key32("unit_spawned")
-SWITCH_NODES = {0, 7, 23, 27, 35, 37, 141, 142, 157}
+SWITCH_NODES = {
+    FlowNode.EXTERNAL_EVENT, FlowNode.UNIT_SPAWNED, FlowNode.OUTPUT_EVENT, FlowNode.SET_UNIT_VISIBILITY,
+    FlowNode.COMPARE_VALUES, FlowNode.GROUP, FlowNode.CREATE_ACTOR, FlowNode.DESTROY_ACTOR,
+    FlowNode.GET_UNIT_BOOLEAN_DATA,
+}
 
 
 def node_kinds(static):
     reader = Binary(static, "unit Flow classification")
     header = reader.unpack("<23I", 0)
-    if header[0] != 0 or header[2] != 92 or header[21] != len(static):
+    if header[0] != 0 or header[2] != FLOW_HEADER_SIZE or header[21] != len(static):
         raise ValueError("Unsupported unit Flow classification header")
     slots = reader.unpack(f"<{header[1]}I", header[2])
     # Switch recognition requires concrete executable nodes for every slot.
@@ -34,7 +41,7 @@ def property_bindings(flow, offset, output=False):
 
 
 def destruction_actors(flow):
-    self_slots = {flow.words(o + 8, 1)[0] for o, n in flow.nodes.items() if n["kind"] == 27}
+    self_slots = {flow.words(o + 8, 1)[0] for o, n in flow.nodes.items() if n["kind"] == FlowNode.SET_UNIT_VISIBILITY}
     pending = list(flow.events.get(key32("lua_last_destruction"), []))
     seen, actors = set(), set()
     while pending:
@@ -43,20 +50,20 @@ def destruction_actors(flow):
             continue
         seen.add(offset)
         kind = flow.nodes[offset]["kind"]
-        if kind == 0 and flow.boolean(flow.words(offset + 8, 1)[0]):
+        if kind == FlowNode.EXTERNAL_EVENT and flow.boolean(flow.words(offset + 8, 1)[0]):
             continue
-        if kind == 142:
+        if kind == FlowNode.DESTROY_ACTOR:
             unit_slot, actor_slot = flow.words(offset + 8, 2)
             if unit_slot in self_slots:
                 actors.add(key32(flow.string(flow.dynamic, actor_slot)[0]))
-        elif kind == 52:
+        elif kind == FlowNode.BOOLEAN_BRANCH:
             value = flow.boolean(flow.words(offset + 8, 1)[0])
             yes, end = flow.links(offset + 12)
             no, _ = flow.links(end)
             pending.extend(o for o, _ in yes if value)
             pending.extend(o for o, _ in no if not value)
             continue
-        elif kind not in (0, 6, 41):
+        elif kind not in (FlowNode.EXTERNAL_EVENT, FlowNode.DELAY, FlowNode.SEQUENCE):
             continue
         pending.extend(o for o, _ in flow.outgoing(offset))
     return actors
@@ -65,7 +72,7 @@ def destruction_actors(flow):
 class StateTransitions:
     def __init__(self, flow):
         self.flow = flow
-        self.scripts = {offset: flow.script(offset) for offset, node in flow.nodes.items() if node["kind"] == 17}
+        self.scripts = {offset: flow.script(offset) for offset, node in flow.nodes.items() if node["kind"] == FlowNode.SCRIPT}
         functions = {name for script in self.scripts.values() for name in script["functions"]}
         self.is_state = "FlowCallbacks.change_networked_flow_state" in functions
         self.mutable = {storage for storage, _ in flow.variables.values()}
@@ -81,16 +88,16 @@ class StateTransitions:
                 continue
             seen.add((offset, selector))
             kind = flow.nodes[offset]["kind"]
-            if kind == 0:
+            if kind == FlowNode.EXTERNAL_EVENT:
                 variable, = flow.words(offset + 8, 1)
                 if flow.boolean(variable):
                     continue
-            elif kind == 17:
+            elif kind == FlowNode.SCRIPT:
                 script = self.scripts[offset]
                 name = script["functions"][selector]
                 if name == "FlowCallbacks.change_networked_flow_state":
                     data_type, storage = script["inputs"]["in_value"]
-                    if data_type != 6 or storage in self.mutable:
+                    if data_type != FlowValueType.BOOLEAN or storage in self.mutable:
                         return None
                     changed = flow.boolean(storage)
                     if value is not None and value != changed:
@@ -98,11 +105,11 @@ class StateTransitions:
                     value = changed
                 elif name != "FlowCallbacks.get_networked_flow_state":
                     return None
-            elif kind == 23:
+            elif kind == FlowNode.OUTPUT_EVENT:
                 name, = flow.words(offset + 8, 1)
                 outputs.add(name)
                 continue
-            elif kind != 41:
+            elif kind != FlowNode.SEQUENCE:
                 raise ValueError(f"Unsupported boolean state control node {kind}")
             pending.extend(flow.outgoing(offset))
         return None if value is None else (value, outputs)
@@ -115,9 +122,10 @@ class UnitStateControl:
         self.value_slot, size = bindings[STATE_VALUE]
         if size != 4:
             raise ValueError("Boolean Flow output has a non-boolean storage size")
-        self_slots = {flow.words(offset + 8, 1)[0] for offset, node in flow.nodes.items() if node["kind"] == 27}
+        self_slots = {flow.words(offset + 8, 1)[0] for offset, node in flow.nodes.items()
+                      if node["kind"] == FlowNode.SET_UNIT_VISIBILITY}
         for offset, node in flow.nodes.items():
-            if node["kind"] in (141, 142) and flow.words(offset + 8, 1)[0] not in self_slots:
+            if node["kind"] in (FlowNode.CREATE_ACTOR, FlowNode.DESTROY_ACTOR) and flow.words(offset + 8, 1)[0] not in self_slots:
                 raise ValueError("Unit physics switch controls an external unit")
         self.events = {}
         for event in flow.events:
@@ -138,12 +146,12 @@ class UnitStateControl:
                 raise ValueError("Cyclic boolean unit Flow control")
             path = (*path, state)
             kind = flow.nodes[offset]["kind"]
-            if kind == 0:
+            if kind == FlowNode.EXTERNAL_EVENT:
                 variable, = flow.words(offset + 8, 1)
                 if flow.boolean(variable):
                     return
-            elif kind == 37:
-                if selector == 65535:
+            elif kind == FlowNode.GROUP:
+                if selector == VARIABLE_EXCHANGE:
                     return
                 if offset != self.group:
                     raise ValueError("Unexpected nested boolean Flow group")
@@ -158,9 +166,9 @@ class UnitStateControl:
                         for target, port in links:
                             visit(target, port, value, path)
                 return
-            elif kind == 35:
+            elif kind == FlowNode.COMPARE_VALUES:
                 left_type, left, right_type, right = flow.words(offset + 8, 4)
-                if (left_type, right_type) != (6, 6) or value is None:
+                if (left_type, right_type) != (FlowValueType.BOOLEAN, FlowValueType.BOOLEAN) or value is None:
                     raise ValueError(f"{flow.static.name}: unresolved boolean unit Flow comparison at {offset}")
                 read = lambda slot: value if slot == self.value_slot else flow.boolean(slot)
                 yes, end = flow.links(offset + 24)
@@ -168,17 +176,17 @@ class UnitStateControl:
                 for target, port in yes if read(left) == read(right) else no:
                     visit(target, port, value, path)
                 return
-            elif kind in (141, 142):
+            elif kind in (FlowNode.CREATE_ACTOR, FlowNode.DESTROY_ACTOR):
                 _, actor_slot = flow.words(offset + 8, 2)
                 actor, _ = flow.string(flow.dynamic, actor_slot)
-                states[key32(actor)] = kind == 141
-            elif kind == 23:
+                states[key32(actor)] = kind == FlowNode.CREATE_ACTOR
+            elif kind == FlowNode.OUTPUT_EVENT:
                 name, = flow.words(offset + 8, 1)
                 outputs.add(name)
                 return
-            elif kind in (27, 157):
+            elif kind in (FlowNode.SET_UNIT_VISIBILITY, FlowNode.GET_UNIT_BOOLEAN_DATA):
                 return
-            elif kind != 41:
+            elif kind != FlowNode.SEQUENCE:
                 raise ValueError(f"Unsupported unit physics control node {kind}")
             for target, port in flow.outgoing(offset):
                 visit(target, port, value, path)
@@ -201,17 +209,18 @@ class PhysicsControls:
         if not static:
             return
         kinds = node_kinds(static)
-        if 142 in kinds:
+        if FlowNode.DESTROY_ACTOR in kinds:
             self.destruction_actors[identity] = destruction_actors(CompiledFlow(static, dynamic, f"{identity}: destruction Flow"))
         if identity in configuration("build")["collision"]["transientActorResources"]:
             transient = CompiledFlow(static, dynamic, f"{identity}: transient actor Flow")
-            slots = {transient.words(o + 8, 1)[0] for o, n in transient.nodes.items() if n["kind"] == 27}
+            slots = {transient.words(o + 8, 1)[0] for o, n in transient.nodes.items()
+                     if n["kind"] == FlowNode.SET_UNIT_VISIBILITY}
             self.transient_actors[identity] = {key32(transient.string(transient.dynamic, transient.words(o + 12, 1)[0])[0])
-                for o, n in transient.nodes.items() if n["kind"] == 142 and transient.words(o + 8, 1)[0] in slots}
-        if not kinds or not kinds <= SWITCH_NODES or 37 not in kinds or 35 not in kinds:
+                for o, n in transient.nodes.items() if n["kind"] == FlowNode.DESTROY_ACTOR and transient.words(o + 8, 1)[0] in slots}
+        if not kinds or not kinds <= SWITCH_NODES or FlowNode.GROUP not in kinds or FlowNode.COMPARE_VALUES not in kinds:
             return
         flow = CompiledFlow(static, dynamic, f"{identity}: unit Flow")
-        groups = [offset for offset, node in flow.nodes.items() if node["kind"] == 37]
+        groups = [offset for offset, node in flow.nodes.items() if node["kind"] == FlowNode.GROUP]
         if len(groups) != 1:
             return
         group = groups[0]
@@ -245,7 +254,7 @@ class PhysicsControls:
 
         def push(ancestry, links, parent, source=None):
             for offset, selector in links:
-                if selector == 65535:
+                if selector == VARIABLE_EXCHANGE:
                     continue
                 key = ancestry, offset, selector
                 if key not in parents:
@@ -279,7 +288,7 @@ class PhysicsControls:
             push((), [(offset, 0) for offset in offsets], None, {"event": f"{event:08x}"})
         # Mission-root units define possible gameplay callbacks, not a captured state.
         for offset in initial.unit_bindings:
-            if initial.nodes[offset]["kind"] != 10:
+            if initial.nodes[offset]["kind"] != FlowNode.UNIT_EVENT:
                 continue
             for event, links in initial.event_outputs(offset).items():
                 push((), links, None, {"node": offset, "output": f"{event:08x}"})
@@ -289,7 +298,7 @@ class PhysicsControls:
             if not ancestry:
                 continue
             for offset, indices in flow.unit_bindings.items():
-                if flow.nodes[offset]["kind"] != 10:
+                if flow.nodes[offset]["kind"] != FlowNode.UNIT_EVENT:
                     continue
                 units = [objects.get((ancestry, level["units"][index]["id"])) for index in indices]
                 if not any(unit and (unit["resource"] in callback_resources or any(
@@ -302,7 +311,7 @@ class PhysicsControls:
             ancestry, offset, selector = key = pending.popleft()
             level, flow = instances[ancestry], instances[ancestry]["flow"]
             kind = flow.nodes[offset]["kind"]
-            if kind == 10:
+            if kind == FlowNode.UNIT_EVENT:
                 for index in flow.unit_bindings.get(offset, []):
                     unit = level["units"][index]
                     control = self.units.get(unit["resource"])
@@ -322,30 +331,31 @@ class PhysicsControls:
                         if output in effect["outputs"]:
                             push(ancestry, links, key)
                 continue
-            if kind in (21, 142):
+            if kind in (FlowNode.DESTROY_UNIT, FlowNode.DESTROY_ACTOR):
                 slot, = flow.words(offset + 8, 1)
-                actor_slot = flow.words(offset + 12, 1)[0] if kind == 142 else None
-                if slot == 0xFFFFFFFF or actor_slot == 0xFFFFFFFF:
-                    if kind == 142:
+                actor_slot = flow.words(offset + 12, 1)[0] if kind == FlowNode.DESTROY_ACTOR else None
+                if slot == INVALID_STORAGE or actor_slot == INVALID_STORAGE:
+                    if kind == FlowNode.DESTROY_ACTOR:
                         push(ancestry, flow.outgoing(offset), key)
                     continue
-                actors = {key32(flow.string(flow.dynamic, actor_slot)[0])} if kind == 142 else set()
+                actors = {key32(flow.string(flow.dynamic, actor_slot)[0])} if kind == FlowNode.DESTROY_ACTOR else set()
                 for binding, indices in flow.unit_bindings.items():
-                    if flow.nodes[binding]["kind"] not in (10, 27) or flow.words(binding + 8, 1)[0] != slot:
+                    if (flow.nodes[binding]["kind"] not in (FlowNode.UNIT_EVENT, FlowNode.SET_UNIT_VISIBILITY)
+                            or flow.words(binding + 8, 1)[0] != slot):
                         continue
                     for index in indices:
                         record = objects.get((ancestry, level["units"][index]["id"]))
                         if record:
-                            record_effect(record, actors, key, removed=kind == 21)
+                            record_effect(record, actors, key, removed=kind == FlowNode.DESTROY_UNIT)
                 push(ancestry, flow.outgoing(offset), key)
                 continue
-            if kind == 284:
+            if kind == FlowNode.LEVEL_EVENT:
                 event = flow.event_names(offset)[selector]
                 for index in flow.level_bindings.get(offset, []):
                     child = (*ancestry, level["nested"][index]["id"])
                     push(child, [(target, 0) for target in instances[child]["flow"].events.get(event, [])], key)
                 continue
-            if kind == 23:
+            if kind == FlowNode.OUTPUT_EVENT:
                 if not ancestry:
                     continue
                 # Nested-level outputs can release mission blockers in the parent.
@@ -356,13 +366,13 @@ class PhysicsControls:
                                    if child["id"] == ancestry[-1])
                 parent_flow = parent["flow"]
                 for binding, indices in parent_flow.level_bindings.items():
-                    if child_index in indices and parent_flow.nodes[binding]["kind"] == 284:
+                    if child_index in indices and parent_flow.nodes[binding]["kind"] == FlowNode.LEVEL_EVENT:
                         push(parent_ancestry, parent_flow.event_outputs(binding).get(event, ()), key)
                 continue
-            if kind == 0 and flow.boolean(flow.words(offset + 8, 1)[0]):
+            if kind == FlowNode.EXTERNAL_EVENT and flow.boolean(flow.words(offset + 8, 1)[0]):
                 continue
-            if kind in (19, 20) and selector != 0:
+            if kind in (FlowNode.ONCE, FlowNode.GATE) and selector != GateInput.IN:
                 continue
-            if kind in (0, 1, 6, 17, 19, 20, 31, 35, 41, 52, 283):
+            if kind in EVENT_CONTROL_NODES:
                 push(ancestry, flow.outgoing(offset), key)
         return {"units": len({(tuple(entry["ancestry"]), entry["unit"]) for entry in reports}), "routes": reports}

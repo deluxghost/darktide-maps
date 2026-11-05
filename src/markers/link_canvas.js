@@ -1,7 +1,10 @@
 import { APP_CONFIG } from "../config.js";
-import { markerLinkSegments, markerLinkTemplate, writeMarkerLink } from "./link_mesh.js";
+import {
+	LINK_DATA_FLOATS, LINK_PART, LINK_PART_COUNT, LINK_TEXTURE, LINK_VERTEX_ATTRIBUTES,
+	LINK_VERTEX_KIND, LINK_VERTEX_STRIDE, markerLinkSegments, markerLinkTemplate, writeMarkerLink,
+} from "./link_mesh.js";
 
-const STRIDE = 6;
+const ARROW_ATTRIBUTE_OFFSET = LINK_VERTEX_ATTRIBUTES.indexOf("arrowIndex");
 const VERTEX = `#version 300 es
 precision highp float;
 in float pointIndex;
@@ -19,12 +22,12 @@ out vec4 ink;
 const float PI = 3.141592653589793;
 vec4 datum(int column) { return texelFetch(curves, ivec2(column, int(arrowIndex)), 0); }
 vec2 point(int index) {
-	vec4 info = datum(5);
+	vec4 info = datum(${LINK_TEXTURE.HEAD_TIP});
 	int segments = int(info.w);
 	int total = 2 * (segments + 1) + 3;
 	index = (index + total) % total;
-	if (index == segments + 1) return datum(4).xy;
-	if (index == segments + 2) return datum(4).zw;
+	if (index == segments + 1) return datum(${LINK_TEXTURE.HEAD_BASE}).xy;
+	if (index == segments + 2) return datum(${LINK_TEXTURE.HEAD_BASE}).zw;
 	if (index == segments + 3) return info.xy;
 	bool left = index <= segments;
 	int step = left ? index : total - 1 - index;
@@ -35,10 +38,10 @@ vec2 point(int index) {
 void main() {
 	int index = int(pointIndex);
 	vec2 position = point(index);
-	if (kind == 1.0) {
+	if (kind == ${LINK_VERTEX_KIND.EDGE}.0) {
 		vec2 direction = normalize(point(int(edgeIndex) + 1) - point(int(edgeIndex)));
 		position += vec2(-direction.y, direction.x) * radius * side;
-	} else if (kind == 2.0) {
+	} else if (kind == ${LINK_VERTEX_KIND.JOIN}.0) {
 		vec2 previous = normalize(position - point(index - 1));
 		vec2 next = normalize(point(index + 1) - position);
 		float turn = atan(previous.x * next.y - previous.y * next.x, dot(previous, next));
@@ -46,10 +49,10 @@ void main() {
 		position += vec2(cos(angle), sin(angle)) * radius;
 	}
 	vec2 pixel = (position + offset) / viewport;
-	float layer = arrowIndex * 3.0 + part;
+	float layer = arrowIndex * ${LINK_PART_COUNT}.0 + part;
 	gl_Position = vec4(pixel.x * 2.0 - 1.0, 1.0 - pixel.y * 2.0, 1.0 - 1.9 * (layer + 1.0) / (layers + 1.0), 1.0);
-	vec4 color = datum(part == 1.0 ? 7 : 6);
-	color.a *= part == 2.0 ? 0.98 : 0.95;
+	vec4 color = datum(part == ${LINK_PART.OUTLINE}.0 ? ${LINK_TEXTURE.OUTLINE_COLOR} : ${LINK_TEXTURE.FILL_COLOR});
+	color.a *= part == ${LINK_PART.TOP_FILL}.0 ? 0.98 : 0.95;
 	ink = vec4(color.rgb * color.a, color.a);
 }`;
 const FRAGMENT = `#version 300 es
@@ -75,10 +78,10 @@ export function createMarkerLinkCanvas(canvas, outlineWidth) {
 	if (!gl.getProgramParameter(program, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(program));
 	gl.deleteShader(vertex); gl.deleteShader(fragment); gl.useProgram(program);
 	gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
-	for (const [index, name] of ["pointIndex", "edgeIndex", "side", "kind", "part", "arrowIndex"].entries()) {
+	for (const [index, name] of LINK_VERTEX_ATTRIBUTES.entries()) {
 		const location = gl.getAttribLocation(program, name);
 		gl.enableVertexAttribArray(location);
-		gl.vertexAttribPointer(location, 1, gl.FLOAT, false, STRIDE * 4, index * 4);
+		gl.vertexAttribPointer(location, 1, gl.FLOAT, false, LINK_VERTEX_STRIDE * Float32Array.BYTES_PER_ELEMENT, index * Float32Array.BYTES_PER_ELEMENT);
 	}
 	gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
@@ -108,9 +111,9 @@ export function createMarkerLinkCanvas(canvas, outlineWidth) {
 			arrow.geometry !== previous[index].geometry || arrow.color !== previous[index].color);
 		if (changed) {
 			const segments = arrows.map(({geometry}) => markerLinkSegments(geometry, APP_CONFIG.runtime.visual.auxiliaryLinks.arcPixelTolerance));
-			const data = new Float32Array(Math.max(1, arrows.length) * 32);
-			arrows.forEach((arrow, index) => writeMarkerLink(data, index * 32, arrow, segments[index]));
-			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, 8, Math.max(1, arrows.length), 0, gl.RGBA, gl.FLOAT, data);
+			const data = new Float32Array(Math.max(1, arrows.length) * LINK_DATA_FLOATS);
+			arrows.forEach((arrow, index) => writeMarkerLink(data, index * LINK_DATA_FLOATS, arrow, segments[index]));
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, LINK_TEXTURE.COLUMNS, Math.max(1, arrows.length), 0, gl.RGBA, gl.FLOAT, data);
 			const key = segments.join("|");
 			if (topology !== key) {
 				const chunks = segments.map((count) => {
@@ -121,16 +124,16 @@ export function createMarkerLinkCanvas(canvas, outlineWidth) {
 				let start = 0;
 				chunks.forEach((chunk, index) => {
 					vertices.set(chunk, start);
-					for (let item = start + 5; item < start + chunk.length; item += STRIDE) vertices[item] = index;
+					for (let item = start + ARROW_ATTRIBUTE_OFFSET; item < start + chunk.length; item += LINK_VERTEX_STRIDE) vertices[item] = index;
 					start += chunk.length;
 				});
 				gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
-				vertexCount = vertices.length / STRIDE;
+				vertexCount = vertices.length / LINK_VERTEX_STRIDE;
 				topology = key;
 			}
 			previous = arrows.map(({geometry, color}) => ({geometry, color}));
 		}
 		gl.uniform2f(viewport, bounds.width, bounds.height); gl.uniform2f(translation, offset.x, offset.y);
-		gl.uniform1f(layers, arrows.length * 3); gl.drawArrays(gl.TRIANGLES, 0, vertexCount);
+		gl.uniform1f(layers, arrows.length * LINK_PART_COUNT); gl.drawArrays(gl.TRIANGLES, 0, vertexCount);
 	};
 }

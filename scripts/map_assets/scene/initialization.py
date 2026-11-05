@@ -5,6 +5,7 @@ import heapq
 import math
 
 from ..formats.level import key32
+from ..formats.flow import FlowNode, GateInput, VARIABLE_EXCHANGE
 from .objects import walk_levels
 
 LEVEL_SPAWNED = key32("level_spawned")
@@ -48,15 +49,15 @@ class InitialScene:
             for offset, node in flow.nodes.items():
                 key = ancestry, offset
                 # Object output events are separate arrivals, not the result of sending an input.
-                edges = set() if node["kind"] in (10, 284) else {
+                edges = set() if node["kind"] in (FlowNode.UNIT_EVENT, FlowNode.LEVEL_EVENT) else {
                     (ancestry, target) for target, selector in flow.outgoing(offset)
-                    if selector != 65535 or flow.nodes[target]["kind"] not in (10, 284)}
-                if node["kind"] == 10:
+                    if selector != VARIABLE_EXCHANGE or flow.nodes[target]["kind"] not in (FlowNode.UNIT_EVENT, FlowNode.LEVEL_EVENT)}
+                if node["kind"] == FlowNode.UNIT_EVENT:
                     targets = self.unit_targets(ancestry, offset)
                     self.targets[key] = targets
                     if targets and {PATH_OPEN, PATH_CLOSED}.intersection(flow.event_names(offset)):
                         self.goals.add(key)
-                elif node["kind"] == 284:
+                elif node["kind"] == FlowNode.LEVEL_EVENT:
                     for event in flow.event_names(offset):
                         edges.update(self.level_targets(ancestry, offset, event))
                 self.edges[key] = edges
@@ -74,8 +75,9 @@ class InitialScene:
         return critical
 
     def schedule(self, ancestry, offset, selector, time, origin, path):
-        # 0xffff exchanges object Flow variables; it does not send the first input event.
-        if selector == 65535 and self.instances[ancestry]["flow"].nodes[offset]["kind"] in (10, 284):
+        # Variable exchange does not send the first input event.
+        if (selector == VARIABLE_EXCHANGE
+                and self.instances[ancestry]["flow"].nodes[offset]["kind"] in (FlowNode.UNIT_EVENT, FlowNode.LEVEL_EVENT)):
             return
         if (ancestry, offset) not in self.critical:
             return
@@ -126,47 +128,47 @@ class InitialScene:
         if state in path:
             self.unsupported(ancestry, offset, "cyclic scene initialization")
         path = (*path, state)
-        if kind == 10:
+        if kind == FlowNode.UNIT_EVENT:
             self.unit_event(ancestry, offset, selector, origin, path)
             return
-        if kind == 284:
+        if kind == FlowNode.LEVEL_EVENT:
             names = flow.event_names(offset)
             if selector >= len(names):
                 self.unsupported(ancestry, offset, "invalid level event input")
             for child, target in self.level_targets(ancestry, offset, names[selector]):
                 self.schedule(child, target, 0, time, origin, path)
             return
-        if kind == 0:
+        if kind == FlowNode.EXTERNAL_EVENT:
             variable, = flow.words(offset + 8, 1)
             if flow.boolean(variable):
                 return
-        elif kind in (19, 20):
+        elif kind in (FlowNode.ONCE, FlowNode.GATE):
             variable, = flow.words(offset + 8, 1)
             key = self.variable(ancestry, variable)
-            if kind == 19:
-                if selector != 0 or self.variables[key]:
+            if kind == FlowNode.ONCE:
+                if selector != GateInput.IN or self.variables[key]:
                     return
                 self.variables[key] = True
-            elif selector != 0:
-                if selector not in (1, 2, 3):
+            elif selector != GateInput.IN:
+                if selector not in (GateInput.OPEN, GateInput.CLOSE, GateInput.TOGGLE):
                     self.unsupported(ancestry, offset, "invalid gate input")
-                self.variables[key] = selector == 1 if selector != 3 else not self.variables[key]
+                self.variables[key] = selector == GateInput.OPEN if selector != GateInput.TOGGLE else not self.variables[key]
                 return
             elif not self.variables[key]:
                 return
-        elif kind == 6:
+        elif kind == FlowNode.DELAY:
             variable, = flow.words(offset + 8, 1)
             delay = flow.number(variable)
             if not math.isfinite(delay) or delay < 0:
                 self.unsupported(ancestry, offset, "invalid initialization delay")
             time += delay
-        elif kind == 52:
+        elif kind == FlowNode.BOOLEAN_BRANCH:
             variable, = flow.words(offset + 8, 1)
             yes, end = flow.links(offset + 12)
             no, _ = flow.links(end)
             self.emit(ancestry, yes if flow.boolean(variable) else no, time, origin, path)
             return
-        elif kind not in (41, 283):
+        elif kind not in (FlowNode.SEQUENCE, FlowNode.LEVEL_SPAWNED):
             self.unsupported(ancestry, offset, "unsupported control or callback")
         self.emit(ancestry, flow.outgoing(offset), time, origin, path)
 

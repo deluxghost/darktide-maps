@@ -1,13 +1,36 @@
 """Read unit nodes and actor shape metadata without loading render streams."""
 
-import numpy as np
 import struct
+from enum import IntEnum
+
+import numpy as np
 
 from .binary import resource
-from .collision_geometry import decode_shape
+from .collision_geometry import CollisionShape, decode_shape
 from .resource import murmur64
 from ..transforms import placement_matrix
 from .unit_sections import read_sections
+
+UNIT_VERSION = 0x73
+MESH_GEOMETRY_VERSION = 1
+NODE_PARENT_NONE = 0
+NODE_PARENT_LOCAL = 1
+NODE_PARENT_EXTERNAL_MODES = {2, 3}
+NODE_PARENT_MODES = {NODE_PARENT_NONE, NODE_PARENT_LOCAL, *NODE_PARENT_EXTERNAL_MODES}
+ACTOR_CREATE_ON_SPAWN_INDEX = 0
+
+
+class ActorWorld(IntEnum):
+    PRIMARY = 0
+    SECONDARY = 1
+
+
+class IndexFormat(IntEnum):
+    UINT16 = 0
+    UINT32 = 1
+
+
+INDEX_ELEMENT_BYTES = {IndexFormat.UINT16: 2, IndexFormat.UINT32: 4}
 
 
 class Cursor:
@@ -48,7 +71,7 @@ class Cursor:
 
 def skip_mesh(cursor):
     version = cursor.count()
-    if version != 1:
+    if version != MESH_GEOMETRY_VERSION:
         raise ValueError(f"{cursor.reader.name}: unsupported mesh geometry version {version}")
     stream_count = cursor.count()
     for _ in range(stream_count):
@@ -61,7 +84,7 @@ def skip_mesh(cursor):
         raise ValueError(f"{cursor.reader.name}: vertex stream/channel mismatch")
     _, _, kind, count = cursor.read("<4I")
     _, size = cursor.bytes()
-    if kind not in (0, 1) or size not in (0, count * (2 if kind == 0 else 4)):
+    if kind not in INDEX_ELEMENT_BYTES or size not in (0, count * INDEX_ELEMENT_BYTES[kind]):
         raise ValueError(f"{cursor.reader.name}: index stream size mismatch")
     cursor.array(16)
     cursor.skip(40)
@@ -85,7 +108,7 @@ def read_nodes(cursor):
     if len(set(names)) != count:
         raise ValueError(f"{cursor.reader.name}: duplicate unit node names")
     for mode, index in parents:
-        if mode not in (0, 1, 2, 3) or (mode == 1 and index >= count):
+        if mode not in NODE_PARENT_MODES or (mode == NODE_PARENT_LOCAL and index >= count):
             raise ValueError(f"{cursor.reader.name}: invalid node parent")
     return {"nodes": dict(zip(names, transforms, strict=True)),
             "local_nodes": dict(zip(names, local, strict=True)), "parents": dict(zip(names, parents, strict=True))}
@@ -109,9 +132,9 @@ def node_matrices(geometry, overrides):
             raise ValueError(f"Cyclic unit node hierarchy: {stack}")
         mode, parent = geometry["parents"][name]
         matrix = local[name]
-        if mode == 1:
+        if mode == NODE_PARENT_LOCAL:
             matrix = resolve(names[parent], (*stack, name)) @ matrix
-        elif mode != 0:
+        elif mode != NODE_PARENT_NONE:
             raise ValueError(f"Unsupported external unit node parent type {mode}")
         world[name] = matrix
         return matrix
@@ -141,15 +164,15 @@ def read_actors(cursor, group):
             data, size = cursor.bytes()
             extra_data, extra_size = cursor.bytes()
             geometry = cursor.count()
-            if kind == 0:
+            if kind == CollisionShape.SPHERE:
                 parameters = list(cursor.read("<f"))
-            elif kind == 1:
+            elif kind == CollisionShape.BOX:
                 parameters = list(cursor.read("<3f"))
-            elif kind == 2:
+            elif kind == CollisionShape.CAPSULE:
                 parameters = list(cursor.read("<2f"))
-            elif kind in (3, 4):
+            elif kind in (CollisionShape.TRIANGLE_MESH, CollisionShape.CONVEX_MESH):
                 parameters = []
-            elif kind == 5:
+            elif kind == CollisionShape.HEIGHTFIELD:
                 parameters = list(cursor.read("<2I3fB"))
             else:
                 raise ValueError(f"{cursor.reader.name}: unsupported collision shape {kind}")
@@ -169,7 +192,7 @@ def read_actors(cursor, group):
 def read_unit_geometry(path, *, include_collision=False):
     name, reader = resource(path, murmur64("unit"))
     cursor = Cursor(reader)
-    if cursor.count() != 0x73:
+    if cursor.count() != UNIT_VERSION:
         raise ValueError(f"{path}: unsupported unit geometry version")
     for _ in range(cursor.count()):
         skip_mesh(cursor)
@@ -184,8 +207,8 @@ def read_unit_geometry(path, *, include_collision=False):
         cursor.array(4)
     graph = read_nodes(cursor)
     cursor.array(72)
-    actors = read_actors(cursor, 0)
-    actors.extend(read_actors(cursor, 1))
+    actors = read_actors(cursor, ActorWorld.PRIMARY)
+    actors.extend(read_actors(cursor, ActorWorld.SECONDARY))
     dynamic_data, serialized_assets, flow, volumes = read_sections(cursor)
     if include_collision:
         for actor in actors:

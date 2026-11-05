@@ -3,9 +3,12 @@
 import math
 
 from .binary import resource
+from .dynamic_data import DynamicDataType
 from .resource import murmur64
 from .flow import LevelFlow
 from .unit_volumes import read_volumes
+
+LEVEL_VERSION = 125
 
 
 def key32(name):
@@ -23,18 +26,18 @@ def read_config(reader, offset):
         offset += depth * 4
         kind, = reader.unpack("<I", offset)
         offset += 4
-        if kind == 1:
+        if kind == DynamicDataType.BOOLEAN:
             value, = reader.unpack("<I", offset)
             if value not in (0, 1):
                 raise ValueError(f"{reader.name}: invalid dynamic boolean")
             value = bool(value)
             offset += 4
-        elif kind == 2:
+        elif kind == DynamicDataType.NUMBER:
             value, = reader.unpack("<f", offset)
             if not math.isfinite(value):
                 raise ValueError(f"{reader.name}: non-finite dynamic number")
             offset += 4
-        elif kind == 3:
+        elif kind == DynamicDataType.STRING:
             size, = reader.unpack("<I", offset)
             offset += 4
             reader.check(offset, size)
@@ -61,7 +64,7 @@ def transform(reader, offset):
 def read_level(path):
     name, reader = resource(path, murmur64("level"))
     zero, version, unit_count = reader.unpack("<3I", 0)
-    if (zero, version) != (0, 125):
+    if (zero, version) != (0, LEVEL_VERSION):
         raise ValueError(f"{path}: unsupported level version {version}")
     script_table, = reader.unpack("<I", 16)
     units = []

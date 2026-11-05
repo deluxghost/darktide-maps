@@ -2,6 +2,8 @@
 
 from .binary import resource
 
+PACKAGE_VERSION = 43
+
 
 def murmur64(text):
     data = text.encode("utf-8")
@@ -23,6 +25,6 @@ def murmur64(text):
 def read_package(path):
     _, reader = resource(path, murmur64("package"))
     version, count = reader.unpack("<II", 0)
-    if version != 43 or len(reader.data) != 8 + count * 16 + 1 or reader.data[-1] != 1:
+    if version != PACKAGE_VERSION or len(reader.data) != 8 + count * 16 + 1 or reader.data[-1] != 1:
         raise ValueError(f"{path}: unsupported package layout")
     return [reader.unpack("<QQ", 8 + index * 16) for index in range(count)]

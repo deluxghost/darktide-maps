@@ -1,14 +1,28 @@
 """Read the installed game's compiled global physics templates and filter masks."""
 
+from enum import IntFlag
+
 from .binary import resource
 from .resource import murmur64
 from .unit_geometry import Cursor
+
+PHYSICS_VERSION = 14
+ACTOR_TEMPLATE_FLAGS_INDEX = 0
+
+
+class ActorTemplateFlag(IntFlag):
+    DYNAMIC = 1 << 0
+
+
+class ShapeTemplateFlag(IntFlag):
+    DISABLE_COLLISION = 1 << 0
+    TRIGGER = 1 << 5
 
 
 def read_physics(path):
     name, reader = resource(path, murmur64("physics_properties"))
     cursor = Cursor(reader)
-    if name != murmur64("application_settings/global") or cursor.count() != 14:
+    if name != murmur64("application_settings/global") or cursor.count() != PHYSICS_VERSION:
         raise ValueError(f"{path}: unsupported global physics resource")
     materials = {}
     for _ in range(cursor.count()):

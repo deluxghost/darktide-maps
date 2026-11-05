@@ -6,6 +6,7 @@ import numpy as np
 
 from ..formats.resource import murmur64
 from ..formats.unit_geometry import marker_geometry, read_unit_geometry
+from ..formats.collision_geometry import CollisionShape
 
 
 def resource_names(dictionary, hashes):
@@ -70,7 +71,7 @@ def export_collision(paths, output, physics, names, node_resources):
                     stats["non_spherical_hulls"] += 1
                 if surface.get("plane_error", 0) > 0.01:
                     stats["hulls_plane_error_over_1cm"] += 1
-                if shape["type"] < 3 and 0 in shape["parameters"]:
+                if shape["type"] in (CollisionShape.SPHERE, CollisionShape.BOX, CollisionShape.CAPSULE) and 0 in shape["parameters"]:
                     stats["degenerate_primitives"] += 1
                 for field in ("data_offset", "data_size", "extra_data_offset", "extra_data_size"):
                     del shape[field]

@@ -8,13 +8,18 @@ import numpy as np
 from scipy.spatial import ConvexHull
 from scipy.spatial.transform import Rotation
 
-from ..formats.unit_geometry import node_matrices
+from ..formats.unit_geometry import ACTOR_CREATE_ON_SPAWN_INDEX, ActorWorld, node_matrices
+from ..formats.physics import ACTOR_TEMPLATE_FLAGS_INDEX, ActorTemplateFlag, ShapeTemplateFlag
+from ..formats.collision_geometry import (
+    CollisionShape, HEIGHTFIELD_HOLE_MATERIAL, HEIGHTFIELD_MATERIAL_MASK, HEIGHTFIELD_TESSELLATION_FLAG,
+)
 from ..config import configuration
 
 BUILD_CONFIG = configuration("build")
 CURVE_ERROR = BUILD_CONFIG["terrain"]["curveError"]
 HEIGHTFIELD_CHUNK = BUILD_CONFIG["terrain"]["heightfieldChunk"]
 EXCLUDED_UNIT_RESOURCES = BUILD_CONFIG["collision"]["excludedResources"]
+NON_COLLIDING_SHAPE_FLAGS = ShapeTemplateFlag.DISABLE_COLLISION | ShapeTemplateFlag.TRIGGER
 BOX_VERTICES = np.array(list(product((-1, 1), repeat=3)), dtype=float)
 BOX_EDGES = np.array([(a, b) for a in range(8) for b in range(a + 1, 8)
                       if np.count_nonzero(BOX_VERTICES[a] != BOX_VERTICES[b]) == 1])
@@ -47,7 +52,7 @@ def shape_placement(actor_pose, local_matrix):
 
 def curve_dimensions(kind, parameters, scale):
     radius = parameters[0]
-    if kind == 0:
+    if kind == CollisionShape.SPHERE:
         radius *= np.mean(np.abs(scale))
         height = 0
     else:
@@ -81,20 +86,20 @@ def heightfield(shape, samples):
     row, column = np.indices((rows, columns))
     vertices = np.stack((row * row_scale, samples["height"] * height_scale, column * column_scale), axis=-1).reshape(-1, 3)
     cells = (row[:-1, :-1] * columns + column[:-1, :-1]).ravel()
-    split = (samples["material0"][:-1, :-1].ravel() & 128) != 0
+    split = (samples["material0"][:-1, :-1].ravel() & HEIGHTFIELD_TESSELLATION_FLAG) != 0
     first = np.stack((cells, cells + 1, cells + columns), axis=1)
     second = np.stack((cells + columns + 1, cells + columns, cells + 1), axis=1)
     first[split] = np.stack((cells[split] + columns, cells[split], cells[split] + columns + 1), axis=1)
     second[split] = np.stack((cells[split] + 1, cells[split] + columns + 1, cells[split]), axis=1)
-    valid0 = (samples["material0"][:-1, :-1].ravel() & 127) != 127
-    valid1 = (samples["material1"][:-1, :-1].ravel() & 127) != 127
+    valid0 = (samples["material0"][:-1, :-1].ravel() & HEIGHTFIELD_MATERIAL_MASK) != HEIGHTFIELD_HOLE_MATERIAL
+    valid1 = (samples["material1"][:-1, :-1].ravel() & HEIGHTFIELD_MATERIAL_MASK) != HEIGHTFIELD_HOLE_MATERIAL
     return vertices, np.concatenate((first[valid0], second[valid1]))
 
 
 def obstacle_rejection(unit, actor, physics):
     if actor["name"] in unit["conditional_actors"]:
         return "flow_controlled_actor"
-    if physics["actors"][str(actor["template"])][0] & 1:
+    if physics["actors"][str(actor["template"])][ACTOR_TEMPLATE_FLAGS_INDEX] & ActorTemplateFlag.DYNAMIC:
         return "non_static_actor"
     if unit["resource"] in EXCLUDED_UNIT_RESOURCES:
         return EXCLUDED_UNIT_RESOURCES[unit["resource"]]
@@ -138,11 +143,11 @@ class CollisionAssets:
             for a, actor in enumerate(unit["actors"]):
                 for s, shape in enumerate(actor["shapes"]):
                     keys = shape["arrays"]
-                    if shape["type"] in (3, 4):
+                    if shape["type"] in (CollisionShape.TRIANGLE_MESH, CollisionShape.CONVEX_MESH):
                         points, faces = arrays[keys["vertices"]], arrays[keys["triangles"]]
                         edges = np.unique(np.sort(faces[:, [[0, 1], [1, 2], [2, 0]]].reshape(-1, 2), axis=1), axis=0)
                         shapes[a, s] = points, faces, edges
-                    elif shape["type"] == 5:
+                    elif shape["type"] == CollisionShape.HEIGHTFIELD:
                         points, faces = heightfield(shape, arrays[keys["samples"]])
                         shapes[a, s] = points, faces, None
             self.cache[identity] = graph, shapes
@@ -160,7 +165,8 @@ class CollisionAssets:
             graph, shapes = self.geometry(identity)
             nodes = node_matrices(graph, unit["node_overrides"])
             for a, actor in enumerate(self.units[identity]["actors"]):
-                if actor["resource_group"] or (not actor["flags"][0] and not unit["create_actors"]):
+                if (actor["resource_group"] != ActorWorld.PRIMARY
+                        or (not actor["flags"][ACTOR_CREATE_ON_SPAWN_INDEX] and not unit["create_actors"])):
                     continue
                 actor_matrix = np.array(unit["transform"]) @ nodes[actor["node"]]
                 planar_rank = np.linalg.matrix_rank(actor_matrix[:2, :3])
@@ -169,13 +175,13 @@ class CollisionAssets:
                 reason = rule["reason"] if rule else obstacle_rejection(unit, actor, self.physics)
                 for s, shape in enumerate(actor["shapes"]):
                     profile = self.physics["shapes"][str(shape["template"])]
-                    if not profile["matches_player_mover_filter"] or profile["flags"] & (1 | 32):
+                    if not profile["matches_player_mover_filter"] or profile["flags"] & NON_COLLIDING_SHAPE_FLAGS:
                         continue
                     if reason:
                         counts[f"rejected_{reason}"] += 1
                         continue
                     # Collapsed linear geometry cannot remove an area from the Nav plane.
-                    if shape["type"] not in (0, 2) and planar_rank < 2:
+                    if shape["type"] not in (CollisionShape.SPHERE, CollisionShape.CAPSULE) and planar_rank < 2:
                         counts["zero_area_shapes"] += 1
                         continue
                     if actor_pose is None:
@@ -184,9 +190,9 @@ class CollisionAssets:
                     rotation, position, scale = shape_placement(actor_pose, np.array(shape["transform"]))
                     kind = shape["type"]
                     curve = None
-                    if kind == 1:
+                    if kind == CollisionShape.BOX:
                         points, edges, faces = BOX_VERTICES * shape["parameters"] * scale, BOX_EDGES, None
-                    elif kind in (0, 2):
+                    elif kind in (CollisionShape.SPHERE, CollisionShape.CAPSULE):
                         curve = kind, tuple(shape["parameters"]), tuple(scale)
                         radius, height = curve_dimensions(*curve)
                         extent = radius + np.abs(rotation[:, 0]) * height / 2
@@ -206,13 +212,13 @@ class CollisionAssets:
                         result.append({"curve": curve, "rotation": rotation, "position": position,
                                        "radius": radius, "half_height": height / 2, "convex": True,
                                        "source": source, "low": low, "high": high})
-                    elif kind == 5:
+                    elif kind == CollisionShape.HEIGHTFIELD:
                         for start in range(0, len(faces), HEIGHTFIELD_CHUNK):
                             triangles = points[faces[start:start + HEIGHTFIELD_CHUNK]]
                             result.append({"triangles": triangles, "convex": False, "source": source,
                                            "low": triangles.min(axis=(0, 1)), "high": triangles.max(axis=(0, 1)), "surface_only": True})
                     else:
-                        result.append({"vertices": points, "edges": edges, "convex": kind != 3, "source": source,
-                                       "triangles": points[faces] if faces is not None and kind == 3 else None,
+                        result.append({"vertices": points, "edges": edges, "convex": kind != CollisionShape.TRIANGLE_MESH, "source": source,
+                                       "triangles": points[faces] if faces is not None and kind == CollisionShape.TRIANGLE_MESH else None,
                                        "low": low, "high": high, "surface_only": False})
         return result

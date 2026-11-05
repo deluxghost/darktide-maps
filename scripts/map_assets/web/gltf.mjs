@@ -11,6 +11,7 @@ const ARRAY_BUFFER_TARGET = 34962;
 const ELEMENT_ARRAY_BUFFER_TARGET = 34963;
 const TRIANGLES_MODE = 4;
 const LINES_MODE = 1;
+const MAX_UINT16 = 0xFFFF;
 
 function align4(value) {
 	return (value + 3) & ~3;
@@ -109,7 +110,7 @@ export function createNavmeshGlb(data) {
 		positions.set(data.vertices[index], index * 3);
 	}
 
-	const useUint32 = data.vertices.length > 65535;
+	const useUint32 = data.vertices.length > MAX_UINT16;
 	const IndexArray = useUint32 ? Uint32Array : Uint16Array;
 	const indices = new IndexArray(data.triangles.length * 3);
 
@@ -232,7 +233,7 @@ export function createGeometryPartsGlb(name, parts, extras) {
 
 		const positions = new Float32Array(mesh.positions);
 		const normals = new Float32Array(mesh.normals);
-		const useUint32 = positions.length / 3 > 65535;
+		const useUint32 = positions.length / 3 > MAX_UINT16;
 		const IndexArray = useUint32 ? Uint32Array : Uint16Array;
 		const indices = new IndexArray(mesh.indices);
 		const positionBuffer = Buffer.from(positions.buffer);
@@ -302,7 +303,7 @@ export function createPathLinesGlb(name, paths, extras) {
 	}
 
 	const positions = new Float32Array(vertexCount * 3);
-	const useUint32 = vertexCount > 65535;
+	const useUint32 = vertexCount > MAX_UINT16;
 	const IndexArray = useUint32 ? Uint32Array : Uint16Array;
 	const indices = new IndexArray(indexCount);
 	let vertexOffset = 0;

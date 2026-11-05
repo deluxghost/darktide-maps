@@ -11,8 +11,11 @@ from .binary import resource
 
 NAVDATA_TYPE = 0x23EE957DD4B1BB94
 NAV_MESH_ELEMENT = 1
+NAV_MESH_ELEMENT_VERSION = 1
 NON_MESH_BLOBS = {2, 14, 0x500}
 PIXEL_SCALE = 128
+HALF_EDGE_START_VERTEX_MASK = 0x03FFC000
+HALF_EDGE_START_VERTEX_SHIFT = 14
 
 
 class RuntimeStitchRequired(ValueError):
@@ -64,7 +67,7 @@ def read_floor(reader, offset, cell, precision, cell_pixels):
     triangles = []
     for index in range(triangle_count):
         packed = reader.unpack("<3I", edges + index * 12)
-        triangle = [(edge & 0x03FFC000) >> 14 for edge in packed]
+        triangle = [(edge & HALF_EDGE_START_VERTEX_MASK) >> HALF_EDGE_START_VERTEX_SHIFT for edge in packed]
         if len(set(triangle)) != 3 or any(vertex >= vertex_count for vertex in triangle):
             raise ValueError(f"{reader.name}: invalid NavFloor triangle indices")
         a, b, c = (points[vertex] for vertex in triangle)
@@ -172,7 +175,7 @@ def decode_navmesh(mission, files):
         for kind, version, offset, _, _ in blob_records(reader):
             if kind in NON_MESH_BLOBS:
                 continue
-            if kind != NAV_MESH_ELEMENT or version != 1:
+            if kind != NAV_MESH_ELEMENT or version != NAV_MESH_ELEMENT_VERSION:
                 raise ValueError(f"{path}: unsupported NavData blob {kind}/{version}")
             meshes.append({**read_mesh(reader, offset), "resource": f"{name_hash:016x}", "mesh": mesh_count})
             mesh_count += 1
