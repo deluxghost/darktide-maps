@@ -345,6 +345,20 @@ class PhysicsControls:
                     child = (*ancestry, level["nested"][index]["id"])
                     push(child, [(target, 0) for target in instances[child]["flow"].events.get(event, [])], key)
                 continue
+            if kind == 23:
+                if not ancestry:
+                    continue
+                # Nested-level outputs can release mission blockers in the parent.
+                event, = flow.words(offset + 8, 1)
+                parent_ancestry = ancestry[:-1]
+                parent = instances[parent_ancestry]
+                child_index = next(index for index, child in enumerate(parent["nested"])
+                                   if child["id"] == ancestry[-1])
+                parent_flow = parent["flow"]
+                for binding, indices in parent_flow.level_bindings.items():
+                    if child_index in indices and parent_flow.nodes[binding]["kind"] == 284:
+                        push(parent_ancestry, parent_flow.event_outputs(binding).get(event, ()), key)
+                continue
             if kind == 0 and flow.boolean(flow.words(offset + 8, 1)[0]):
                 continue
             if kind in (19, 20) and selector != 0:
