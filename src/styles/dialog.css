@@ -62,10 +62,34 @@
 
 .settings-option {
 	display: grid;
-	grid-template-columns: minmax(80px, 1fr) minmax(0, 3fr);
-	align-items: center;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+	align-items: baseline;
 	gap: 12px;
 	font-size: 13px;
+	line-height: 1.5;
+}
+
+.settings-option > label {
+	min-width: 0;
+	overflow-wrap: anywhere;
+}
+
+.settings-control {
+	display: grid;
+	gap: 6px;
+	min-width: 0;
+}
+
+.settings-control > select {
+	min-width: 0;
+}
+
+.settings-description {
+	margin: 0;
+	color: #a0b79f;
+	font-size: 12px;
+	line-height: 1.5;
+	overflow-wrap: anywhere;
 }
 
 @media (max-width: 480px) {

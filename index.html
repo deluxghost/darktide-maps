@@ -58,16 +58,21 @@
 				<button id="settings-close" class="icon-button" type="button" data-i18n-aria-label="dismiss" data-i18n-title="dismiss"><i data-lucide="x"></i></button>
 			</header>
 			<div class="settings-body">
-				<div class="settings-group" data-settings-group="display">
+				<div class="settings-group" data-settings-group="general">
 					<div class="settings-option">
 						<label for="language-select" data-i18n="language">Language</label>
-						<select id="language-select"></select>
+						<div class="settings-control">
+							<select id="language-select" aria-describedby="language-description"></select>
+							<p id="language-description" class="settings-description" data-i18n="languageDescription">Some text uses the game's official translations. Other text may be machine translated. Translation contributions are welcome.</p>
+						</div>
 					</div>
 				</div>
 				<div class="settings-group" data-settings-group="debug" hidden>
 					<div class="settings-option">
 						<label for="debug-terrain-clipping" data-i18n="showTerrainClipping">Show terrain clipping</label>
-						<input id="debug-terrain-clipping" type="checkbox">
+						<div class="settings-control">
+							<input id="debug-terrain-clipping" type="checkbox">
+						</div>
 					</div>
 				</div>
 			</div>
