@@ -4,6 +4,7 @@ import { SimpleMeshLayer } from "@deck.gl/mesh-layers";
 import { APP_CONFIG } from "../config.js";
 import { FloorClipExtension } from "./floorclip.js";
 import { NavmeshDepthExtension } from "./picking.js";
+import { UnreachablePatternExtension } from "./unreachable.js";
 import { PinOcclusionExtension } from "./pin_occlusion.js";
 import { pinIconForCategory, positionMarkerIcon } from "../markers/icons.js";
 import { sortedPins, auxiliaryPinsForMarker } from "../markers/pins.js";
@@ -13,6 +14,7 @@ const VISUAL = RUNTIME.visual;
 const FLOOR_CLIP_EXTENSION = new FloorClipExtension();
 const FLOOR_PATH_EXTENSION = new FloorClipExtension({path: true});
 const NAVMESH_DEPTH_EXTENSION = new NavmeshDepthExtension();
+const UNREACHABLE_PATTERN_EXTENSION = new UnreachablePatternExtension();
 const PIN_OCCLUSION_EXTENSION = new PinOcclusionExtension();
 const OVERLAY_LINE_PARAMETERS = {
 	blend: false,
@@ -73,6 +75,7 @@ export function createMapLayers(currentState, viewport) {
 		material,
 		parameters = RUNTIME.layers.opaqueMeshParameters,
 		pickable = false,
+		unreachablePattern = false,
 	}) {
 		return new SimpleMeshLayer({
 			id,
@@ -87,7 +90,8 @@ export function createMapLayers(currentState, viewport) {
 			getPolygonOffset: () => [0, 0],
 			parameters,
 			_instanced: false,
-			extensions: [FLOOR_CLIP_EXTENSION, NAVMESH_DEPTH_EXTENSION],
+			extensions: [FLOOR_CLIP_EXTENSION, NAVMESH_DEPTH_EXTENSION,
+				...(unreachablePattern ? [UNREACHABLE_PATTERN_EXTENSION] : [])],
 			floorRange,
 		});
 	}
@@ -117,6 +121,7 @@ export function createMapLayers(currentState, viewport) {
 			color: [255, 255, 255, 255],
 			material: VISUAL.lighting.navmeshMaterial,
 			pickable: true,
+			unreachablePattern: true,
 		}));
 	}
 

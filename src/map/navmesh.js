@@ -29,7 +29,36 @@ function normalizeNormals(normals) {
 	}
 }
 
-export function createMesh(glb, colors) {
+function markUnreachable(attributes, indices, reachableIndexCount) {
+	const vertexCount = attributes.positions.value.length / 3;
+	const reachable = new Uint8Array(vertexCount);
+	for (let index = 0; index < reachableIndexCount; index++) reachable[indices[index]] = 1;
+	const duplicates = new Map();
+	for (let index = reachableIndexCount; index < indices.length; index++) {
+		const vertex = indices[index];
+		if (reachable[vertex] && !duplicates.has(vertex)) duplicates.set(vertex, vertexCount + duplicates.size);
+	}
+	// Shared boundary vertices need one copy so the flag stays constant within each triangle.
+	if (duplicates.size) {
+		attributes = Object.fromEntries(Object.entries(attributes).map(([name, {size, value}]) => {
+			const expanded = new value.constructor((vertexCount + duplicates.size) * size);
+			expanded.set(value);
+			for (const [source, target] of duplicates) {
+				expanded.set(value.subarray(source * size, (source + 1) * size), target * size);
+			}
+			return [name, {size, value: expanded}];
+		}));
+		indices = Uint32Array.from(indices);
+	}
+	for (let index = reachableIndexCount; index < indices.length; index++) {
+		const vertex = duplicates.get(indices[index]) ?? indices[index];
+		indices[index] = vertex;
+		attributes.texCoords.value[vertex * 2 + 1] = 1;
+	}
+	return {attributes, indices};
+}
+
+export function createMesh(glb, colors, reachableIndexCount) {
 	const indices = glb.indices;
 
 	if (indices.length === 0) {
@@ -48,14 +77,16 @@ export function createMesh(glb, colors) {
 
 	normalizeNormals(normals);
 
+	const attributes = {
+		positions: { size: 3, value: glb.positions },
+		normals: { size: 3, value: normals },
+		colors: { size: 3, value: colors },
+		texCoords: floorCoordinatesAttribute(glb.floorIds),
+	};
 	return new Geometry({
 		topology: "triangle-list",
-		attributes: {
-			positions: { size: 3, value: glb.positions },
-			normals: { size: 3, value: normals },
-			colors: { size: 3, value: colors },
-			texCoords: floorCoordinatesAttribute(glb.floorIds),
-		},
-		indices,
+		...(reachableIndexCount < indices.length
+			? markUnreachable(attributes, indices, reachableIndexCount)
+			: {attributes, indices}),
 	});
 }

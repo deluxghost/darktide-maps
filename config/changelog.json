@@ -1,5 +1,24 @@
 [
   {
+    "date": "2026-11-09",
+    "items": [
+      {
+        "en": "Added the “Show unreachable areas” option.",
+        "zh-cn": "添加“显示不可达区域”选项。",
+        "de": "Option „Unerreichbare Bereiche anzeigen“ hinzugefügt.",
+        "es": "Añadida la opción «Mostrar zonas inaccesibles».",
+        "fr": "Ajout de l’option « Afficher les zones inaccessibles ».",
+        "it": "Aggiunta l’opzione «Mostra aree irraggiungibili».",
+        "ja": "「到達できないエリアを表示」オプションを追加。",
+        "ko": "‘도달할 수 없는 영역 표시’ 옵션 추가.",
+        "pl": "Dodano opcję „Pokaż obszary nieosiągalne”.",
+        "pt-br": "Adicionada a opção “Mostrar áreas inacessíveis”.",
+        "ru": "Добавлена настройка «Показывать недоступные области».",
+        "zh-tw": "新增「顯示無法到達的區域」選項。"
+      }
+    ]
+  },
+  {
     "date": "2026-10-31",
     "items": [
       {

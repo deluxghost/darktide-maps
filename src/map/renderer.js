@@ -359,7 +359,8 @@ export function createMapRenderer(mapElement, onError) {
 		currentState = {
 			map,
 			token,
-			mesh: createMesh(navmeshGlb, options.heightColors),
+			mesh: createMesh(navmeshGlb, options.heightColors,
+				map.reach.evaluated ? map.reach.shownTriangles * 3 : navmeshGlb.indices.length),
 			pinOcclusion,
 			boundaryPaths,
 			mainPathMeshes,

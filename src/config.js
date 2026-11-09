@@ -109,6 +109,7 @@ export const APP_CONFIG = {
 				boundaryWidth: 0.3,
 				boundaryDepthBias: -1,
 				boundaryDepthBiasSlopeScale: -1,
+				unreachablePattern: {spacing: 4, width: 0.8, opacity: 0.35},
 			},
 			mainPath: {
 				tubeColor: [255, 125, 0, 255],
