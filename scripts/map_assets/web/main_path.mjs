@@ -4,6 +4,10 @@ import {CatmullRomCurve3, TubeGeometry, Vector3} from "three";
 
 const MAIN_PATH = BUILD_CONFIG.mainPath;
 
+function floorCoordinate(floor) {
+	return Array.isArray(floor) ? floor.map((value) => value + 0.5) : floor + 0.5;
+}
+
 function createMesh() {
 	return {
 		positions: [],
@@ -169,7 +173,10 @@ function addDashedTube(mesh, start, end, floorAt) {
 	const endAt = length - gapLength;
 	const startFloor = floorAt(start), endFloor = floorAt(end);
 	// A connector spans missing path data; interpolate its endpoint ownership monotonically.
-	const connectorFloor = (point) => startFloor + (endFloor - startFloor) * distance(start, point) / length;
+	const between = (from, to, point) => from + (to - from) * distance(start, point) / length;
+	const connectorFloor = (point) => Array.isArray(startFloor)
+		? startFloor.map((from, index) => between(from, endFloor[index], point))
+		: between(startFloor, endFloor, point);
 
 	if (length <= gapLength * 2 || dashLength <= 0 || gapLength < 0) {
 		return;
@@ -246,11 +253,11 @@ export function createMainPathMeshes(data, floors) {
 	const segments = requireArray(data.segments, "main path segments")
 		.map((segment) => cleanNodes(requireArray(segment.nodes, "main path segment nodes")));
 	const visibleSegments = segments.filter((nodes) => nodes.length >= 2);
-	const floorAt = (point) => floors.floorAt([point[0], point[1], point[2] - MAIN_PATH.verticalOffset]) + 0.5;
+	const floorAt = (point) => floorCoordinate(floors.floorAt([point[0], point[1], point[2] - MAIN_PATH.verticalOffset]));
 
 	for (const nodes of visibleSegments) {
 		for (const section of floors.splitPath(nodes, MAIN_PATH.verticalOffset)) {
-			addTubePath(meshes.tube, section.path, MAIN_PATH.tubeRadius, () => section.floorIndex + 0.5);
+			addTubePath(meshes.tube, section.path, MAIN_PATH.tubeRadius, () => floorCoordinate(section.floorIndex));
 		}
 		addSegmentEndArrow(meshes.arrows, nodes, floorAt(nodes.at(-1)));
 	}
@@ -262,7 +269,7 @@ export function createMainPathMeshes(data, floors) {
 		if (connection.kind === "break") addDashedTube(meshes.connectors, ...points, floorAt);
 		else if (connection.kind === "continuous") {
 			for (const section of floors.splitPath(points, MAIN_PATH.verticalOffset)) {
-				addTubePath(meshes.tube, section.path, MAIN_PATH.tubeRadius, () => section.floorIndex + 0.5);
+				addTubePath(meshes.tube, section.path, MAIN_PATH.tubeRadius, () => floorCoordinate(section.floorIndex));
 			}
 		} else throw new Error(`Unknown main path connection kind: ${connection.kind}`);
 	}

@@ -42,10 +42,10 @@ function layerGradient(layers, minimum, maximum) {
 	return `linear-gradient(to top, ${stops.join(", ")})`;
 }
 
+// Ignore unused vertices when computing the current view's height percentiles.
 export function createHeightColors(glb, layerCount) {
-	const {positions, floorIds} = glb;
-	const order = Array.from({length: positions.length / 3}, (_, index) => index)
-		.sort((left, right) => positions[left * 3 + 2] - positions[right * 3 + 2]);
+	const {positions, floorIds, indices} = glb;
+	const order = [...new Set(indices)].sort((left, right) => positions[left * 3 + 2] - positions[right * 3 + 2]);
 	const colors = new Float32Array(positions.length);
 	const layers = Array.from({length: layerCount}, () => []);
 	let minimum = 0, maximum = 0;

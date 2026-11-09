@@ -194,16 +194,23 @@ function writeChunks(chunks) {
 	return binary;
 }
 
+// Floor coordinates per vertex: a number (one partition) or [all-nav floor, reachable-area floor].
+const FLOOR_ATTRIBUTES = ["_FLOOR", "_REACH_FLOOR"];
+
 function appendFloorAttribute(gltf, chunks, primitive, floors, count) {
-	if (floors?.length !== count || floors.some((floor) => !Number.isFinite(floor))) {
+	const columns = Array.isArray(floors?.[0]) ? floors[0].length : 1;
+	if (floors?.length !== count || columns > FLOOR_ATTRIBUTES.length
+		|| floors.some((floor) => [floor].flat().length !== columns || ![floor].flat().every(Number.isFinite))) {
 		throw new Error("Geometry is missing valid floor coordinates.");
 	}
-	const values = Float32Array.from(floors);
-	const buffer = Buffer.from(values.buffer);
-	const offset = appendAligned(chunks, buffer);
-	primitive.attributes._FLOOR = gltf.accessors.length;
-	gltf.accessors.push({bufferView: gltf.bufferViews.length, componentType: FLOAT_COMPONENT_TYPE, count, type: "SCALAR"});
-	gltf.bufferViews.push({buffer: 0, byteOffset: offset, byteLength: buffer.length, target: ARRAY_BUFFER_TARGET});
+	for (let column = 0; column < columns; column++) {
+		const values = Float32Array.from(floors, (floor) => columns === 1 ? floor : floor[column]);
+		const buffer = Buffer.from(values.buffer);
+		const offset = appendAligned(chunks, buffer);
+		primitive.attributes[FLOOR_ATTRIBUTES[column]] = gltf.accessors.length;
+		gltf.accessors.push({bufferView: gltf.bufferViews.length, componentType: FLOAT_COMPONENT_TYPE, count, type: "SCALAR"});
+		gltf.bufferViews.push({buffer: 0, byteOffset: offset, byteLength: buffer.length, target: ARRAY_BUFFER_TARGET});
+	}
 }
 
 export function createGeometryPartsGlb(name, parts, extras) {

@@ -79,9 +79,7 @@ def skip_mesh(cursor):
         _, _, vertices, stride = cursor.read("<4I")
         if size not in (0, vertices * stride):
             raise ValueError(f"{cursor.reader.name}: vertex stream size mismatch")
-    channel_count = cursor.array(17)
-    if channel_count != stream_count:
-        raise ValueError(f"{cursor.reader.name}: vertex stream/channel mismatch")
+    cursor.array(17)   # vertex channels; geometry compiled into levels has more channels than streams
     _, _, kind, count = cursor.read("<4I")
     _, size = cursor.bytes()
     if kind not in INDEX_ELEMENT_BYTES or size not in (0, count * INDEX_ELEMENT_BYTES[kind]):
@@ -191,9 +189,14 @@ def read_actors(cursor, group):
 
 def read_unit_geometry(path, *, include_collision=False):
     name, reader = resource(path, murmur64("unit"))
+    return name, unit_geometry(reader, include_collision=include_collision)
+
+
+def unit_geometry(reader, *, include_collision=False):
+    """Nodes, actors (with decoded collision surfaces if include_collision) and sections of compiled unit data."""
     cursor = Cursor(reader)
     if cursor.count() != UNIT_VERSION:
-        raise ValueError(f"{path}: unsupported unit geometry version")
+        raise ValueError(f"{reader.name}: unsupported unit geometry version")
     for _ in range(cursor.count()):
         skip_mesh(cursor)
     for _ in range(cursor.count()):
@@ -214,5 +217,5 @@ def read_unit_geometry(path, *, include_collision=False):
         for actor in actors:
             for shape in actor["shapes"]:
                 shape["surface"] = decode_shape(reader, shape)
-    return name, {**graph, "actors": actors, "volumes": volumes, "dynamic_data": dynamic_data,
-                  "serialized_assets": serialized_assets, "flow": flow}
+    return {**graph, "actors": actors, "volumes": volumes, "dynamic_data": dynamic_data,
+            "serialized_assets": serialized_assets, "flow": flow}

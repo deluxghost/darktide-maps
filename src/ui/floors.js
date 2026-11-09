@@ -244,8 +244,8 @@ export function createFloorController({root, onChange}) {
 		}
 	});
 
-	function setMap(map, gradient) {
-		layers = map?.floorSlices?.layers ?? [];
+	function setMap(map, gradient, mapLayers = []) {
+		layers = map ? mapLayers : [];
 		colorBand.style.background = map ? gradient : "";
 		minTick = 0;
 		maxTick = layers.length;

@@ -2,7 +2,7 @@
 
 import math
 
-from .binary import resource
+from .binary import Binary, resource
 from .dynamic_data import DynamicDataType
 from .resource import murmur64
 from .flow import LevelFlow
@@ -61,12 +61,47 @@ def transform(reader, offset):
     return {"position": list(values[:3]), "rotation": list(values[3:7]), "scale": list(values[7:])}
 
 
+def read_object_sets(reader, unit_count):
+    """Per unit, the name hashes (key32) of the level object sets it belongs to; themes hide whole sets."""
+    set_count, names, table = reader.unpack("<3I", 116)
+    known = set()
+    for index in range(set_count):
+        start, = reader.unpack("<I", names + index * 4)
+        end = reader.data.index(0, start)
+        known.add(key32(reader.data[start:end].decode("utf-8")))
+    result = []
+    for index in range(unit_count):
+        count, offset = reader.unpack("<2I", table + index * 8)
+        sets = list(reader.unpack(f"<{count}I", offset)) if count else []
+        if not set(sets) <= known:
+            raise ValueError(f"{reader.name}: unit {index} references an unknown object set")
+        result.append(sets)
+    return result
+
+
+EMBEDDED_UNITS = 108   # count and table offset of the unit data compiled into the level (entries: offset, size, id)
+
+
+def embedded_units(path):
+    """Units compiled into a level resource itself (its own collision, such as its player_mover_blocker volumes):
+    [(unit id, Binary of the unit data)]."""
+    _, reader = resource(path, murmur64("level"))
+    count, start = reader.unpack("<2I", EMBEDDED_UNITS)
+    units = []
+    for index in range(count):
+        offset, size, unit = reader.unpack("<2IQ", start + index * 16)
+        reader.check(offset, size)
+        units.append((unit, Binary(reader.data[offset:offset + size], f"{reader.name}:unit{index}")))
+    return units
+
+
 def read_level(path):
     name, reader = resource(path, murmur64("level"))
     zero, version, unit_count = reader.unpack("<3I", 0)
     if (zero, version) != (0, LEVEL_VERSION):
         raise ValueError(f"{path}: unsupported level version {version}")
     script_table, = reader.unpack("<I", 16)
+    memberships = read_object_sets(reader, unit_count)
     units = []
     for index in range(unit_count):
         offset = 192 + index * 96
@@ -89,7 +124,8 @@ def read_level(path):
                               "rotation": list(rotation_scale[:4]), "scale": list(rotation_scale[4:])})
         units.append({"id": f"{identity:016x}", "editor_name": f"{editor_name:016x}",
                       "resource": f"{unit:016x}", **transform(reader, offset + 32),
-                      "node_overrides": overrides, "volume_overrides": volumes, "config": config})
+                      "node_overrides": overrides, "volume_overrides": volumes, "config": config,
+                      "object_sets": memberships[index]})
     nested_count, nested_offset = reader.unpack("<2I", 136)
     nested = []
     for _ in range(nested_count):

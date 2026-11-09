@@ -83,6 +83,9 @@ export async function parseGlb(arrayBuffer) {
 			floorIds: Number.isInteger(primitive.attributes._FLOOR)
 				? typedArrayForAccessor(json, binary, primitive.attributes._FLOOR)
 				: null,
+			reachFloorIds: Number.isInteger(primitive.attributes._REACH_FLOOR)
+				? typedArrayForAccessor(json, binary, primitive.attributes._REACH_FLOOR)
+				: null,
 			normals: Number.isInteger(primitive.attributes.NORMAL)
 				? typedArrayForAccessor(json, binary, primitive.attributes.NORMAL)
 				: null,

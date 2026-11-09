@@ -12,6 +12,7 @@ ACTOR_TEMPLATE_FLAGS_INDEX = 0
 
 class ActorTemplateFlag(IntFlag):
     DYNAMIC = 1 << 0
+    KINEMATIC = 1 << 1    # moved only by code (animation, Flow), never by the simulation; in game Actor.is_kinematic
 
 
 class ShapeTemplateFlag(IntFlag):

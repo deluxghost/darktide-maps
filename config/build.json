@@ -42,11 +42,15 @@
   "boundaries": {
     "coordinatePrecision": 4,
     "minimumCollapsedArea": 0.05,
-    "maximumDanglingBranchLength": 3.5
+    "probeOffset": 0.01,
+    "probeSpacing": 0.1,
+    "surfaceHeight": 0.3
   },
   "terrain": {
     "clearanceLow": 0.35,
     "clearanceHigh": 1.2,
+    "moverBlockerClearanceLow": 1.3,
+    "moverBlockerClearanceHigh": 1.65,
     "overlayOffset": 0.02,
     "curveError": 0.001,
     "heightfieldChunk": 256
@@ -62,26 +66,6 @@
       "823dd56d7ad8b535": "content/environment/gameplay/events/propaganda/mid/large_sand_fan_01"
     },
     "nonObstacleActors": {
-      "dm_stockpile": [
-        {
-          "ancestry": [
-            "07ab06ec4ad24ab0"
-          ],
-          "unit": "63da3b692bdef9dd",
-          "resource": "21027a51c6c203af",
-          "actor": 3199297567,
-          "reason": "mission_gate"
-        },
-        {
-          "ancestry": [
-            "07ab06ec4ad24ab0"
-          ],
-          "unit": "cdfd424384159837",
-          "resource": "21027a51c6c203af",
-          "actor": 3199297567,
-          "reason": "mission_gate"
-        }
-      ],
       "lm_rails": [
         {
           "ancestry": [
@@ -89,8 +73,7 @@
           ],
           "unit": "c8bd10933a7ae34d",
           "resource": "eaca047f9084d5d7",
-          "actor": 3229172091,
-          "reason": "walkable_support"
+          "actor": 3229172091
         },
         {
           "ancestry": [
@@ -98,8 +81,7 @@
           ],
           "unit": "c9d985561a63d061",
           "resource": "eaca047f9084d5d7",
-          "actor": 3229172091,
-          "reason": "walkable_support"
+          "actor": 3229172091
         },
         {
           "ancestry": [
@@ -107,8 +89,7 @@
           ],
           "unit": "ee00d3cbca129164",
           "resource": "eaca047f9084d5d7",
-          "actor": 3229172091,
-          "reason": "walkable_support"
+          "actor": 3229172091
         }
       ]
     }
@@ -121,6 +102,98 @@
       "tg_shooting_range": {
         "mainPath": true
       }
+    }
+  },
+  "reach": {
+    "notEvaluatedMissions": ["tg_shooting_range"],
+    "voidNav": {
+      "psykhanium": [
+        [63.14, -20.3, 9.01]
+      ],
+      "hm_strain": [
+        [-69.51, -61.69, -136.96],
+        [-67.4, -30.0, -143.25]
+      ]
+    },
+    "player": {
+      "moverRadius": 0.495,
+      "moverHeight": 1.65,
+      "navAgentRadius": 0.38,
+      "moverMaxSlope": 0.6675,
+      "stepHeight": 0.35,
+      "jumpApex": 0.75,
+      "ledgeVaultHeight": 1.3,
+      "airLedgeVaultHeight": 0.65,
+      "jumpSpeed": 4.0,
+      "gravity": 11.82,
+      "walkSpeed": 4.0,
+      "sprintSpeed": 5.2,
+      "safeFallHeight": 7.0,
+      "hangCapsuleRadius": 0.5
+    },
+    "regions": {
+      "sliverArea": 0.02,
+      "sourceArea": 1.0,
+      "sourceProbes": 4,
+      "floorGap": 1.5,
+      "standLift": 0.6,
+      "blockerHeight": 1.4,
+      "sliverLandRadius": 1.5,
+      "sliverLandHeight": 0.5,
+      "ladderStep": 0.5,
+      "ladderReach": 1.0,
+      "ladderHeight": 0.4,
+      "anchorRadius": 1.5,
+      "anchorHeight": 1.2,
+      "dockSnapHeight": 0.6,
+      "dockRadius": 3.0,
+      "dockHeight": 1.5,
+      "vehicleSpawnRadius": 3.0,
+      "vehicleSpawnHeight": 3.0,
+      "vehicleDrop": 60.0
+    },
+    "moves": {
+      "distances": [
+        0.5,
+        1.0,
+        1.6,
+        2.4,
+        3.2,
+        4.0,
+        4.8,
+        5.6
+      ],
+      "walkReach": 3.2,
+      "normalReach": 4.0,
+      "lateralOffset": 0.45,
+      "sweepHalfWidth": 0.3,
+      "arcSegments": 4,
+      "sampleSpacing": 1.0,
+      "shaftRadius": 0.45,
+      "shaftWidth": 1.06,
+      "shaftDrop": 1.0,
+      "shaftStep": 0.5,
+      "newTargetRadius": 8.0,
+      "aimTargets": 3,
+      "aimOvershoot": 1.0,
+      "aimSpread": 15.0,
+      "aimDrop": 3.0,
+      "footholdTargets": 2,
+      "footholdRise": 1.3,
+      "footholdMinimum": 0.6,
+      "footholdRegionRadius": 6.0,
+      "footholdRegionHeight": 4.0
+    },
+    "footholds": {
+      "snap": 0.35,
+      "footRadius": 0.25,
+      "wallClearance": 0.3,
+      "navGap": 0.6,
+      "navHeight": 0.5,
+      "rise": 4.0,
+      "topSpacing": 1.0,
+      "topNearNav": 6.0,
+      "topDedupe": 0.75
     }
   }
 }

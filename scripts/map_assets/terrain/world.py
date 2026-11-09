@@ -10,6 +10,7 @@ from scipy.spatial.transform import Rotation
 
 from ..formats.unit_geometry import ACTOR_CREATE_ON_SPAWN_INDEX, ActorWorld, node_matrices
 from ..formats.physics import ACTOR_TEMPLATE_FLAGS_INDEX, ActorTemplateFlag, ShapeTemplateFlag
+from ..formats.resource import murmur64
 from ..formats.collision_geometry import (
     CollisionShape, HEIGHTFIELD_HOLE_MATERIAL, HEIGHTFIELD_MATERIAL_MASK, HEIGHTFIELD_TESSELLATION_FLAG,
 )
@@ -96,10 +97,29 @@ def heightfield(shape, samples):
     return vertices, np.concatenate((first[valid0], second[valid1]))
 
 
+def static_component_child(unit):
+    """LevelPropCustomization child spawned as static, unlinked from its parent and without component extensions
+    or Flow bindings, so parent movement does not move its actors."""
+    spawn = unit.get("spawn")
+    return bool(spawn) and spawn["component"] == "LevelPropCustomization" and unit["create_actors"]
+
+
+def door_unit(unit):
+    """Keep door collision unless the door rules have already marked its actors as conditional."""
+    return any(component["name"] == "Door" for component in unit["components"])
+
+
+def unmoved_kinematic(unit, flags):
+    """Kinematic actor on a unit with no component, Flow or story track that can move it."""
+    return bool(flags & ActorTemplateFlag.KINEMATIC) and not unit["components"] and unit.get("unaddressed", False)
+
+
 def obstacle_rejection(unit, actor, physics):
     if actor["name"] in unit["conditional_actors"]:
         return "flow_controlled_actor"
-    if physics["actors"][str(actor["template"])][ACTOR_TEMPLATE_FLAGS_INDEX] & ActorTemplateFlag.DYNAMIC:
+    flags = physics["actors"][str(actor["template"])][ACTOR_TEMPLATE_FLAGS_INDEX]
+    if flags & ActorTemplateFlag.DYNAMIC and not static_component_child(unit) and not door_unit(unit) \
+            and not unmoved_kinematic(unit, flags):
         return "non_static_actor"
     if unit["resource"] in EXCLUDED_UNIT_RESOURCES:
         return EXCLUDED_UNIT_RESOURCES[unit["resource"]]
@@ -112,11 +132,12 @@ class CollisionAssets:
         self.units = json_file(root / "collision_units.json")
         self.physics = json_file(root / "physics.json")
         self.cache = {}
+        self.matches = {}
         self.actor_exclusions = {}
         for rule in BUILD_CONFIG["collision"]["nonObstacleActors"].get(mission, []):
             key = tuple(rule["ancestry"]), rule["unit"], rule["actor"]
-            if key in self.actor_exclusions or not rule["reason"]:
-                raise ValueError(f"Invalid or duplicate non-obstacle actor rule: {rule}")
+            if key in self.actor_exclusions:
+                raise ValueError(f"Duplicate non-obstacle actor rule: {rule}")
             self.actor_exclusions[key] = rule
 
     def validate_actor_exclusions(self, scene):
@@ -153,8 +174,23 @@ class CollisionAssets:
             self.cache[identity] = graph, shapes
         return self.cache[identity]
 
-    def place(self, scene, bounds, counts):
+    def filter_matches(self, query_filter):
+        """Shape templates a scene query with this collision filter hits (membership against mask, either way)."""
+        if query_filter not in self.matches:
+            query = self.physics["filters"][str(murmur64(query_filter) >> 32)]
+            query_is, query_with = int(query["is"], 16), int(query["collides_with"], 16)
+            self.matches[query_filter] = {
+                name: bool(int(shape["is"], 16) & query_with or query_is & int(shape["collides_with"], 16))
+                for name, shape in self.physics["shapes"].items()}
+        return self.matches[query_filter]
+
+    def place(self, scene, bounds, counts, query_filter="filter_player_mover", keep_rejected=False, query_shapes=False):
+        """Placed collision shapes of the scene that a query with query_filter hits. Shapes of actors that are not
+        permanent obstacles are skipped, or with keep_rejected kept with their reason in shape["rejected"].
+        query_shapes: also shapes without simulation collision (raycast-only shapes such as hang-ledge helpers)."""
         self.validate_actor_exclusions(scene)
+        matches = self.filter_matches(query_filter)
+        skipped_flags = ShapeTemplateFlag.TRIGGER if query_shapes else NON_COLLIDING_SHAPE_FLAGS
         result = []
         for unit in scene:
             if unit["physics_disabled"] or unit.get("mission_path_blocker_enabled") is False:
@@ -172,14 +208,15 @@ class CollisionAssets:
                 planar_rank = np.linalg.matrix_rank(actor_matrix[:2, :3])
                 actor_pose = None
                 rule = self.actor_exclusions.get((tuple(unit["ancestry"]), unit["unit"], actor["name"]))
-                reason = rule["reason"] if rule else obstacle_rejection(unit, actor, self.physics)
+                reason = "non_obstacle_rule" if rule else obstacle_rejection(unit, actor, self.physics)
                 for s, shape in enumerate(actor["shapes"]):
                     profile = self.physics["shapes"][str(shape["template"])]
-                    if not profile["matches_player_mover_filter"] or profile["flags"] & NON_COLLIDING_SHAPE_FLAGS:
+                    if not matches[str(shape["template"])] or profile["flags"] & skipped_flags:
                         continue
                     if reason:
                         counts[f"rejected_{reason}"] += 1
-                        continue
+                        if not keep_rejected:
+                            continue
                     # Collapsed linear geometry cannot remove an area from the Nav plane.
                     if shape["type"] not in (CollisionShape.SPHERE, CollisionShape.CAPSULE) and planar_rank < 2:
                         counts["zero_area_shapes"] += 1
@@ -205,9 +242,10 @@ class CollisionAssets:
                         low, high = points.min(axis=0), points.max(axis=0)
                     if np.any(high < bounds[0]) or np.any(low > bounds[1]):
                         continue
-                    counts["static_obstacle_shapes"] += 1
+                    counts["static_obstacle_shapes" if not reason else "kept_rejected_shapes"] += 1
                     source = {"resource": identity, "unit": unit["unit"], "ancestry": unit["ancestry"],
                               "actor": a, "shape": s}
+                    placed = len(result)
                     if curve is not None:
                         result.append({"curve": curve, "rotation": rotation, "position": position,
                                        "radius": radius, "half_height": height / 2, "convex": True,
@@ -221,4 +259,6 @@ class CollisionAssets:
                         result.append({"vertices": points, "edges": edges, "convex": kind != CollisionShape.TRIANGLE_MESH, "source": source,
                                        "triangles": points[faces] if faces is not None and kind == CollisionShape.TRIANGLE_MESH else None,
                                        "low": low, "high": high, "surface_only": False})
+                    for shape_entry in result[placed:]:
+                        shape_entry["rejected"] = reason
         return result

@@ -22,6 +22,71 @@ SWITCH_NODES = {
 }
 
 
+BREED_WHITE_LIST = key32("breed_white_list")
+PLAYER_BREEDS = {"human", "ogryn"}
+SMART_OBJECTS = key32("smart_objects")
+LINK_ENDS = (key32("entrance_position"), key32("exit_position"))
+SPAWNER_REACH = 4.0       # m; spawner association radius around a monster-wall nav link endpoint
+WALL_PIECE_REACH = 2.5    # m; panel association radius around a monster-wall nav link
+
+
+def breed_restricted(unit):
+    """Destructible whose explicit PropHealth damage whitelist contains no player breeds."""
+    health = next((c for c in unit["components"] if c["name"] == "PropHealth"), None)
+    if health is None or not any(c["name"] == "Destructible" for c in unit["components"]):
+        return False
+    breeds = {value for path, value in health.get("data", []) if path and path[0] == BREED_WHITE_LIST}
+    return bool(breeds) and not breeds & PLAYER_BREEDS
+
+
+def wall_links(unit):
+    """(entrance, exit) world points of the nav links a monster uses to burst through this wall."""
+    links = []
+    for graph in (c for c in unit["components"] if c["name"] == "NavGraph"):
+        ends = {}
+        for path, value in graph.get("data", []):
+            if len(path) == 4 and path[0] == SMART_OBJECTS and path[2] in LINK_ENDS:
+                ends.setdefault((path[1], path[2]), [0.0, 0.0, 0.0])[path[3]] = float(value)
+        for index in sorted({key[0] for key in ends}):
+            if all((index, end) in ends for end in LINK_ENDS):
+                links.append(tuple(ends[index, end] for end in LINK_ENDS))
+    return links
+
+
+def sealed_monster_walls(scene, forced=frozenset()):
+    """Classify breed-restricted walls as sealed when no nav-link endpoint has an associated spawner and the wall
+    is not a scripted destruction target.
+
+    Returns wall keys {(ancestry, unit)} and their nav links; terrain checks for enclosed spawners later."""
+    spawners = [unit["position"] for unit in scene if any(c["name"] == "MonsterSpawner" for c in unit["components"])]
+    near = lambda point: any(sum((a - b) ** 2 for a, b in zip(point, s)) <= SPAWNER_REACH ** 2 for s in spawners)
+    walls, links = set(), []
+    for unit in scene:
+        if breed_restricted(unit) and (tuple(unit["ancestry"]), unit["unit"]) not in forced:
+            own = wall_links(unit)
+            if not any(near(end) for link in own for end in link):
+                walls.add((tuple(unit["ancestry"]), unit["unit"]))
+                links += own
+    return walls, links
+
+
+def wall_panel(unit, links):
+    """Associate a destructible without PropHealth with a nearby monster-wall nav link.
+
+    Matched panels follow the wall when retaining or reopening its collision."""
+    if any(c["name"] == "PropHealth" for c in unit["components"]):
+        return False
+    x, y, z = unit["position"]
+    for (ax, ay, az), (bx, by, bz) in links:
+        dx, dy = bx - ax, by - ay
+        length = dx * dx + dy * dy
+        t = 0.0 if length == 0 else max(0.0, min(1.0, ((x - ax) * dx + (y - ay) * dy) / length))
+        px, py = ax + t * dx, ay + t * dy
+        if (x - px) ** 2 + (y - py) ** 2 <= WALL_PIECE_REACH ** 2 and abs(z - (az + t * (bz - az))) <= 2.0:
+            return True
+    return False
+
+
 def node_kinds(static):
     reader = Binary(static, "unit Flow classification")
     header = reader.unpack("<23I", 0)
@@ -236,14 +301,26 @@ class PhysicsControls:
         if transitions.is_state and STATE_VALUE in property_bindings(flow, group, True):
             self.units[identity] = UnitStateControl(flow, group, transitions)
 
-    def apply(self, root, levels, scene, definitions):
+    def apply(self, root, levels, scene, definitions, live, forced=frozenset()):
         instances = {ancestry: level for _, level, _, ancestry in walk_levels(root, levels)}
         objects = {(tuple(unit["ancestry"]), unit["unit"]): unit for unit in scene}
         pending, parents, sources, reports = deque(), {}, {}, []
+        sealed, sealed_links = sealed_monster_walls(scene, forced)
+        # Retain candidates for the terrain stage, which also checks for spawners enclosed behind a wall.
+        for unit in scene:
+            key = tuple(unit["ancestry"]), unit["unit"]
+            if key in sealed:
+                unit["monster_wall"] = {"links": [[list(end) for end in link] for link in wall_links(unit)]}
+            elif not any(c["name"] == "PropHealth" for c in unit["components"])                     and any(c["name"] == "Destructible" for c in unit["components"]):
+                owners = [[list(wall[0]), wall[1]] for wall in sorted(sealed)
+                          if wall_panel(unit, wall_links(objects[wall]))]
+                if owners:
+                    unit["monster_wall_panel_of"] = owners
         for unit in scene:
             disabled = set(self.transient_actors.get(unit["resource"], ()))
             destructible = next((c for c in unit["components"] if c["name"] == "Destructible"), None)
-            if destructible and component_value(destructible, definitions, "start_enabled"):
+            if destructible and component_value(destructible, definitions, "start_enabled") \
+                    and (tuple(unit["ancestry"]), unit["unit"]) not in sealed and not wall_panel(unit, sealed_links):
                 disabled.add(key32("c_destructible"))
                 disabled.update(key32(actor) for actor in component_value(destructible, definitions, "collision_actors"))
                 disabled.update(self.destruction_actors.get(unit["resource"], ()))
@@ -375,4 +452,23 @@ class PhysicsControls:
                 continue
             if kind in EVENT_CONTROL_NODES:
                 push(ancestry, flow.outgoing(offset), key)
+        # Collision disabled by live mission Flow nodes is conditional, as with openable doors.
+        for ancestry, level in instances.items():
+            flow = level["flow"]
+            for offset, indices in flow.unit_bindings.items():
+                if flow.nodes[offset]["kind"] != FlowNode.UNIT_EVENT or offset not in live[ancestry]:
+                    continue
+                for index in indices:
+                    unit = level["units"][index]
+                    control = self.units.get(unit["resource"])
+                    record = objects.get((ancestry, unit["id"]))
+                    if control is None or record is None:
+                        continue
+                    for selector, name in enumerate(flow.event_names(offset)):
+                        effect = control.events.get(name)
+                        if effect and effect["disabled"] and not effect["disabled"] <= set(record["conditional_actors"]):
+                            key = ancestry, offset, selector
+                            parents.setdefault(key, None)
+                            sources.setdefault(key, {"level_flow_event": f"{name:08x}"})
+                            record_effect(record, effect["disabled"], key, name)
         return {"units": len({(tuple(entry["ancestry"]), entry["unit"]) for entry in reports}), "routes": reports}

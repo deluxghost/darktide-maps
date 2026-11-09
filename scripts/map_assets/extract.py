@@ -1,10 +1,11 @@
 """Export static navigation, complete main paths, and scene component placements."""
 
+import math
 import time
 from collections import Counter
 from pathlib import Path
 
-from .formats.level import components, read_level
+from .formats.level import components, embedded_units, read_level
 from .source.lua_data import read_tables
 from .formats.navdata import RuntimeStitchRequired, decode_navmesh
 from .source.resources import Resources, file_digest
@@ -26,6 +27,17 @@ from .formats.physics import read_physics
 from .terrain.collisions import export_collision, resource_names
 from .config import configuration
 from .scene.physics import PhysicsControls
+from .scene.volumes import MOVER_BLOCKER, PLAYER_INSTAKILL, level_blockers, solid_parts, typed_volumes, volume_types
+from .scene.doors import DESTRUCTIBLE_COMPONENT, DOOR_COMPONENT, flow_destructed, openable_doors
+from .scene.flow_spawns import spawn_specs
+from .scene.flow_live import live_nodes
+from .scene.themes import DEFAULT_THEME_TAG, THEME_SUFFIX, hidden_set_keys
+from .scene.stories import story_unit_indices
+from .scene.platforms import player_platforms
+from .terrain.world import CollisionAssets
+
+
+FLOOR_COSINE = math.cos(configuration("build")["reach"]["player"]["moverMaxSlope"])
 
 
 def extract(args):
@@ -68,11 +80,21 @@ def extract(args):
     levels = {f"{name:016x}": read_level(path) for name, path in extracted["level"].items()}
     unit_defaults = {}
     controls = PhysicsControls(assets)
+    door_flows = {}
+    flow_spawns = {}
+    flowed_units = set()     # unit resources with their own unit Flow
     for path in extracted["unit"].values():
         name, data, flow = read_unit_data(path)
         controls.add_unit(f"{name:016x}", flow)
+        if flow and flow[0]:
+            flowed_units.add(f"{name:016x}")
+        specs = spawn_specs(flow, f"{name:016x}: spawn Flow")
+        if specs:
+            flow_spawns[f"{name:016x}"] = specs
         if data:
             unit_defaults[f"{name:016x}"] = data
+            if any(component["name"] in (DOOR_COMPONENT, DESTRUCTIBLE_COMPONENT) for component in components(data)):
+                door_flows[f"{name:016x}"] = flow
     prop_source = "scripts/components/level_prop_customization"
     marker_sources = [f"scripts/components/{file}" for file in COMPONENT_SOURCES.values()]
     source_names = [*marker_sources, prop_source]
@@ -84,7 +106,13 @@ def extract(args):
     }
     main_paths = {name: mission["level"] + "_main_path" for name, mission in fixed.items()
                   if (murmur64("lua"), murmur64(mission["level"] + "_main_path")) in dependencies[name]}
-    sources = assets.lua_sources([*source_names, *main_paths.values(), *setting_sources.values()], Path(args.decompiler).resolve())
+    theme_sources = {name: mission["level"] + THEME_SUFFIX for name, mission in fixed.items()
+                     if (murmur64("lua"), murmur64(mission["level"] + THEME_SUFFIX)) in dependencies[name]}
+    sources = assets.lua_sources([*source_names, *main_paths.values(), *setting_sources.values(), *theme_sources.values()],
+                                 Path(args.decompiler).resolve())
+    theme_lists = {fixed[name]["level"]: themes.get(DEFAULT_THEME_TAG, []) for name, themes in
+                   zip(theme_sources, read_tables("table", [sources[source] for source in theme_sources.values()]), strict=True)}
+    hidden_sets = hidden_set_keys(assets, theme_lists)
     definitions = dict(zip(COMPONENT_SOURCES, read_tables("component", [sources[name] for name in marker_sources]), strict=True))
     marker_settings = load_marker_settings(assets, Path(args.decompiler).resolve(), fixed)
     prop_definition, = read_tables("select:LevelPropCustomization.component_data.children_units.definition", [sources[prop_source]])
@@ -105,18 +133,66 @@ def extract(args):
     physics_path, = assets.extract("physics_properties", ["application_settings/global"]).values()
     physics = read_physics(physics_path)
     names = resource_names(args.dictionary, extracted["unit"].keys()) if args.dictionary else {}
-    node_resources = marker_resources | prop_node_resources(levels, unit_defaults)
-    collision_catalog, geometry, collision_stats = export_collision(extracted["unit"], output, physics, names, node_resources)
+    node_resources = marker_resources | prop_node_resources(levels, unit_defaults) | set(flow_spawns)
+    level_paths = {f"{name:016x}": path for name, path in extracted["level"].items()}
+    # Embedded level collision remains active even when the level's volume metadata Lua is not loaded.
+    level_units = {identity: [(f"{identity}-{index}", reader) for index, (_, reader) in enumerate(embedded_units(path))]
+                   for identity, path in level_paths.items()}
+    collision_catalog, geometry, collision_stats = export_collision(
+        extracted["unit"], output, physics, names, node_resources,
+        {key: reader for units in level_units.values() for key, reader in units})
     write_json(output / "physics.json", physics)
     write_json(output / "collision_units.json", collision_catalog)
+    level_names = {f"{murmur64(mission['level']):016x}": mission["level"] for mission in fixed.values()}
+    for level in levels.values():
+        level_names.update((child["resource"], child["name"]) for child in level["nested"])
+    volume_sources = {identity: level + "_volume_data" for identity, level in level_names.items()
+                      if any((murmur64("lua"), murmur64(level + "_volume_data")) in entries for entries in dependencies.values())}
+    volume_metadata = {}
+    if volume_sources:
+        volume_paths = assets.lua_sources(volume_sources.values(), Path(args.decompiler).resolve())
+        volume_metadata = dict(zip(volume_sources, (volume_types(records) for records in read_tables(
+            "select:volume_data", [volume_paths[source] for source in volume_sources.values()])), strict=True))
+    story_cache = {}
     scene_assets = SceneAssets(unit_defaults, collision_catalog, geometry,
-                               {f"{key:016x}" for key in extracted["unit"]}, child_defaults)
+                               {f"{key:016x}" for key in extracted["unit"]}, child_defaults, flow_spawns)
     reports = []
     for name, mission in fixed.items():
         root = f"{murmur64(mission['level']):016x}"
-        scene = scene_assets.objects(root, levels)
+        scene = scene_assets.objects(root, levels, hidden_sets.get(mission["level"], set()))
         initialization = initialize_scene(root, levels, scene)
-        physics_controls = controls.apply(root, levels, scene, definitions)
+        # Stories can animate otherwise unbound units, so their tracks also prevent an "unaddressed" classification.
+        bound = {}
+        for resource_id, level, _, ancestry in walk_levels(root, levels):
+            flow = level["flow"]
+            bound[ancestry] = {level["units"][index]["id"] for indices in flow.unit_bindings.values() for index in indices}
+            if resource_id not in story_cache:
+                story_cache[resource_id] = story_unit_indices(level_paths[resource_id])
+            bound[ancestry] |= {level["units"][index]["id"] for index in story_cache[resource_id]
+                                if index < len(level["units"])}
+        for unit in scene:
+            if not unit.get("spawn") and not unit["components"] and unit["resource"] not in flowed_units \
+                    and unit["unit"] not in bound.get(tuple(unit["ancestry"]), ()):
+                unit["unaddressed"] = True
+        live = live_nodes(root, levels)
+        forced = flow_destructed(root, levels, scene, door_flows, live)
+        physics_controls = controls.apply(root, levels, scene, definitions, live, forced)
+        # Doors players can open are conditional passages: none of their actors are permanent obstacles.
+        doors = openable_doors(root, levels, scene, door_flows, live)
+        for unit in scene:
+            if (tuple(unit["ancestry"]), unit["unit"]) in doors and unit["resource"] in collision_catalog:
+                actors = {actor["name"] for actor in collision_catalog[unit["resource"]]["actors"]}
+                unit["conditional_actors"] = sorted(set(unit["conditional_actors"]) | actors)
+        loaded = {identity: types for identity, types in volume_metadata.items()
+                  if (murmur64("lua"), murmur64(volume_sources[identity])) in dependencies[name]}
+        volumes = typed_volumes(root, levels, level_paths, loaded, (MOVER_BLOCKER, PLAYER_INSTAKILL))
+        # non-obstacle actor rules name scene units; compiled level collision has none
+        level_collision = level_blockers(root, levels, level_units, CollisionAssets(output, None))
+        # carving: the authored prisms where the level's volume Lua names them, else the compiled solids
+        blockers = volumes[MOVER_BLOCKER] + [part for blocker in level_collision if blocker["levelResource"] not in loaded
+                                             for part in solid_parts(blocker)]
+        platforms, skipped_platforms = player_platforms(root, levels, level_paths, scene, definitions, geometry,
+                                                        CollisionAssets(output, name), FLOOR_COSINE)
         nav_names = {int(nav["resource"], 16) for _, level, _, _ in walk_levels(root, levels) for nav in level["navigation"]}
         expected = {resource for kind, resource in dependencies[name] if kind == murmur64("NavData")}
         if nav_names != expected:
@@ -126,6 +202,13 @@ def extract(args):
                   "scene_initialization": initialization,
                   "physics_controls": physics_controls,
                   "physics_disabled_units": sum(unit["physics_disabled"] for unit in scene),
+                  "mover_blockers": len(blockers),
+                  "level_blockers": len(level_collision),
+                  "kill_volumes": len(volumes[PLAYER_INSTAKILL]),
+                  "player_platforms": len(platforms),
+                  "skipped_platforms": skipped_platforms,
+                  "openable_doors": len(doors),
+                  "theme_hidden_units": scene_assets.hidden_units,
                   "collision_units": sum(unit["resource"] in collision_catalog for unit in scene),
                   "components": dict(Counter(component["name"] for unit in scene for component in unit["components"]))}
         try:
@@ -164,7 +247,9 @@ def extract(args):
         enrich_marker_details(markers, scene, geometry, definitions, marker_settings["pickups"], text)
         if "navigation" in report:
             write_json(output / "missions" / f"{name}.json", {
-                "id": name, "navmesh": mesh, "scene": scene, "markers": markers, "mainPath": paths.get(name),
+                "id": name, "navmesh": mesh, "scene": scene, "moverBlockers": blockers, "levelBlockers": level_collision,
+                "killVolumes": volumes[PLAYER_INSTAKILL], "platforms": platforms,
+                "markers": markers, "mainPath": paths.get(name),
                 "metadata": metadata[name],
             })
         report["marker_candidates"] = {family: len(pins) for family, pins in markers.items()}

@@ -21,7 +21,7 @@ PATH_HELP = {
 def arguments():
     parser = argparse.ArgumentParser(description=__doc__, epilog=(
         "A full build requires --game, --limn, --decompiler and --cache. "
-        "Rebuild web/terrain needs only --work and --output. "
+        "Rebuild web/reach/terrain needs only --work and --output. "
         "Game resource, scene construction or marker extraction changes require a new full build. "
         "Install Python dependencies from scripts/requirements.txt and run npm ci first."))
     for name in (*INPUT_PATHS, "dictionary", "work", "output"):
@@ -29,7 +29,7 @@ def arguments():
     parser.add_argument("--node", default="node", help="Node.js executable path or command")
     parser.add_argument("--workers", type=int, default=1, help="Parallel terrain map processes")
     parser.add_argument("--missions", nargs="+", help="Build only these fixed mission ids")
-    parser.add_argument("--rebuild", choices=("terrain", "web"), help="Resume an internal stage from this build's work directory")
+    parser.add_argument("--rebuild", choices=("terrain", "reach", "web"), help="Resume an internal stage from this build's work directory")
     args = parser.parse_args()
     node = shutil.which(args.node)
     if node is None:

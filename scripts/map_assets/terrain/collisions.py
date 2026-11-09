@@ -5,7 +5,7 @@ from collections import Counter
 import numpy as np
 
 from ..formats.resource import murmur64
-from ..formats.unit_geometry import marker_geometry, read_unit_geometry
+from ..formats.unit_geometry import marker_geometry, read_unit_geometry, unit_geometry
 from ..formats.collision_geometry import CollisionShape
 
 
@@ -22,7 +22,54 @@ def resource_names(dictionary, hashes):
     return result
 
 
-def export_collision(paths, output, physics, names, node_resources):
+def add_collision(catalog, identity, geometry, directory, physics, stats, name, origin):
+    """Catalog entry of one unit's collision, its geometry arrays stored in directory/<identity>.npz."""
+    arrays = {}
+    for actor_index, actor in enumerate(geometry["actors"]):
+        physics["actors"][actor["template"]]
+        if actor["node"] not in geometry["nodes"]:
+            raise ValueError(f"{origin}: actor references an unknown unit node")
+        stats["actors"] += 1
+        for shape_index, shape in enumerate(actor["shapes"]):
+            if shape["extra_data_size"]:
+                raise ValueError(f"{origin}: additional cooked collision data is not supported")
+            profile = physics["shapes"][shape["template"]]
+            stats[f"shape_{shape['type']}"] += 1
+            stats["player_filter_matches"] += profile["matches_player_mover_filter"]
+            surface = shape.pop("surface")
+            storage = {}
+            for field, data in surface.items():
+                if isinstance(data, np.ndarray):
+                    array_key = f"a{actor_index}_s{shape_index}_{field}"
+                    arrays[array_key] = data
+                    storage[field] = array_key
+                else:
+                    shape[field] = data
+            shape["arrays"] = storage
+            if "triangles" in surface:
+                stats["triangles"] += len(surface["triangles"])
+            if "samples" in surface:
+                stats["heightfield_samples"] += surface["samples"].size
+            if surface.get("topology_euler", 2) != 2:
+                stats["non_spherical_hulls"] += 1
+            if surface.get("plane_error", 0) > 0.01:
+                stats["hulls_plane_error_over_1cm"] += 1
+            if shape["type"] in (CollisionShape.SPHERE, CollisionShape.BOX, CollisionShape.CAPSULE) and 0 in shape["parameters"]:
+                stats["degenerate_primitives"] += 1
+            for field in ("data_offset", "data_size", "extra_data_offset", "extra_data_size"):
+                del shape[field]
+    if arrays:
+        np.savez_compressed(directory / f"{identity}.npz", **arrays)
+    catalog[identity] = {
+        "name": name, "actors": geometry["actors"],
+        "nodes": [{"name": node, "world": matrix.tolist(), "local": geometry["local_nodes"][node].tolist(),
+                   "parent": geometry["parents"][node]} for node, matrix in geometry["nodes"].items()],
+    }
+
+
+def export_collision(paths, output, physics, names, node_resources, embedded):
+    """Collision catalog of unit resources (paths: id -> path) and of unit data compiled into levels
+    (embedded: catalog key -> Binary)."""
     directory = output / "collision_geometry"
     directory.mkdir()
     catalog, selected_geometry = {}, {}
@@ -41,46 +88,11 @@ def export_collision(paths, output, physics, names, node_resources):
             continue
         if identity not in names:
             stats["unresolved_resource_names"] += 1
-        arrays = {}
-        for actor_index, actor in enumerate(geometry["actors"]):
-            physics["actors"][actor["template"]]
-            if actor["node"] not in geometry["nodes"]:
-                raise ValueError(f"{path}: actor references an unknown unit node")
-            stats["actors"] += 1
-            for shape_index, shape in enumerate(actor["shapes"]):
-                if shape["extra_data_size"]:
-                    raise ValueError(f"{path}: additional cooked collision data is not supported")
-                profile = physics["shapes"][shape["template"]]
-                stats[f"shape_{shape['type']}"] += 1
-                stats["player_filter_matches"] += profile["matches_player_mover_filter"]
-                surface = shape.pop("surface")
-                storage = {}
-                for field, data in surface.items():
-                    if isinstance(data, np.ndarray):
-                        array_key = f"a{actor_index}_s{shape_index}_{field}"
-                        arrays[array_key] = data
-                        storage[field] = array_key
-                    else:
-                        shape[field] = data
-                shape["arrays"] = storage
-                if "triangles" in surface:
-                    stats["triangles"] += len(surface["triangles"])
-                if "samples" in surface:
-                    stats["heightfield_samples"] += surface["samples"].size
-                if surface.get("topology_euler", 2) != 2:
-                    stats["non_spherical_hulls"] += 1
-                if surface.get("plane_error", 0) > 0.01:
-                    stats["hulls_plane_error_over_1cm"] += 1
-                if shape["type"] in (CollisionShape.SPHERE, CollisionShape.BOX, CollisionShape.CAPSULE) and 0 in shape["parameters"]:
-                    stats["degenerate_primitives"] += 1
-                for field in ("data_offset", "data_size", "extra_data_offset", "extra_data_size"):
-                    del shape[field]
-        if arrays:
-            np.savez_compressed(directory / f"{identity}.npz", **arrays)
-        catalog[identity] = {
-            "name": names.get(identity), "actors": geometry["actors"],
-            "nodes": [{"name": node, "world": matrix.tolist(), "local": geometry["local_nodes"][node].tolist(),
-                       "parent": geometry["parents"][node]} for node, matrix in geometry["nodes"].items()],
-        }
+        add_collision(catalog, identity, geometry, directory, physics, stats, names.get(identity), path)
+    for identity, reader in embedded.items():
+        geometry = unit_geometry(reader, include_collision=True)
+        if geometry["actors"]:
+            stats["embedded_units"] += 1
+            add_collision(catalog, identity, geometry, directory, physics, stats, None, reader.name)
     stats["collision_resources"] = len(catalog)
     return catalog, selected_geometry, dict(stats)

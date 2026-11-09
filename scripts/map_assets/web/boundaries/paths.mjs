@@ -1,12 +1,7 @@
 import {BUILD_CONFIG} from "../config.mjs";
-import {EPSILON, segmentLiesOnReferenceInternalEdge} from "./geometry.mjs";
 
 const MINIMUM_COLLAPSED_AREA = BUILD_CONFIG.boundaries.minimumCollapsedArea;
-const MAXIMUM_DANGLING_BRANCH_LENGTH = BUILD_CONFIG.boundaries.maximumDanglingBranchLength;
-
-if (!Number.isFinite(MAXIMUM_DANGLING_BRANCH_LENGTH)) {
-	throw new Error("Missing boundary config: maximumDanglingBranchLength");
-}
+const EPSILON = 1e-6;
 
 function addAdjacentEdge(adjacency, vertexId, edgeId) {
 	const edgeIds = adjacency.get(vertexId);
@@ -18,25 +13,10 @@ function addAdjacentEdge(adjacency, vertexId, edgeId) {
 	}
 }
 
-function edgeLength(edge, vertices) {
-	const start = vertices[edge.start];
-	const end = vertices[edge.end];
-
-	return Math.hypot(
-		start[0] - end[0],
-		start[1] - end[1],
-		start[2] - end[2],
-	);
-}
-
-function createAdjacency(edges, removed = new Set()) {
+function createAdjacency(edges) {
 	const adjacency = new Map();
 
 	for (let edgeId = 0; edgeId < edges.length; edgeId++) {
-		if (removed.has(edgeId)) {
-			continue;
-		}
-
 		const edge = edges[edgeId];
 
 		addAdjacentEdge(adjacency, edge.start, edgeId);
@@ -44,71 +24,6 @@ function createAdjacency(edges, removed = new Set()) {
 	}
 
 	return adjacency;
-}
-
-function walkDanglingBranch(edges, vertices, adjacency, startVertexId, startEdgeId) {
-	const edgeIds = [];
-	let currentVertexId = startVertexId;
-	let currentEdgeId = startEdgeId;
-	let length = 0;
-
-	while (currentEdgeId !== undefined && !edgeIds.includes(currentEdgeId)) {
-		const edge = edges[currentEdgeId];
-		const nextVertexId = edge.start === currentVertexId ? edge.end : edge.start;
-
-		edgeIds.push(currentEdgeId);
-		length += edgeLength(edge, vertices);
-
-		const nextEdges = adjacency.get(nextVertexId) ?? [];
-
-		if (nextEdges.length !== 2) {
-			break;
-		}
-
-		currentEdgeId = nextEdges.find((edgeId) => edgeId !== currentEdgeId);
-		currentVertexId = nextVertexId;
-	}
-
-	return {
-		edgeIds,
-		length,
-	};
-}
-
-export function removeDanglingEdges(edges, vertices, protectedEdges) {
-	if (MAXIMUM_DANGLING_BRANCH_LENGTH <= 0) {
-		return edges;
-	}
-
-	const removed = new Set();
-	let changed = true;
-
-	while (changed) {
-		changed = false;
-
-		const adjacency = createAdjacency(edges, removed);
-
-		for (const [vertexId, edgeIds] of adjacency) {
-			if (edgeIds.length !== 1 || removed.has(edgeIds[0])) {
-				continue;
-			}
-
-			const branch = walkDanglingBranch(edges, vertices, adjacency, vertexId, edgeIds[0]);
-
-			if (branch.length > MAXIMUM_DANGLING_BRANCH_LENGTH || branch.edgeIds.some((edgeId) => protectedEdges.has(edgeId))) {
-				continue;
-			}
-
-			for (const edgeId of branch.edgeIds) {
-				removed.add(edgeId);
-			}
-
-			changed = true;
-			break;
-		}
-	}
-
-	return edges.filter((_, edgeId) => !removed.has(edgeId));
 }
 
 function walkPath(edges, adjacency, visited, startVertexId, startEdgeId) {
@@ -216,18 +131,4 @@ export function isCollapsedPath(path) {
 	return isClosed(path)
 		&& projectedArea(path) <= EPSILON
 		&& spatialArea(path) <= MINIMUM_COLLAPSED_AREA;
-}
-
-export function isReferenceInternalOpenPath(path, referenceEdges) {
-	if (isClosed(path)) {
-		return false;
-	}
-
-	for (let index = 1; index < path.length; index++) {
-		if (!segmentLiesOnReferenceInternalEdge(path[index - 1], path[index], referenceEdges)) {
-			return false;
-		}
-	}
-
-	return true;
 }

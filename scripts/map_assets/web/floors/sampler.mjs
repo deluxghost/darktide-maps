@@ -6,24 +6,17 @@ function interpolate(a, b, t) {
 	return a.map((value, axis) => value + (b[axis] - value) * t);
 }
 
-export function createFloorSampler(mesh, graph) {
-	const geometry = new BufferGeometry();
-	geometry.setAttribute(
-		"position",
-		new BufferAttribute(Float32Array.from(mesh.positions), 3),
-	);
-	geometry.setIndex(new BufferAttribute(Uint32Array.from(mesh.indices), 1));
-	const bvh = new MeshBVH(geometry, { indirect: true });
-	const point = new Vector3();
-	const hit = {};
+function sameLabel(a, b) {
+	return Array.isArray(a) ? a.every((value, index) => value === b?.[index]) : a === b;
+}
 
-	function floorAt(position) {
-		point.fromArray(position);
-		const nearest = bvh.closestPointToPoint(point, hit);
-		if (!nearest) throw new Error(`No floor surface near ${position}.`);
-		return mesh.labels[mesh.indices[nearest.faceIndex * 3]];
-	}
+function floorCoordinate(label) {
+	return Array.isArray(label) ? label.map((floor) => floor + 0.5) : label + 0.5;
+}
 
+// Split only at horizontal analysis planes, not XY cells. Labels are scalars or arrays when multiple partitions
+// share the same plane lattice.
+function sampling(graph, labelAt) {
 	function splitPath(path, verticalOffset = 0) {
 		const result = [];
 		for (let index = 1; index < path.length; index++) {
@@ -32,7 +25,6 @@ export function createFloorSampler(mesh, graph) {
 			const low = Math.min(a[2], b[2]) - verticalOffset;
 			const high = Math.max(a[2], b[2]) - verticalOffset;
 			const parameters = [0, 1];
-			// Surface ownership changes at horizontal analysis planes, never XY cells.
 			for (
 				let band = Math.floor((low - graph.base) / graph.step) + 1;
 				graph.base + band * graph.step < high;
@@ -49,9 +41,9 @@ export function createFloorSampler(mesh, graph) {
 				const end = interpolate(a, b, parameters[part]);
 				const middle = interpolate(start, end, 0.5);
 				middle[2] -= verticalOffset;
-				const floorIndex = floorAt(middle);
+				const floorIndex = labelAt(middle);
 				const previous = result.at(-1);
-				if (previous?.floorIndex === floorIndex) {
+				if (previous && sameLabel(previous.floorIndex, floorIndex)) {
 					if (part > 1) previous.path.pop();
 					previous.path.push(end);
 				} else {
@@ -62,8 +54,9 @@ export function createFloorSampler(mesh, graph) {
 		return result;
 	}
 
+	// sources: the input triangle of every output triangle
 	function labelMesh(mesh, {verticalOffset = 0} = {}) {
-		const result = {positions: [], normals: [], indices: [], floorIds: []};
+		const result = {positions: [], normals: [], indices: [], floorIds: [], sources: []};
 		const lookup = new Map();
 		for (let index = 0; index < mesh.indices.length; index += 3) {
 			const vertices = mesh.indices.slice(index, index + 3);
@@ -90,10 +83,11 @@ export function createFloorSampler(mesh, graph) {
 							lookup.set(key, result.floorIds.length);
 							result.positions.push(...position);
 							result.normals.push(...normal);
-							result.floorIds.push(floor + 0.5);
+							result.floorIds.push(floorCoordinate(floor));
 						}
 						result.indices.push(lookup.get(key));
 					}
+					result.sources.push(index / 3);
 				}
 			}
 			for (let band = firstBand; band <= lastBand; band++) {
@@ -102,8 +96,8 @@ export function createFloorSampler(mesh, graph) {
 				if (faceArea(face) === 0) continue;
 				const center = face.reduce((sum, point) => sum.add(point), new Vector3()).divideScalar(face.length);
 				center.z -= verticalOffset;
-				const label = floorAt(center.toArray());
-				if (floor !== label) {
+				const label = labelAt(center.toArray());
+				if (!sameLabel(floor, label)) {
 					flush();
 					first = band;
 					floor = label;
@@ -118,5 +112,36 @@ export function createFloorSampler(mesh, graph) {
 		return result;
 	}
 
-	return { floorAt, splitPath, labelMesh };
+	return { floorAt: labelAt, splitPath, labelMesh };
+}
+
+export function createFloorSampler(mesh, graph) {
+	const geometry = new BufferGeometry();
+	geometry.setAttribute(
+		"position",
+		new BufferAttribute(Float32Array.from(mesh.positions), 3),
+	);
+	geometry.setIndex(new BufferAttribute(Uint32Array.from(mesh.indices), 1));
+	const bvh = new MeshBVH(geometry, { indirect: true });
+	const point = new Vector3();
+	const hit = {};
+
+	function floorAt(position) {
+		point.fromArray(position);
+		const nearest = bvh.closestPointToPoint(point, hit);
+		if (!nearest) throw new Error(`No floor surface near ${position}.`);
+		return mesh.labels[mesh.indices[nearest.faceIndex * 3]];
+	}
+
+	return { ...sampling(graph, floorAt), graph };
+}
+
+// A shared analysis-plane lattice lets one cut pass label every partition.
+export function combineFloorSamplers(...samplers) {
+	const {graph} = samplers[0];
+	if (samplers.some((sampler) => sampler.graph.step !== graph.step
+		|| Math.abs(Math.round((sampler.graph.base - graph.base) / graph.step) * graph.step - (sampler.graph.base - graph.base)) > 1e-6)) {
+		throw new Error("Combined floor partitions do not share their analysis planes.");
+	}
+	return { ...sampling(graph, (position) => samplers.map((sampler) => sampler.floorAt(position))), graph };
 }

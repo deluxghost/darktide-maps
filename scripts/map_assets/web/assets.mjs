@@ -8,9 +8,10 @@ import {
 import {createMainPathMeshes, createMainPathSummary} from "./main_path.mjs";
 import {buildMarkers} from "./markers.mjs";
 import {shouldOmitMainPath} from "./config.mjs";
-import {validateTerrain} from "./terrain.mjs";
+import {validateReach, validateTerrain} from "./terrain.mjs";
 import {createBoundaryPaths} from "./boundaries/index.mjs";
 import {assignMarkerFloors, createFloorSlices} from "./floors.mjs";
+import {combineFloorSamplers} from "./floors/sampler.mjs";
 import {createViewMetadata} from "./view.mjs";
 import {
 	compactObject,
@@ -44,7 +45,7 @@ async function buildMainPathAsset(missionId, data, context) {
 		throw new Error(`Main path requires the complete static route graph: ${missionId}`);
 	}
 
-	const meshes = createMainPathMeshes(data, context.floors.sampler);
+	const meshes = createMainPathMeshes(data, context.sampler);
 
 	if (Object.values(meshes).every((mesh) => mesh.indices.length === 0)) {
 		throw new Error(`${missionId}: main path contains no renderable segments`);
@@ -73,7 +74,7 @@ async function buildTerrainClipAsset(missionId, context, surface) {
 	const outputPath = path.join(context.missionDirectory, fileName);
 	const labelOptions = {verticalOffset: surface.data.overlay_offset};
 	const glb = await createGeometryPartsGlb(`${missionId}_terrain_clip`, {
-		removed: context.floors.sampler.labelMesh(surface.removedMesh, labelOptions),
+		removed: context.sampler.labelMesh(surface.removedMesh, labelOptions),
 	}, {
 		schemaVersion: surface.data.schema_version,
 		kind: "terrainClip",
@@ -90,13 +91,16 @@ async function buildTerrainClipAsset(missionId, context, surface) {
 	};
 }
 
-async function buildNavmeshBoundaryAsset(missionId, navmesh, context) {
-	const sliced = createBoundaryPaths(navmesh, context.referenceNavmesh, context.removed)
-		.flatMap((boundary) => context.floors.sampler.splitPath(boundary));
+async function buildNavmeshBoundaryAsset(missionId, navmesh, shown, context) {
+	const outline = (mesh, sampler) => createBoundaryPaths(mesh).flatMap((boundary) => sampler.splitPath(boundary));
+	const all = outline(navmesh, context.floors.sampler);
+	const reachable = outline({...navmesh, triangles: shown}, context.reachFloors.sampler);
+	const sliced = [...all, ...reachable];
 	const paths = sliced.map((boundary) => boundary.path);
 	const stats = {
 		paths: paths.length,
 		points: paths.reduce((sum, path) => sum + path.length, 0),
+		groups: {all: all.length, reach: reachable.length},
 	};
 	const fileName = "navmesh_boundaries.glb";
 	const outputPath = path.join(context.missionDirectory, fileName);
@@ -115,6 +119,14 @@ async function buildNavmeshBoundaryAsset(missionId, navmesh, context) {
 	};
 }
 
+function meshArrays(navmesh) {
+	return {
+		positions: navmesh.vertices.flat(),
+		indices: navmesh.triangles.flatMap((triangle) => triangle.slice(0, 3).map((index) => index - 1)),
+		normals: new Array(navmesh.vertices.length * 3).fill(0),
+	};
+}
+
 export async function buildMissionAssets(packet, context) {
 	const data = packet.navmesh;
 	if (data.mission !== packet.id) throw new Error(`Nav mission mismatch: ${packet.id}`);
@@ -129,14 +141,20 @@ export async function buildMissionAssets(packet, context) {
 		throw new Error(`${data.mission}: map build requires offline NavData.`);
 	}
 	const surface = validateTerrain(packet);
+	const reach = validateReach(packet);
 	const renderNavmesh = surface.navmesh;
+	// Keep reachable triangles first for prefix rendering. All-nav layers use the original reference nav;
+	// reachable layers use shown carved triangles, excluding unreachable-only layers from the default view.
+	const shownSet = new Set(reach.shownTriangles);
+	const shown = reach.shownTriangles.map((index) => renderNavmesh.triangles[index]);
+	const ordered = [...shown, ...renderNavmesh.triangles.filter((_, index) => !shownSet.has(index))];
 	const floors = createFloorSlices(data);
-	const mesh = floors.sampler.labelMesh({
-		positions: renderNavmesh.vertices.flat(),
-		indices: renderNavmesh.triangles.flatMap(triangle => triangle.slice(0, 3).map(index => index - 1)),
-		normals: new Array(renderNavmesh.vertices.length * 3).fill(0),
-	});
-	floors.navmesh = {...renderNavmesh,
+	const reachFloors = reach.evaluated ? createFloorSlices({...renderNavmesh, mission: data.mission, triangles: shown}) : floors;
+	const sampler = combineFloorSamplers(floors.sampler, reachFloors.sampler);
+	// labelMesh preserves source order, so the reachable prefix remains contiguous after slicing.
+	const mesh = sampler.labelMesh(meshArrays({vertices: renderNavmesh.vertices, triangles: ordered}));
+	const shownTriangles = mesh.sources.filter((source) => source < shown.length).length;
+	const navmesh = {...renderNavmesh,
 		vertices: Array.from({length: mesh.floorIds.length}, (_, index) => mesh.positions.slice(index * 3, index * 3 + 3)),
 		triangles: Array.from({length: mesh.indices.length / 3}, (_, index) => mesh.indices.slice(index * 3, index * 3 + 3).map(vertex => vertex + 1)),
 		floorIds: mesh.floorIds};
@@ -144,26 +162,13 @@ export async function buildMissionAssets(packet, context) {
 		outputVertices: mesh.floorIds.length,
 		outputTriangles: mesh.indices.length / 3,
 	});
-	const mainPath = await buildMainPathAsset(data.mission, packet.mainPath, {
-		...context,
-		missionDirectory,
-		floors,
-	});
+	const assetContext = {...context, missionDirectory, floors, reachFloors, sampler};
+	const mainPath = await buildMainPathAsset(data.mission, packet.mainPath, assetContext);
 	const markers = buildMarkers(data.mission, packet.markers);
-	const terrainClip = await buildTerrainClipAsset(data.mission, {
-		...context,
-		missionDirectory,
-		floors,
-	}, surface);
-	const layeredMarkers = assignMarkerFloors(markers, floors);
-	const glb = await createNavmeshGlb(floors.navmesh);
-	const boundaries = await buildNavmeshBoundaryAsset(data.mission, renderNavmesh, {
-		...context,
-		missionDirectory,
-		referenceNavmesh: data,
-		removed: {mesh: surface.removedMesh, verticalOffset: surface.data.overlay_offset},
-		floors,
-	});
+	const terrainClip = await buildTerrainClipAsset(data.mission, assetContext, surface);
+	const layeredMarkers = assignMarkerFloors(markers, sampler);
+	const glb = await createNavmeshGlb(navmesh);
+	const boundaries = await buildNavmeshBoundaryAsset(data.mission, renderNavmesh, shown, assetContext);
 
 	await writeFile(outputPath, glb);
 
@@ -177,7 +182,12 @@ export async function buildMissionAssets(packet, context) {
 		file: `./data/maps/${sanitizeFileName(data.mission)}/${fileName}`,
 		bounds: renderNavmesh.bounds,
 		view: createViewMetadata(renderNavmesh),
-		floorSlices: {algorithm: floors.manifest.algorithm, layers: floors.manifest.layers},
+		floorSlices: {
+			algorithm: floors.manifest.algorithm,
+			layers: floors.manifest.layers,
+			reachLayers: reachFloors.manifest.layers,
+		},
+		reach: {evaluated: reach.evaluated, shownTriangles},
 		boundaries,
 		landmarks: mainPath ? {mainPath: mainPath.asset} : {},
 		markers: layeredMarkers ?? undefined,
@@ -194,7 +204,8 @@ export async function buildMissionAssets(packet, context) {
 		manifest: manifestEntry,
 		data: mapData,
 		assetBytes: glb.length,
-		report: {id: packet.id, floors: floors.manifest, terrain: surface.stats},
+		report: {id: packet.id, floors: floors.manifest, reachFloors: reachFloors.manifest, terrain: surface.stats,
+			reach: reach.stats},
 	};
 }
 

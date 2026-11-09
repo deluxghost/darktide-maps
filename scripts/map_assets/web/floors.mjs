@@ -55,13 +55,13 @@ export function createFloorSlices(navmesh) {
 	};
 }
 
-export function assignMarkerFloors(markers, floors) {
+export function assignMarkerFloors(markers, sampler) {
 	if (!markers?.pins?.length) return markers;
 	return {
 		...markers,
-		pins: markers.pins.map((marker) => ({
-			...marker,
-			floorIndex: floors.sampler.floorAt(marker.position),
-		})),
+		pins: markers.pins.map((marker) => {
+			const [floorIndex, reachFloorIndex] = sampler.floorAt(marker.position);
+			return {...marker, floorIndex, reachFloorIndex};
+		}),
 	};
 }

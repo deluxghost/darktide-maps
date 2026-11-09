@@ -12,6 +12,7 @@ from .extract import extract
 from .json_io import write_json
 from .scene.main_path import route_triggers
 from .terrain.build import build_terrain
+from .reach.build import build_reach
 
 
 def project_markers(args, plan):
@@ -55,6 +56,9 @@ def publish(source, output):
 def build(args):
     os.environ["PYTHON"] = sys.executable
     os.environ["MAP_BUILD_NODE"] = args.node
+    # missions run in parallel worker processes: one BLAS thread each, so the workers do not oversubscribe the CPU
+    for name in ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS"):
+        os.environ[name] = "1"
     started = time.monotonic()
     stages = {}
     if args.rebuild:
@@ -70,10 +74,16 @@ def build(args):
     plan["complete"] = False
     plan["stageSeconds"] = stages
     write_json(args.work / "build.json", plan)
+    missions = [item["id"] for item in plan["missions"]]
+    if args.rebuild in (None, "terrain"):
+        stage = time.monotonic()
+        plan["terrain"] = build_terrain(args.work, missions, args.workers)
+        stages["terrain"] = time.monotonic() - stage
+        write_json(args.work / "build.json", plan)
     if args.rebuild != "web":
         stage = time.monotonic()
-        plan["terrain"] = build_terrain(args.work, [item["id"] for item in plan["missions"]], args.workers)
-        stages["terrain"] = time.monotonic() - stage
+        plan["reach"] = build_reach(args.work, missions, args.workers)
+        stages["reach"] = time.monotonic() - stage
     write_json(args.work / "build.json", plan)
     web = args.work / "web"
     stage = time.monotonic()

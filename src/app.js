@@ -4,6 +4,7 @@ import { createGeometryBoundaryPaths, createLandmarkMesh, createPathBoundaryPath
 import { APP_CONFIG } from "./config.js";
 import { createMapRenderer } from "./map/renderer.js";
 import { createHeightColors } from "./map/height_colors.js";
+import { isReachableView, navmeshView, viewFloors, viewLayers, viewPins } from "./map/views.js";
 import { createFilterController } from "./ui/filters.js";
 import { createFloorController } from "./ui/floors.js";
 import { createMarkerOverlays } from "./markers/overlays.js";
@@ -41,12 +42,15 @@ const dataUpdatedElement = document.querySelector("#data-updated");
 const floorControl = document.querySelector("#floor-control");
 const mobileMedia = window.matchMedia(APP_CONFIG.ui.mobileMediaQuery);
 const DEBUG_STORAGE_KEY = "darktide-maps.debug.v1";
+const VIEW_STORAGE_KEY = "darktide-maps.view.v1";
 const URL_POSITION_MARKER_ID = "url-position";
 
 let loadController;
 let currentManifest = null;
 let loadingMap = null;
 let debugTerrainClippingVisible = readDebugTerrainClippingVisible();
+let showUnreachable = readStoredObject(VIEW_STORAGE_KEY).showUnreachable === true;
+let loadedMap = null;
 const mapDataCache = new Map();
 const notifications = createNotifications({
 	container: notificationsElement,
@@ -200,22 +204,22 @@ async function loadGlb(file, signal) {
 	return parseGlb(await response.arrayBuffer());
 }
 
-async function loadGeometryPartMeshes(asset, signal, includeBoundaries) {
-	if (!asset?.file) {
+async function loadGeometryParts(asset, signal) {
+	return asset?.file ? (await loadGlb(asset.file, signal)).parts : null;
+}
+
+function geometryPartMeshes(parts, reachable, includeBoundaries) {
+	if (!parts) {
 		return null;
 	}
 
-	const glb = await loadGlb(asset.file, signal);
-	const parts = {};
-
-	for (const [part, partGlb] of Object.entries(glb.parts)) {
-		parts[part] = {
-			mesh: createLandmarkMesh(partGlb),
-			boundaryPaths: includeBoundaries ? createGeometryBoundaryPaths(partGlb) : undefined,
-		};
-	}
-
-	return parts;
+	return Object.fromEntries(Object.entries(parts).map(([part, partGlb]) => {
+		const glb = viewFloors(partGlb, reachable);
+		return [part, {
+			mesh: createLandmarkMesh(glb),
+			boundaryPaths: includeBoundaries ? createGeometryBoundaryPaths(glb) : undefined,
+		}];
+	}));
 }
 
 async function loadBoundaryPaths(asset, signal) {
@@ -223,7 +227,11 @@ async function loadBoundaryPaths(asset, signal) {
 		throw new Error("Map data is missing preprocessed navmesh boundaries.");
 	}
 
-	return createPathBoundaryPaths(await loadGlb(asset.file, signal));
+	const glb = await loadGlb(asset.file, signal);
+	const paths = createPathBoundaryPaths(glb);
+	const {all} = glb.extras.stats.groups;
+
+	return {all: paths.slice(0, all), reach: paths.slice(all)};
 }
 
 async function loadMapData(mapEntry, signal) {
@@ -361,6 +369,7 @@ function markerPinsForMap(map, locator) {
 }
 
 function clearMap() {
+	loadedMap = null;
 	mapRenderer.clear();
 	markerOverlays.hidePopup();
 	markerOverlays.hideTooltip();
@@ -374,42 +383,21 @@ async function loadMap(mapEntry, locator, signal) {
 	setLoading(mapEntry);
 
 	const map = await loadMapData(mapEntry, signal);
-	const [glb, boundaryPaths, mainPathMeshes, terrainClipMeshes] = await Promise.all([
+	const [glb, boundaryPaths, mainPathParts, terrainClipParts] = await Promise.all([
 		loadGlb(map.file, signal),
 		loadBoundaryPaths(map.boundaries, signal),
-		loadGeometryPartMeshes(map.landmarks?.mainPath, signal, false),
-		import.meta.env.DEV
-			? loadGeometryPartMeshes(map.diagnostics?.terrainClip, signal, true)
-			: null,
+		loadGeometryParts(map.landmarks?.mainPath, signal),
+		import.meta.env.DEV ? loadGeometryParts(map.diagnostics?.terrainClip, signal) : null,
 	]);
 	if (signal.aborted) return;
-	const heightColors = createHeightColors(glb, map.floorSlices.layers.length);
 	const markerPins = markerPinsForMap(map, locator);
-	const selectedMarker = locator?.type === "marker"
-		? markerPins.find((marker) => marker.id === locator.markerId && marker.markerType === "pin")
-		: null;
 
+	loadedMap = {map, glb, boundaryPaths, mainPathParts, terrainClipParts, markerPins};
 	filters.setCurrentMap(map);
-	mapRenderer.render(
-		map,
-		glb,
-		boundaryPaths,
-		mainPathMeshes,
-		{
-			heightColors: heightColors.colors,
-			terrainClipMeshes,
-			terrainClipVisible: import.meta.env.DEV && debugTerrainClippingVisible,
-			mainPathVisible: filters.mainPathVisible,
-			fitPositions: glb.positions,
-			markerPins,
-			visiblePinCategories: filters.visiblePinCategorySet(map),
-			onMarkerClick: markerOverlays.showPopup,
-			onMarkerHover: markerOverlays.showTooltip,
-			onMapCoordinatePick: import.meta.env.DEV ? copyMapCoordinate : null,
-			onViewChange: markerOverlays.update,
-		},
-	);
-	floorController.setMap(map, heightColors.gradient);
+	const renderedPins = renderMapView(false);
+	const selectedMarker = locator?.type === "marker"
+		? renderedPins.find((marker) => marker.id === locator.markerId && marker.markerType === "pin")
+		: null;
 	filters.writeFilters(map);
 	clearLoading();
 	if (locator?.type === "position") {
@@ -420,6 +408,38 @@ async function loadMap(mapEntry, locator, signal) {
 			markerOverlays.showPopup(selectedMarker);
 		}
 	}
+}
+
+function renderMapView(keepView) {
+	const {map, glb, boundaryPaths, mainPathParts, terrainClipParts, markerPins} = loadedMap;
+	const reachable = isReachableView(map, showUnreachable);
+	const navmesh = navmeshView(glb, map, reachable);
+	const layers = viewLayers(map, reachable);
+	const heightColors = createHeightColors(navmesh, layers.length);
+	const renderedPins = viewPins(markerPins, reachable);
+
+	mapRenderer.render(
+		map,
+		navmesh,
+		reachable ? boundaryPaths.reach : boundaryPaths.all,
+		geometryPartMeshes(mainPathParts, reachable, false),
+		{
+			keepView,
+			heightColors: heightColors.colors,
+			terrainClipMeshes: geometryPartMeshes(terrainClipParts, reachable, true),
+			terrainClipVisible: import.meta.env.DEV && debugTerrainClippingVisible,
+			mainPathVisible: filters.mainPathVisible,
+			fitPositions: glb.positions,
+			markerPins: renderedPins,
+			visiblePinCategories: filters.visiblePinCategorySet(map),
+			onMarkerClick: markerOverlays.showPopup,
+			onMarkerHover: markerOverlays.showTooltip,
+			onMapCoordinatePick: import.meta.env.DEV ? copyMapCoordinate : null,
+			onViewChange: markerOverlays.update,
+		},
+	);
+	floorController.setMap(map, heightColors.gradient, layers);
+	return renderedPins;
 }
 
 async function loadLocationFromUrl(manifest) {
@@ -503,6 +523,17 @@ export function startApp() {
 	});
 	panelToggle.addEventListener("click", () => {
 		setPanelCollapsed(!panel.classList.contains("collapsed"));
+	});
+	const showUnreachableInput = document.querySelector("#show-unreachable");
+	showUnreachableInput.checked = showUnreachable;
+	showUnreachableInput.addEventListener("change", () => {
+		showUnreachable = showUnreachableInput.checked;
+		writeStoredProperty(VIEW_STORAGE_KEY, "showUnreachable", showUnreachable);
+		if (loadedMap) {
+			markerOverlays.hidePopup();
+			markerOverlays.hideTooltip();
+			renderMapView(true);
+		}
 	});
 	if (import.meta.env.DEV) {
 		const debugTerrainClipping = document.querySelector("#debug-terrain-clipping");

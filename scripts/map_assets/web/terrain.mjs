@@ -12,3 +12,15 @@ export function validateTerrain(packet) {
 	}
 	return surface;
 }
+
+export function validateReach(packet) {
+	const reach = packet.reach;
+	const shown = reach?.shownTriangles;
+	const count = packet.terrain.navmesh.triangles.length;
+	if (!Array.isArray(shown) || shown.length === 0
+		|| shown.some((index, at) => !Number.isInteger(index) || index < 0 || index >= count || (at && index <= shown[at - 1]))
+		|| (!reach.evaluated && shown.length !== count)) {
+		throw new Error(`Incomplete reachability stage: ${packet.id}`);
+	}
+	return reach;
+}

@@ -6,6 +6,7 @@ from ..formats.level import components, key32
 from ..formats.resource import murmur64
 from ..transforms import placement_matrix
 from ..formats.unit_geometry import node_matrices
+from .flow_spawns import MAX_DEPTH as MAX_FLOW_SPAWN_DEPTH, active
 
 PROP_COMPONENT = "LevelPropCustomization"
 
@@ -63,9 +64,32 @@ def child_specs(component, defaults):
 
 
 class SceneAssets:
-    def __init__(self, defaults, collision, geometry, resources, child_defaults):
+    def __init__(self, defaults, collision, geometry, resources, child_defaults, flow_spawns):
         self.defaults, self.collision, self.geometry = defaults, collision, geometry
-        self.resources, self.child_defaults = resources, child_defaults
+        self.resources, self.child_defaults, self.flow_spawns = resources, child_defaults, flow_spawns
+
+    def spawned(self, record, config, depth=0):
+        """Parts the unit's own Flow spawns and links to it at spawn time (see flow_spawns)."""
+        specs = [spec for spec in self.flow_spawns.get(record["resource"], ()) if active(spec, config)]
+        if not specs:
+            return
+        if depth >= MAX_FLOW_SPAWN_DEPTH:
+            raise ValueError(f"{record['resource']}: Flow spawns nest deeper than {MAX_FLOW_SPAWN_DEPTH}")
+        nodes = node_matrices(self.geometry[record["resource"]], record["node_overrides"])
+        for index, spec in enumerate(specs):
+            identity = f"{murmur64(spec['resource']):016x}"
+            if identity not in self.resources:
+                raise ValueError(f"Missing Flow-spawned resource: {spec['resource']}")
+            if spec["node"] not in nodes:
+                raise ValueError(f"{record['resource']}: Flow spawn links to unknown node {spec['node']:08x}")
+            matrix = np.array(record["transform"]) @ nodes[spec["node"]]
+            child = {"unit": f"{record['unit']}/flow-{index}", "resource": identity,
+                     "level": record["level"], "ancestry": record["ancestry"],
+                     "position": matrix[:3, 3].tolist(), "transform": matrix.tolist(), "node_overrides": [],
+                     "physics_disabled": False, "create_actors": False, "components": [], "conditional_actors": [],
+                     "spawn": {"parent": record["unit"], "component": "Flow", "index": index}}
+            yield child
+            yield from self.spawned(child, self.defaults.get(identity, {}), depth + 1)
 
     def children(self, record, attached):
         for component in attached:
@@ -91,14 +115,19 @@ class SceneAssets:
                        "conditional_actors": [],
                        "spawn": {"parent": record["unit"], "component": PROP_COMPONENT, "index": spec["index"]}}
 
-    def objects(self, root, levels):
-        records = []
+    def objects(self, root, levels, hidden_sets=frozenset()):
+        """Scene records of a mission; units in object sets its default theme hides are not spawned."""
+        records, self.hidden_units = [], 0
         for level_hash, level, parent, ancestry in walk_levels(root, levels):
             for unit in level["units"]:
+                if hidden_sets.intersection(unit["object_sets"]):
+                    self.hidden_units += 1
+                    continue
                 config = instance_config(unit, self.defaults)
                 attached = components(config)
                 anchor = scripted_anchor(config)
-                if not attached and unit["resource"] not in self.collision and not anchor:
+                if not attached and unit["resource"] not in self.collision and not anchor \
+                        and unit["resource"] not in self.flow_spawns:
                     continue
                 physics_disabled = config.get((key32("disable_physics"),), False)
                 if not isinstance(physics_disabled, bool):
@@ -117,4 +146,5 @@ class SceneAssets:
                     record["scripted"] = anchor
                 records.append(record)
                 records.extend(self.children(record, attached))
+                records.extend(self.spawned(record, config))
         return records

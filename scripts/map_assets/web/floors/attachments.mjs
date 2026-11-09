@@ -53,6 +53,7 @@ function indexComponents(graph, components) {
 	}
 	for (let triangle = 0; triangle < graph.byTriangle.length; triangle++) {
 		const piece = graph.byTriangle[triangle].values().next().value;
+		if (piece === undefined) continue;   // zero-area triangles hold no surface and belong to no floor
 		components[componentOfNode[graph.nodeOfPiece[piece]]].triangles.push(triangle);
 	}
 	const positions = new BufferAttribute(Float32Array.from(graph.mesh.positions,

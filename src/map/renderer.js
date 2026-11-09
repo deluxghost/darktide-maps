@@ -347,10 +347,12 @@ export function createMapRenderer(mapElement, onError) {
 
 	function render(map, navmeshGlb, boundaryPaths, mainPathMeshes, options) {
 		pinchGesture = null;
-		const viewState = constrainedViewState(map, options.fitPositions, {
-			width: mapElement.clientWidth || window.innerWidth,
-			height: mapElement.clientHeight || window.innerHeight,
-		});
+		const viewState = options.keepView && currentState?.map.id === map.id
+			? currentState.viewState
+			: constrainedViewState(map, options.fitPositions, {
+				width: mapElement.clientWidth || window.innerWidth,
+				height: mapElement.clientHeight || window.innerHeight,
+			});
 		const token = ++renderToken;
 		pinOcclusion.setMap(navmeshGlb, options.markerPins);
 
