@@ -212,7 +212,7 @@ export async function buildMissionAssets(packet, context) {
 export async function removeStaleAssets(outputDirectory, maps) {
 	const mapOutputDirectory = path.join(outputDirectory, "maps");
 	const outputMapDirectories = await readDirectoryIfExists(mapOutputDirectory);
-	const expectedMapDirectories = new Set(maps.map((map) => sanitizeFileName(map.data.id)));
+	const expectedMapDirectories = new Set(maps.map((map) => sanitizeFileName(map.id)));
 
 	for (const outputMapDirectory of outputMapDirectories) {
 		if (!expectedMapDirectories.has(outputMapDirectory)) {

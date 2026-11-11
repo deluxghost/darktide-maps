@@ -87,7 +87,8 @@ def build(args):
     write_json(args.work / "build.json", plan)
     web = args.work / "web"
     stage = time.monotonic()
-    subprocess.run([args.node, str(PACKAGE_ROOT / "web/index.mjs"), str(args.work), str(web)], check=True)
+    subprocess.run([args.node, str(PACKAGE_ROOT / "web/index.mjs"), str(args.work), str(web),
+                    str(args.workers)], check=True)
     stages["web"] = time.monotonic() - stage
     stage = time.monotonic()
     publish(web, args.output)

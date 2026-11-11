@@ -1,28 +1,53 @@
 import {mkdir, writeFile} from "node:fs/promises";
+import {availableParallelism} from "node:os";
 import path from "node:path";
-import {buildMissionAssets, removeStaleAssets} from "./assets.mjs";
+import {Worker} from "node:worker_threads";
+import {removeStaleAssets} from "./assets.mjs";
 import {compactObject, readJson} from "./utils.mjs";
 import {verifyFloorDependencies} from "./floors/ordered_cut.mjs";
 import {createGameTextRegistry} from "./game_text.mjs";
 import {validateAssets} from "./validate.mjs";
 import {validateMarkerConfiguration} from "./marker_overrides.mjs";
 
-const [work, outputDirectory] = process.argv.slice(2);
+const [work, outputDirectory, workerArgument] = process.argv.slice(2);
 if (!work || !outputDirectory) throw new Error("Missing internal map build directories");
 verifyFloorDependencies();
 const plan = await readJson(path.join(work, "build.json"));
 if (plan.format !== "static-map-build-v2") throw new Error("Invalid map build plan");
 validateMarkerConfiguration(plan.missions.map((mission) => mission.id), plan.markerLabels);
 await mkdir(outputDirectory, {recursive: true});
-const maps = [], reports = [];
 const gameText = createGameTextRegistry();
-for (const {id} of [...plan.missions].sort((a, b) => a.id.localeCompare(b.id))) {
-	const packet = await readJson(path.join(work, "missions", `${id}.json`));
-	if (packet.id !== id) throw new Error(`Mission packet mismatch: ${id}`);
-	const map = await buildMissionAssets(packet, {outputDirectory, gameText, zones: plan.zones});
-	maps.push(map);
-	reports.push(map.report);
-	console.log(`${id}: ${map.assetBytes} bytes; ${map.report.floors.layers.length} layers`);
+const ids = plan.missions.map(({id}) => id).sort((a, b) => a.localeCompare(b));
+
+function buildMission(id) {
+	return new Promise((resolve, reject) => {
+		const worker = new Worker(new URL("./mission_worker.mjs", import.meta.url),
+			{workerData: {work, outputDirectory, zones: plan.zones, id}});
+		let result = null;
+		worker.once("message", (message) => { result = message; });
+		worker.once("error", reject);
+		worker.once("exit", (code) => code === 0 && result ? resolve(result)
+			: reject(new Error(`${id}: web build worker exited with code ${code}`)));
+	});
+}
+
+// missions build in parallel worker threads; results are merged in id order
+const results = new Map();
+let next = 0;
+async function runWorker() {
+	while (next < ids.length) {
+		const id = ids[next++];
+		const map = await buildMission(id);
+		results.set(id, map);
+		console.log(`${id}: ${map.assetBytes} bytes; ${map.report.floors.layers.length} layers`);
+	}
+}
+const workerCount = Math.max(1, Math.min(ids.length, Number(workerArgument) || availableParallelism()));
+await Promise.all(Array.from({length: workerCount}, runWorker));
+const maps = ids.map((id) => results.get(id));
+const reports = maps.map((map) => map.report);
+for (const map of maps) {
+	for (const text of map.texts) gameText.pack(text);
 }
 for (const locale of ["en", "zh-cn"]) {
 	const names = maps.map(({manifest}) => `${manifest.zone}:${manifest.title[locale]}`);

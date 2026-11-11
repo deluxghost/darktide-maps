@@ -27,7 +27,7 @@ def arguments():
     for name in (*INPUT_PATHS, "dictionary", "work", "output"):
         parser.add_argument(f"--{name}", type=Path, required=name in ("work", "output"), help=PATH_HELP[name])
     parser.add_argument("--node", default="node", help="Node.js executable path or command")
-    parser.add_argument("--workers", type=int, default=1, help="Parallel terrain map processes")
+    parser.add_argument("--workers", type=int, default=1, help="Parallel map workers for the terrain, reach and web stages")
     parser.add_argument("--missions", nargs="+", help="Build only these fixed mission ids")
     parser.add_argument("--rebuild", choices=("terrain", "reach", "web"), help="Resume an internal stage from this build's work directory")
     args = parser.parse_args()
