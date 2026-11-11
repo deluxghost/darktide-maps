@@ -1,9 +1,12 @@
 """Batched ray and body-slab queries against a fixed triangle set."""
 
 import numpy as np
+from numba import njit
+from numba.core import types
+from numba.extending import intrinsic
 
 CELL = 2.0          # m; spatial grid of the triangle index
-BLOCK = 16384       # ray x triangle pairs per intersection block (a few hundred KB of temporaries)
+BLOCK = 16384       # ray x triangle pairs per block; a block's shape picks the BLAS summation order reproduced below
 
 
 class Rays:
@@ -25,28 +28,34 @@ class Rays:
         k = np.arange(count.sum()) - np.repeat(np.cumsum(count) - count, count)
         cx = lo[tri, 0] + k // span[tri, 1]; cy = lo[tri, 1] + k % span[tri, 1]
         order = np.lexsort((cy, cx)); cx, cy, tri = cx[order], cy[order], tri[order]
-        cuts = np.nonzero((np.diff(cx) != 0) | (np.diff(cy) != 0))[0] + 1
-        self.grid = {(int(cx[g[0]]), int(cy[g[0]])): tri[g] for g in np.split(np.arange(len(tri)), cuts) if len(g)}
+        # cells as sorted keys (cx - x0) * height + (cy - y0), each owning tri[start[k]:start[k + 1]] in index order
+        self.origin = (int(cx.min()), int(cy.min())) if len(tri) else (0, 0)
+        self.size = (int(cx.max()) - self.origin[0] + 1, int(cy.max()) - self.origin[1] + 1) if len(tri) else (0, 0)
+        key = (cx - self.origin[0]).astype(np.int64) * self.size[1] + (cy - self.origin[1])
+        first = np.ones(len(key), bool); first[1:] = key[1:] != key[:-1]
+        self.keys = key[first]; self.start = np.r_[np.nonzero(first)[0], len(key)]; self.tri = tri.astype(np.int64)
         self.zlo = tris[:, :, 2].min(1); self.zhi = tris[:, :, 2].max(1)
         self.cxy = tris[:, :, :2].mean(1); self.rad = np.linalg.norm(tris[:, :, :2] - self.cxy[:, None], axis=2).max(1)
-        self.stamp = np.zeros(len(tris), np.int64)     # scratch for de-duplicating candidate lists
+        self.seen = np.zeros(len(tris), np.bool_)      # scratch for de-duplicating candidate lists
 
     def __len__(self):
         return len(self.t)
 
     def candidates(self, lo, hi):
         """Sorted indices of triangles whose grid cells overlap the box [lo, hi] and whose z range overlaps it."""
-        x0, y0 = np.floor(lo[:2] / CELL).astype(int); x1, y1 = np.floor(hi[:2] / CELL).astype(int)
-        cand = [self.grid[(x, y)] for x in range(x0, x1 + 1) for y in range(y0, y1 + 1) if (x, y) in self.grid]
-        if not cand:
-            return np.zeros(0, int)
-        idx = np.concatenate(cand) if len(cand) > 1 else cand[0]
-        idx = idx[(self.zhi[idx] >= lo[2] - 1e-6) & (self.zlo[idx] <= hi[2] + 1e-6)]
-        if len(cand) > 1:   # large triangles sit in many cells: keep one copy of each
-            pos = np.arange(len(idx))
-            self.stamp[idx] = pos
-            idx = np.sort(idx[self.stamp[idx] == pos])
-        return idx
+        return candidates_kernel(self.keys, self.start, self.tri, self.origin[0], self.origin[1], self.size[0],
+                                 self.size[1], self.zlo, self.zhi, self.seen, float(lo[0]), float(lo[1]),
+                                 float(lo[2]), float(hi[0]), float(hi[1]), float(hi[2]))
+
+    def cell(self, x, y):
+        """Triangles of grid cell (x, y), or None."""
+        x -= self.origin[0]; y -= self.origin[1]
+        if not (0 <= x < self.size[0] and 0 <= y < self.size[1]):
+            return None
+        k = np.searchsorted(self.keys, x * self.size[1] + y)
+        if k == len(self.keys) or self.keys[k] != x * self.size[1] + y:
+            return None
+        return self.tri[self.start[k]:self.start[k + 1]]
 
     def strip(self, idx, s, nrm, length, half):
         """Of candidate triangles idx, those that can touch the strip from s along nrm (length) of half width."""
@@ -55,17 +64,13 @@ class Rays:
         return idx[(along >= -r - half) & (along <= length + r + half) & (perp <= half + r)]
 
     def intersect(self, o, d, tmax, idx):
-        """Nearest hit distance per ray (inf if none) for rays o + d*t, t in (1e-4, tmax], against triangles idx.
-        Rays go in blocks whose rays x triangles temporaries stay cache-sized (parallel builds are memory bound)."""
+        """Nearest hit distance per ray (inf if none) for rays o + d*t, t in (1e-4, tmax], against triangles idx."""
         n = len(o)
         if not len(idx) or not n:
             return np.full(n, np.inf)
-        rows = max(1, BLOCK // len(idx))
-        planes = self.N[idx].T, self.A[idx].T, self.B[idx].T, self.cN[idx], self.cA[idx], self.cB[idx]
-        if n > rows:
-            return np.concatenate([intersect_block(o[i:i + rows], d[i:i + rows], tmax[i:i + rows], planes)
-                                   for i in range(0, n, rows)])
-        return intersect_block(o, d, tmax, planes)
+        return intersect_kernel(np.ascontiguousarray(o, float), np.ascontiguousarray(d, float),
+                                np.ascontiguousarray(tmax, float), np.ascontiguousarray(idx, np.int64),
+                                max(1, BLOCK // len(idx)), self.N, self.A, self.B, self.cN, self.cA, self.cB)
 
     def cast(self, o, d, tmax):
         """First hit distance along o + d*t up to tmax, or None."""
@@ -84,7 +89,7 @@ class Rays:
         order = np.lexsort((cells[:, 1], cells[:, 0])); cs = cells[order]
         breaks = np.nonzero(np.any(np.diff(cs, axis=0) != 0, axis=1))[0] + 1
         for group in np.split(order, breaks):
-            idx = self.grid.get(tuple(cells[group[0]]))
+            idx = self.cell(int(cells[group[0], 0]), int(cells[group[0], 1]))
             if idx is None:
                 continue
             if surfaces is not None:
@@ -116,16 +121,77 @@ class Rays:
         return out
 
 
-def intersect_block(o, d, tmax, planes):
-    """One ray block using triangle coefficients shared by the query's blocks."""
-    N, A, B, cN, cA, cB = planes
-    dn = d @ N
-    ok = np.abs(dn) > 1e-12
-    t = (cN - o @ N) / np.where(ok, dn, 1.0)
-    u = (o @ A - cA) + t * (d @ A)
-    v = (o @ B - cB) + t * (d @ B)
-    hit = ok & (u >= 0) & (v >= 0) & (u + v <= 1) & (t > 1e-4) & (t <= tmax[:, None])
-    return np.where(hit, t, np.inf).min(axis=1)
+@njit(cache=True)
+def candidates_kernel(keys, start, tri, x_origin, y_origin, width, height, zlo, zhi, seen, lx, ly, lz, hx, hy, hz):
+    """Rays.candidates over the cell table: z-overlapping triangles of the overlapped cells, one copy each, sorted."""
+    x0 = int(np.floor(lx / CELL)) - x_origin; x1 = int(np.floor(hx / CELL)) - x_origin
+    y0 = int(np.floor(ly / CELL)) - y_origin; y1 = int(np.floor(hy / CELL)) - y_origin
+    x0 = max(x0, 0); y0 = max(y0, 0); x1 = min(x1, width - 1); y1 = min(y1, height - 1)
+    zl = lz - 1e-6; zh = hz + 1e-6
+    total = 0; cells = 0
+    for x in range(x0, x1 + 1):
+        first = np.searchsorted(keys, x * height + y0); last = np.searchsorted(keys, x * height + y1, "right")
+        if last > first:
+            total += start[last] - start[first]; cells += last - first
+    out = np.empty(total, np.int64); n = 0
+    for x in range(x0, x1 + 1):
+        first = np.searchsorted(keys, x * height + y0); last = np.searchsorted(keys, x * height + y1, "right")
+        for k in range(start[first], start[last]):
+            j = tri[k]
+            if zhi[j] >= zl and zlo[j] <= zh and not seen[j]:
+                seen[j] = True; out[n] = j; n += 1
+    out = out[:n]
+    for j in out:
+        seen[j] = False
+    if cells > 1:
+        out.sort()
+    return out
+
+
+@intrinsic
+def fma(typingctx, a, b, c):
+    """Fused a * b + c, rounded once."""
+    def codegen(context, builder, signature, args):
+        return builder.fma(*args)
+    return types.float64(types.float64, types.float64, types.float64), codegen
+
+
+@njit(inline="always")
+def dot(p, q, order):
+    """p . q summed as numpy matmul does for a (rows x 3) @ (3 x triangles) block: a matrix product (order 0) fuses
+    y then z onto x; a single row or column (order 1, a BLAS vector product) fuses x then z onto y; a 1 x 1 product
+    (order 2) is numpy's own unfused sum."""
+    if order == 0:
+        return fma(p[2], q[2], fma(p[1], q[1], p[0] * q[0]))
+    if order == 1:
+        return fma(p[2], q[2], fma(p[0], q[0], p[1] * q[1]))
+    return p[0] * q[0] + p[1] * q[1] + p[2] * q[2]
+
+
+@njit(cache=True)
+def intersect_kernel(o, d, tmax, idx, rows, N, A, B, cN, cA, cB):
+    """Nearest hit per ray against triangles idx given by planes and barycentric duals, rays taken in blocks of rows;
+    tests stop at the first failing condition, which leaves the nearest hit unchanged."""
+    out = np.full(len(o), np.inf)
+    for i in range(len(o)):
+        block = min(rows, len(o) - i // rows * rows)
+        order = 2 if block == 1 and len(idx) == 1 else 1 if block == 1 or len(idx) == 1 else 0
+        oi = o[i]; di = d[i]; best = np.inf
+        for j in idx:
+            dn = dot(di, N[j], order)
+            if not abs(dn) > 1e-12:
+                continue
+            t = (cN[j] - dot(oi, N[j], order)) / dn
+            if not (t > 1e-4 and t <= tmax[i] and t < best):
+                continue
+            u = (dot(oi, A[j], order) - cA[j]) + t * dot(di, A[j], order)
+            if not u >= 0:
+                continue
+            v = (dot(oi, B[j], order) - cB[j]) + t * dot(di, B[j], order)
+            if v >= 0 and u + v <= 1:
+                best = t
+        out[i] = best
+    return out
 
 
 def body_sweep(tris, s, dir3, side, half, bands, reach, windows=None):
