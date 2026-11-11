@@ -245,6 +245,8 @@ class CollisionAssets:
                     counts["static_obstacle_shapes" if not reason else "kept_rejected_shapes"] += 1
                     source = {"resource": identity, "unit": unit["unit"], "ancestry": unit["ancestry"],
                               "actor": a, "shape": s}
+                    if "story_pose" in unit:
+                        source["storyPose"] = unit["story_pose"]
                     placed = len(result)
                     if curve is not None:
                         result.append({"curve": curve, "rotation": rotation, "position": position,

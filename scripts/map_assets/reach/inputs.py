@@ -23,15 +23,20 @@ def triangles(shapes):
 
 def collision_sets(assets, scene, bounds):
     """(blocking, support, envelopes): blocking = permanent player-mover collision; support = blocking plus moving
-    and Flow-controlled actors at their placed pose, for standing only; envelopes = (pivot, radius) of the space
-    those units sweep (nav there may be held by them in another pose)."""
-    shapes = assets.place(scene, bounds, Counter(), keep_rejected=True)
+    and Flow-controlled actors at their placed pose and at every story key pose, for standing only; envelopes =
+    (pivot, radius) of the space those units sweep about their placed pose (nav there may be held by them in another
+    pose)."""
+    moved = [{**unit, "transform": pose, "story_pose": k} for unit in scene
+             for k, pose in enumerate(unit.get("story_poses", ()))]
+    shapes = assets.place(scene + moved, bounds, Counter(), keep_rejected=True)
     units = {(unit["unit"], tuple(unit["ancestry"])): unit for unit in scene}
     blocking, support, envelopes = [], [], {}
     for shape in shapes:
         if shape["rejected"] is not None and shape["rejected"] not in SUPPORT_ONLY:
             continue
         support.append(shape)
+        if "storyPose" in shape["source"]:
+            continue
         if shape["rejected"] is None:
             blocking.append(shape)
             continue

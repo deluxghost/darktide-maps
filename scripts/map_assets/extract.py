@@ -32,7 +32,7 @@ from .scene.doors import DESTRUCTIBLE_COMPONENT, DOOR_COMPONENT, flow_destructed
 from .scene.flow_spawns import spawn_specs
 from .scene.flow_live import live_nodes
 from .scene.themes import DEFAULT_THEME_TAG, THEME_SUFFIX, hidden_set_keys
-from .scene.stories import story_unit_indices
+from .scene.stories import story_poses, story_units
 from .scene.platforms import player_platforms
 from .terrain.world import CollisionAssets
 
@@ -167,7 +167,7 @@ def extract(args):
             flow = level["flow"]
             bound[ancestry] = {level["units"][index]["id"] for indices in flow.unit_bindings.values() for index in indices}
             if resource_id not in story_cache:
-                story_cache[resource_id] = story_unit_indices(level_paths[resource_id])
+                story_cache[resource_id] = story_units(level_paths[resource_id])
             bound[ancestry] |= {level["units"][index]["id"] for index in story_cache[resource_id]
                                 if index < len(level["units"])}
         for unit in scene:
@@ -191,6 +191,7 @@ def extract(args):
         # carving: the authored prisms where the level's volume Lua names them, else the compiled solids
         blockers = volumes[MOVER_BLOCKER] + [part for blocker in level_collision if blocker["levelResource"] not in loaded
                                              for part in solid_parts(blocker)]
+        skipped_story_poses = story_poses(root, levels, level_paths, scene, story_cache)
         platforms, skipped_platforms = player_platforms(root, levels, level_paths, scene, definitions, geometry,
                                                         CollisionAssets(output, name), FLOOR_COSINE)
         nav_names = {int(nav["resource"], 16) for _, level, _, _ in walk_levels(root, levels) for nav in level["navigation"]}
@@ -207,6 +208,8 @@ def extract(args):
                   "kill_volumes": len(volumes[PLAYER_INSTAKILL]),
                   "player_platforms": len(platforms),
                   "skipped_platforms": skipped_platforms,
+                  "story_moved_units": sum("story_poses" in unit for unit in scene),
+                  "skipped_story_poses": skipped_story_poses,
                   "openable_doors": len(doors),
                   "theme_hidden_units": scene_assets.hidden_units,
                   "collision_units": sum(unit["resource"] in collision_catalog for unit in scene),

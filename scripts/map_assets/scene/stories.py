@@ -5,11 +5,14 @@ platforms). Each track stores the level unit index in its second word, not throu
 with no components, no unit Flow and no Flow binding can still be moved by a story.
 """
 
+from collections import Counter
+
 import numpy as np
 from scipy.spatial.transform import Rotation
 
 from ..formats.binary import resource
 from ..formats.resource import murmur64
+from .objects import walk_levels
 
 STORY_TABLE = 160
 STORY_VERSION = 9
@@ -17,23 +20,29 @@ STORY_DURATION = 44
 STORY_REFERENCE = 48
 TRACKS = 112
 TRACK_SIZE = 68
+POSITION_CHANNELS = (0, 1, 2)
+SCALE_CHANNELS = (3, 4, 5)
 ROTATION_CHANNELS = (6, 7, 8)
+MIN_STORY_SCALE = float(np.float32(1e-6))
+POSE_DIGITS = 4                 # story poses closer than this (m, matrix entries) are one pose
 
 
-def story_unit_indices(path):
-    """Indices (into the level's unit list) of every unit some story of this level animates."""
+def story_units(path):
+    """{level unit index: [names of the stories of this level that animate it]}."""
     _, reader = resource(path, murmur64("level"))
     table, = reader.unpack("<I", STORY_TABLE)
     if not table:
-        return set()
+        return {}
     count, = reader.unpack("<I", table)
     entries = [reader.unpack("<2I", table + 4 + index * 8) for index in range(count)]
-    animated = set()
-    for _, relative in entries:
+    animated = {}
+    for name, relative in entries:
         start = table + 4 + count * 8 + relative
         _, tracks = reader.unpack("<2I", start)
         for index in range(tracks):
-            animated.add(reader.unpack("<17I", start + TRACKS + index * TRACK_SIZE)[1])
+            stories = animated.setdefault(reader.unpack("<17I", start + TRACKS + index * TRACK_SIZE)[1], [])
+            if name not in stories:
+                stories.append(name)
     return animated
 
 
@@ -88,3 +97,69 @@ def rotation_at_key(tracks, time, initial):
         return initial
     angles = [value_at_key(tracks[axis], time) if axis in tracks else 0 for axis in ROTATION_CHANNELS]
     return Rotation.from_euler("XYZ", angles).as_matrix()
+
+
+def key_pose(tracks, time, local):
+    """Level-local unit matrix at one key time of a story (channels it does not animate keep the placed values), or
+    None when an animated channel has no key at that time."""
+    try:
+        return pose_at(tracks, time, local)
+    except ValueError:
+        return None
+
+
+def pose_at(tracks, time, local):
+    scale = np.linalg.norm(local[:3, :3], axis=0)
+    pose = local.copy()
+    pose[:3, 3] = [value_at_key(tracks[axis], time) if axis in tracks else local[axis, 3] for axis in POSITION_CHANNELS]
+    story_scale = np.array([value_at_key(tracks[axis], time) if axis in tracks else scale[axis - 3]
+                            for axis in SCALE_CHANNELS])
+    story_scale[story_scale == 0] = MIN_STORY_SCALE
+    pose[:3, :3] = rotation_at_key(tracks, time, local[:3, :3] / scale) * story_scale
+    return pose
+
+
+def story_poses(root, levels, level_paths, scene, cache):
+    """Set unit["story_poses"]: world matrices of every key pose that a level story moves the unit to (other than its
+    placed pose). Players can stand on a story-moved unit wherever a story leaves it. Returns skipped counts."""
+    placements = {tuple(ancestry): matrix for _, _, matrix, ancestry in walk_levels(root, levels)}
+    indices = {}
+    skipped = Counter()
+    for unit in scene:
+        level = unit["level"]
+        if level not in cache:
+            cache[level] = story_units(level_paths[level])
+        if not cache[level]:
+            continue
+        if level not in indices:
+            indices[level] = {item["id"]: index for index, item in enumerate(levels[level]["units"])}
+        index = indices[level].get(unit["unit"])
+        if index not in cache[level]:
+            continue
+        placement = placements[tuple(unit["ancestry"])]
+        placed = np.array(unit["transform"])
+        local = np.linalg.inv(placement) @ placed
+        seen = {tuple(np.round(placed, POSE_DIGITS).ravel())}
+        poses = []
+        for story in cache[level][index]:
+            try:
+                _, reference, tracks = story_tracks(level_paths[level], story, index)
+            except ValueError:      # tracks that are not unit transform curves
+                skipped["unsupported_story_track"] += 1
+                continue
+            if not np.array_equal(reference, np.eye(4)):
+                skipped["nonidentity_story_reference"] += 1
+                continue
+            for time in sorted({key[0] for keys in tracks.values() for key in keys}):
+                pose = key_pose(tracks, time, local)
+                if pose is None:
+                    skipped["unaligned_story_keys"] += 1
+                    continue
+                world = placement @ pose
+                identity = tuple(np.round(world, POSE_DIGITS).ravel())
+                if identity not in seen:
+                    seen.add(identity)
+                    poses.append(world.tolist())
+        if poses:
+            unit["story_poses"] = poses
+    return dict(skipped)
